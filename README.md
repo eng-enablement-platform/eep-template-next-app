@@ -7,10 +7,11 @@ pnpm dev
 ```
 
 ## TODOS
+
 - Eslint + Prettier + VScode Settings
-- AGENTS.md
+- Vitest + Playwright
+- AGENTS.md + GSD setup
 - Husky
-- ShadCN UI
 - Docs site + README Structure
 - Drizzle + Postgres (local docker & Neon)
 - Docker

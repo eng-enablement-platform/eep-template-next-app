@@ -1,0 +1,60 @@
+ERROR_MESSAGE='🔨❌ You need to fix a few things in your code.
+        Please review the above errors...'
+
+# Skip tests and build with: SKIP_TESTS=1 git commit -m "..."
+# Useful when committing intentionally failing tests (e.g. TDD failure phase)
+if [ "$SKIP_TESTS" = "1" ]; then
+    echo '⏭️  SKIP_TESTS=1 detected — skipping tests and build (lint/style checks still run)'
+fi
+
+echo '🏗️👷 Pre commit checks being completed...'
+
+# Run Trivy only when package.json or package-lock.json changed
+if git diff --cached --name-only | grep -qE '^package(-lock)?\.json$'; then
+    echo "🔐 Running Trivy security scan..."
+    trivy fs --scanners vuln --ignore-unfixed --detection-priority comprehensive --disable-telemetry --skip-version-check --severity CRITICAL --exit-code 1 .
+    if [ $? -ne 0 ]; then
+        echo "❌ Security vulnerabilities found! Fix them before committing."
+        exit 1
+    fi
+    echo "✅ No critical vulnerabilities found!"
+else
+    echo "🔐 Skipping Trivy (package.json / package-lock.json unchanged)"
+fi
+
+
+# Check branch name length (max 44 characters allowed for Kubera branch based deployments)
+current_branch=$(git rev-parse --abbrev-ref HEAD)
+if [ ${#current_branch} -gt 44 ]; then
+    echo "❌ Branch name '$current_branch' is too long (${#current_branch} characters). Maximum allowed is 44 characters."
+    echo "Please rename your branch to be 44 characters or less."
+    exit 1
+fi
+
+echo '📝 Running style and linting checks...'
+npx lint-staged || (echo "$ERROR_MESSAGE"; false;)
+
+# Function to check if files matching a pattern have changed
+files_changed() {
+    git diff --cached --name-only | grep -E "$1"
+}
+
+# Check if any TypeScript or config files have changed
+# TODO: Will need to fix this to work with playwright + vitest (think about integration tests also - how might we strcutre this here)
+if [ "$SKIP_TESTS" = "1" ]; then
+    echo '⏭️  Skipping tests and build step.'
+elif files_changed '\.(ts|tsx)$'; then
+    echo '💪 Relevant files changed. Running tests...'
+    npm run test:ci || (echo "$ERROR_MESSAGE"; false;)
+    npm run test:integration || (echo "$ERROR_MESSAGE"; false;)
+
+    echo '👍 Code looks good so far... running build after successful tests!'
+    npm run build || (echo "$ERROR_MESSAGE"; false;)
+elif files_changed '\.mjs$'; then
+    echo '📋 Config files changed. Running build...'
+    npm run build || (echo "$ERROR_MESSAGE"; false;)
+else
+    echo '🏎️ No relevant files changed. Skipping tests and build step.'
+fi
+
+echo '✅ All good to go, making the commit now!'

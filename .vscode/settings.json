@@ -1,0 +1,34 @@
+{
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[scss]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit",
+    "source.fixAll.tslint": "explicit"
+  },
+  "editor.formatOnSave": true,
+  "eslint.format.enable": true,
+  "eslint.run": "onSave",
+  "cSpell.words": ["dpage", "intialise", "nums", "sonner"],
+  /*
+   * Defaults to the actual svg code rather than the image
+   * so it can be easily copied and edited if needed
+   * Use a preview extension to view the actual image
+   * https://marketplace.visualstudio.com/items?itemName=SimonSiefke.svg-preview
+   */
+  "workbench.editorAssociations": {
+    "*.svg": "default"
+  }
+}
