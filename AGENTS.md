@@ -1,0 +1,140 @@
+# AGENTS instructions
+
+## Philosophy
+
+We write clean, coherent, and simple code. Nothing clever or fancy — if it's
+hard to read it's wrong. Move fast but keep things maintainable and scalable.
+When in doubt, boring is better.
+
+## Code Standards
+
+- DRY, readable, boring — avoid clever solutions
+- Error handling and edge cases are first class concerns, not afterthoughts
+- Use import aliases (`@/`) never relative paths
+- Do not add dependencies arbitrarily — check if native TS/JS can do it first
+- Comments are required for anything non-obvious — explain the why, not the what
+- TSDoc on all `.ts` files — pre-commit will enforce this
+- If disabling a lint rule, leave a comment explaining why
+
+## Git & Branching
+
+Branch format: `<type>/<ticket-number>-<brief-description>`
+
+- `feat/` — new features
+- `fix/` — bug fixes
+- Ad-hoc: `fix/<brief-description>` (no ticket needed)
+
+Commit messages must follow conventional commits — at least one of:
+
+- `feat:` `fix:` `chore:` `BREAKING CHANGE:`
+
+## Testing
+
+Focus on core functionality and critical paths. Ask: "Would a test here prevent
+future bugs or make refactoring easier?" If yes, write it.
+
+## Architecture
+
+Three layers, strictly separated:
+
+**Server Layer (`classes/`)** — Business logic and external service interactions.
+Server-only. Organised by domain subdirectories.
+
+**API Layer (`app/api/`)** — Next.js route handlers only. GET requests via
+RESTful endpoints. All external service logic lives in `classes/`, not here.
+
+**Client Layer (`hooks/`, `components/`, `store/`)** — `hooks/` wraps SWR for
+all data fetching, providing declarative interfaces with built-in loading/error
+states. `store/` manages client state via Zustand. `components/` are purely
+presentational.
+
+## Data Fetching
+
+SWR is used for all client-side data fetching. Never use useEffect for fetching.
+Hooks wrap SWR and live in `hooks/`. Each hook handles its own loading and error
+state and exposes a clean interface to components.
+
+## Folder Structure
+
+<!-- TODO: Cursor can re-write this once done -->
+
+project-root/
+scripts/ # DB seeding and utility scripts, runs outside Next.js
+src/
+app/ # Next.js routing only — routes, layouts, pages, globals.css
+(root)/ # main app routes and layout
+api/ # Next.js route handlers only
+classes/ # business logic, domain subdirectories, server-only
+components/
+ui/ # shadcn primitives — never edit
+common/ # reusable components shared across features
+features/ # feature-specific components
+config/
+constants/ # app-wide constants
+hooks/ # SWR-based data fetching hooks
+lib/ # third party instantiation (db, auth, swr config)
+utils/ # shared utility functions
+store/ # zustand stores
+types/ # shared global types only
+.env
+.eslintrc
+package.json
+tsconfig.json
+env.d.ts # TypeScript env var declarations, must stay at root
+
+## Naming Rules
+
+**Folders** — always kebab-case.
+
+**index.ts / index.tsx** — only use when a folder represents a meaningful
+grouping or domain. Do not create a folder + index.ts just to wrap a single
+file — name the file directly instead (e.g. `this-class.ts`, `this-component.tsx`).
+
+**Components** — each in its own kebab-cased folder with `index.tsx` as entry
+point. Sub-components go in a nested `components/` folder. Component-specific
+types go in a `types/` folder alongside the component.
+
+**Hooks** — one file per hook, named `use-*.ts`.
+
+**Stores** — one file per domain (e.g. `domain-store.ts`). Co-locate types
+unless shared, in which case pull up to `types/`.
+
+**Variables** — full descriptive names, never abbreviated.
+
+## Types
+
+Global shared types live in `src/types/`. Component-scoped types live in a
+`types/` folder next to the component. Store types are co-located in the store
+file unless shared. Pull types up one level when two or more siblings need them
+— never duplicate.
+
+## Barrel Exports
+
+Use barrels only at meaningful domain or feature boundaries — never at the
+top level of `components/`, `hooks/`, or `store/`.
+
+- ✅ Feature level: `components/features/dashboard/index.ts`
+- ✅ Domain level: `classes/payments/index.ts`
+- ❌ Never: `components/index.ts`, `hooks/index.ts`
+- ❌ Never mix server and client exports in the same barrel
+- Direct imports preferred for `ui/` components
+
+## Documentation
+
+All code documented with TSDoc. Methods include purpose, business context,
+`@param` and `@returns`. Components document props, purpose, and a usage example.
+
+## Quick Reference
+
+| Concern          | Location            | Convention                              |
+| ---------------- | ------------------- | --------------------------------------- |
+| Business logic   | `classes/`          | Domain subdirectories, server-only      |
+| Route handlers   | `app/api/`          | Next.js route handlers, GET only        |
+| Mutations        | `actions/`          | `*-actions.ts` naming                   |
+| UI               | `components/`       | ui / common / features split            |
+| Data fetching    | `hooks/`            | SWR hooks, never useEffect for fetching |
+| State management | `store/`            | Zustand, co-located types               |
+| Shared types     | `types/`            | Pull up when shared across siblings     |
+| Third party libs | `lib/`              | Instantiation and config only           |
+| Constants        | `config/constants/` | App-wide constants                      |
+| Scripts          | `scripts/` (root)   | DB seeding, outside Next.js context     |
