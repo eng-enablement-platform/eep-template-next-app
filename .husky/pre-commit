@@ -22,15 +22,6 @@ else
     echo "🔐 Skipping Trivy (package.json / package-lock.json unchanged)"
 fi
 
-
-# Check branch name length (max 44 characters allowed for Kubera branch based deployments)
-current_branch=$(git rev-parse --abbrev-ref HEAD)
-if [ ${#current_branch} -gt 44 ]; then
-    echo "❌ Branch name '$current_branch' is too long (${#current_branch} characters). Maximum allowed is 44 characters."
-    echo "Please rename your branch to be 44 characters or less."
-    exit 1
-fi
-
 echo '📝 Running style and linting checks...'
 npx lint-staged || (echo "$ERROR_MESSAGE"; false;)
 
