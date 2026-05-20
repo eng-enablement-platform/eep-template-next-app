@@ -22,6 +22,16 @@ else
     echo "🔐 Skipping Trivy (package.json / package-lock.json unchanged)"
 fi
 
+# Run ESLint config probes only when the config itself changed.
+# Cheap (~30s cold, skipped otherwise) but catches the case where a plugin
+# upgrade or config tweak silently disables a rule we depend on.
+if git diff --cached --name-only | grep -qE '^eslint\.config\.ts$'; then
+    echo "🧪 eslint.config.ts changed — running lint probes..."
+    pnpm lint:probe || (echo "$ERROR_MESSAGE"; false;)
+else
+    echo "🧪 Skipping lint probes (eslint.config.ts unchanged)"
+fi
+
 echo '📝 Running style and linting checks...'
 npx lint-staged || (echo "$ERROR_MESSAGE"; false;)
 

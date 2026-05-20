@@ -3,18 +3,42 @@
 ## Philosophy
 
 We write clean, coherent, and simple code. Nothing clever or fancy — if it's
-hard to read it's wrong. Move fast but keep things maintainable and scalable.
-When in doubt, boring is better.
+hard to read it's wrong.
+
+We respect the codebase but don't over-engineer it. Remember that code is
+simply a vehicle to get to the outcome — but we'd rather drive there in a
+Ferrari than an old banger.
+
+Move fast but always aim to keep things maintainable and scalable. When in
+doubt, boring is better.
+
+**The north star:** could a developer or an agent pick this up and work
+confidently without asking anyone?
+
+## Code Standards
 
 ## Code Standards
 
 - DRY, readable, boring — avoid clever solutions
 - Error handling and edge cases are first class concerns, not afterthoughts
 - Use import aliases (`@/`) never relative paths
+- Always use `import type` for type-only imports — never mix types and values
+  in the same import
+- Use named imports from `react` — never `import * as React from 'react'`.
+  Namespace imports break tree-shaking and prevent `import type` from working
+  cleanly. Exception: shadcn primitives in `src/components/ui/` are vendored
+  and may keep their upstream namespace imports.
+- Named exports everywhere — default exports only where Next.js requires
+- Components declared as function declarations, never const arrow functions
+- Arrow functions for utilities, callbacks, and inline handlers
+- Props typed as a named interface above the component, never inline
 - Do not add dependencies arbitrarily — check if native TS/JS can do it first
-- Comments are required for anything non-obvious — explain the why, not the what
+- Comments required for anything non-obvious — explain the why, not the what
+- Multi-line comments must always use /\* \*/ block syntax, never consecutive
+  // single-line comments. Single // is fine for single line inline comments only.
 - TSDoc on all `.ts` files — pre-commit will enforce this
 - If disabling a lint rule, leave a comment explaining why
+- Tailwind only for styles, no exceptions
 
 ## Git & Branching
 
