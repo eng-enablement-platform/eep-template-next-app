@@ -8,10 +8,8 @@ pnpm dev
 
 ## TODOS
 
-- Eslint + Prettier + VScode Settings
-- Vitest + Playwright
+- Playwright
 - AGENTS.md + GSD setup
-- Husky
 - Docs site + README Structure
 - Drizzle + Postgres (local docker & Neon)
 - Docker
