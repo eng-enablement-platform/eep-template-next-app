@@ -52,10 +52,42 @@ Commit messages must follow conventional commits — at least one of:
 
 - `feat:` `fix:` `chore:` `BREAKING CHANGE:`
 
+## Git Hooks
+
+**Pre-commit** — full guardrail suite on every commit. Designed to be strict
+enough to constrain both human and agentic contributors.
+
+- Trivy security scan (only when `package.json` / `pnpm-lock.yaml` changed) —
+  system binary, install with `brew install trivy` (macOS) or see
+  [aquasecurity/trivy](https://github.com/aquasecurity/trivy)
+- ESLint config probe (only when `eslint.config.ts` changed)
+- lint-staged — lint + prettier on staged files only
+- On `.ts/.tsx` or config changes: full `tsc --noEmit`, test suite, and build
+- On config file changes (`.mjs`, `.cjs`, `next.config.*`): build only
+- No relevant changes: skips heavy checks automatically
+
+**Escape hatch** — for intentional WIP or TDD red phase only:
+`SKIP_CHECKS=1 git commit -m "..."` — lint, Trivy, and style still run.
+Never use this to bypass failing tests on shippable code.
+
+**CI** — integration and e2e tests only. The pre-commit hook is the
+first line of defence, not CI.
+
 ## Testing
+
+Tests are co-located with the code they test, never in a separate top-level
+test folder.
+
+- Component tests: `components/features/my-component/__tests__/my-component.test.tsx`
+- Hook tests: `hooks/__tests__/use-my-hook.test.ts`
+- Class tests: `classes/my-domain/__tests__/my-domain.test.ts`
+- Utility tests: `lib/utils/__tests__/my-util.test.ts`
 
 Focus on core functionality and critical paths. Ask: "Would a test here prevent
 future bugs or make refactoring easier?" If yes, write it.
+
+e2e tests are the exception — these live in `e2e/` at the project root as they
+test the full application, not individual units.
 
 ## Architecture
 

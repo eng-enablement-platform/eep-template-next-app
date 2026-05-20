@@ -1,25 +1,40 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
 ERROR_MESSAGE='🔨❌ You need to fix a few things in your code.
         Please review the above errors...'
 
-# Skip tests and build with: SKIP_TESTS=1 git commit -m "..."
-# Useful when committing intentionally failing tests (e.g. TDD failure phase)
-if [ "$SKIP_TESTS" = "1" ]; then
-    echo '⏭️  SKIP_TESTS=1 detected — skipping tests and build (lint/style checks still run)'
+# Print the error banner and exit non-zero. Used after every check that
+# must block the commit on failure.
+fail() {
+    echo "$ERROR_MESSAGE"
+    exit 1
+}
+
+# Skip the heavy checks (tsc + tests + build) with: SKIP_CHECKS=1 git commit -m "..."
+# Useful when committing intentionally broken/in-progress state (e.g. TDD red phase
+# or a WIP checkpoint). Lint, style, Trivy, and lint-probe still run.
+if [ "${SKIP_CHECKS:-}" = "1" ]; then
+    echo '⏭️  SKIP_CHECKS=1 detected — skipping tsc, tests, and build (lint/style checks still run)'
 fi
 
 echo '🏗️👷 Pre commit checks being completed...'
 
-# Run Trivy only when package.json or package-lock.json changed
-if git diff --cached --name-only | grep -qE '^package(-lock)?\.json$'; then
+# Function to check if files matching a pattern have changed
+files_changed() {
+    git diff --cached --name-only | grep -E "$1"
+}
+
+# Run Trivy only when dependency manifests changed
+if git diff --cached --name-only | grep -qE '^(package\.json|pnpm-lock\.yaml)$'; then
     echo "🔐 Running Trivy security scan..."
-    trivy fs --scanners vuln --ignore-unfixed --detection-priority comprehensive --disable-telemetry --skip-version-check --severity CRITICAL --exit-code 1 .
-    if [ $? -ne 0 ]; then
+    if ! trivy fs --scanners vuln --ignore-unfixed --detection-priority comprehensive --disable-telemetry --skip-version-check --severity CRITICAL --exit-code 1 .; then
         echo "❌ Security vulnerabilities found! Fix them before committing."
         exit 1
     fi
     echo "✅ No critical vulnerabilities found!"
 else
-    echo "🔐 Skipping Trivy (package.json / package-lock.json unchanged)"
+    echo "🔐 Skipping Trivy (package.json / pnpm-lock.yaml unchanged)"
 fi
 
 # Run ESLint config probes only when the config itself changed.
@@ -27,35 +42,33 @@ fi
 # upgrade or config tweak silently disables a rule we depend on.
 if git diff --cached --name-only | grep -qE '^eslint\.config\.ts$'; then
     echo "🧪 eslint.config.ts changed — running lint probes..."
-    pnpm lint:probe || (echo "$ERROR_MESSAGE"; false;)
+    pnpm lint:probe || fail
 else
     echo "🧪 Skipping lint probes (eslint.config.ts unchanged)"
 fi
 
 echo '📝 Running style and linting checks...'
-npx lint-staged || (echo "$ERROR_MESSAGE"; false;)
+pnpm exec lint-staged || fail
 
-# Function to check if files matching a pattern have changed
-files_changed() {
-    git diff --cached --name-only | grep -E "$1"
-}
+# Heavy checks — type-check, run tests, then build.
+# Skipped entirely when SKIP_CHECKS=1, and short-circuited when no
+# TS/config files changed (cuts ~no-op commits like docs / .md edits).
+if [ "${SKIP_CHECKS:-}" = "1" ]; then
+    echo '⏭️  Skipping tsc, tests, and build step.'
+elif files_changed '\.(ts|tsx)$|^tsconfig\.json$|^package\.json$' > /dev/null; then
+    echo '🔬 Type-checking project (tsc --noEmit)...'
+    pnpm typecheck || fail
 
-# Check if any TypeScript or config files have changed
-# TODO: Will need to fix this to work with playwright + vitest (think about integration tests also - how might we strcutre this here)
-if [ "$SKIP_TESTS" = "1" ]; then
-    echo '⏭️  Skipping tests and build step.'
-elif files_changed '\.(ts|tsx)$'; then
     echo '💪 Relevant files changed. Running tests...'
-    npm run test:ci || (echo "$ERROR_MESSAGE"; false;)
-    npm run test:integration || (echo "$ERROR_MESSAGE"; false;)
+    pnpm test || fail
 
     echo '👍 Code looks good so far... running build after successful tests!'
-    npm run build || (echo "$ERROR_MESSAGE"; false;)
-elif files_changed '\.mjs$'; then
+    pnpm build || fail
+elif files_changed '\.mjs$|\.cjs$|^next\.config\.' > /dev/null; then
     echo '📋 Config files changed. Running build...'
-    npm run build || (echo "$ERROR_MESSAGE"; false;)
+    pnpm build || fail
 else
-    echo '🏎️ No relevant files changed. Skipping tests and build step.'
+    echo '🏎️ No relevant files changed. Skipping tsc, tests, and build step.'
 fi
 
 echo '✅ All good to go, making the commit now!'

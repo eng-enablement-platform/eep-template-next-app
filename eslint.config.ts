@@ -27,6 +27,16 @@ const NEXT_DEFAULT_EXPORT_FILES = [
   '**/app/**/not-found.tsx',
 ];
 
+/*
+ * Config files at the repo root that are expected to default-export (their
+ * loader requires it — `next.config.ts`, `vitest.config.ts`, `eslint.config.ts`,
+ * `prettier.config.js`, etc.).
+ */
+const CONFIG_FILE_DEFAULT_EXPORT_FILES = [
+  '*.config.{ts,mts,cts,js,mjs,cjs}',
+  'eslint.config.{ts,mts,cts,js,mjs,cjs}',
+];
+
 export default defineConfig([
   {
     ignores: [
@@ -51,6 +61,13 @@ export default defineConfig([
          * `projectService` lets typescript-eslint discover the nearest
          * tsconfig on demand — needed for type-aware rules without
          * hand-maintaining a `project` array.
+         *
+         * ⚠️  Footgun: every file ESLint lints must live inside the tsconfig
+         * project. Do NOT add lintable paths under `src/` to
+         * `tsconfig.json`'s `exclude` array — doing so causes ESLint to fail
+         * with "file not found by the project service". If you need a path
+         * excluded from tsc but linted by ESLint, configure
+         * `projectService.allowDefaultProject` instead.
          */
         projectService: true,
         tsconfigRootDir: __dirname,
@@ -177,6 +194,16 @@ export default defineConfig([
    */
   {
     files: NEXT_DEFAULT_EXPORT_FILES,
+    rules: {
+      'import/no-default-export': 'off',
+    },
+  },
+
+  /*
+   * Tool config files at the repo root must default-export (loader requirement).
+   */
+  {
+    files: CONFIG_FILE_DEFAULT_EXPORT_FILES,
     rules: {
       'import/no-default-export': 'off',
     },

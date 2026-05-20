@@ -16,6 +16,7 @@ pnpm dev
 - Drizzle + Postgres (local docker & Neon)
 - Docker
 - Dev Container
+- Full docs and deep dive write up on all tech and tools in `/docs`/
 
 ## Deploy on Vercel
 
