@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# GSD / agent runtime (per-developer, regenerated on demand — not project code)
+.gsd/
+.agents/
+.bg-shell/
+skills-lock.json
