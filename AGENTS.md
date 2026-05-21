@@ -159,6 +159,13 @@ file — name the file directly instead (e.g. `this-class.ts`, `this-component.t
 point. Sub-components go in a nested `components/` folder. Component-specific
 types go in a `types/` folder alongside the component.
 
+**Utility modules** — single `index.ts` until the file exceeds ~200 lines or
+~3 distinct concerns, or its functions have grown dedicated test files. Then
+split into kebab-named per-function files along meaningful seams (not
+one-file-per-export). After splitting, `index.ts` becomes the folder's barrel
+(see Barrel Exports) — consumers import from the folder, internal siblings
+import directly.
+
 **Hooks** — one file per hook, named `use-*.ts`.
 
 **Stores** — one file per domain (e.g. `domain-store.ts`). Co-locate types
@@ -178,10 +185,13 @@ file unless shared. Pull types up one level when two or more siblings need them
 Use barrels only at meaningful domain or feature boundaries — never at the
 top level of `components/`, `hooks/`, or `store/`.
 
-- ✅ Feature level: `components/features/dashboard/index.ts`
+✅ Feature level: `components/features/dashboard/index.ts`
+
 - ✅ Domain level: `classes/payments/index.ts`
+- ✅ Split utility/domain folder: `billing-utils/index.ts` (see Naming Rules → Utility modules)
 - ❌ Never: `components/index.ts`, `hooks/index.ts`
 - ❌ Never mix server and client exports in the same barrel
+- ❌ Never import the barrel from a sibling file in the same folder
 - Direct imports preferred for `ui/` components
 
 ## Documentation
