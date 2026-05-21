@@ -73,21 +73,48 @@ Never use this to bypass failing tests on shippable code.
 **CI** — integration and e2e tests only. The pre-commit hook is the
 first line of defence, not CI.
 
-## Testing
+## Testing & QA
 
-Tests are co-located with the code they test, never in a separate top-level
-test folder.
+We work in a QA orientated manner — no regressions, no silly bugs, no shortcuts.
+Before writing a test ask: "Would this prevent future bugs or make refactoring
+easier?" If yes, write it. Focus on core functionality and critical paths.
 
-- Component tests: `components/features/my-component/__tests__/my-component.test.tsx`
-- Hook tests: `hooks/__tests__/use-my-hook.test.ts`
-- Class tests: `classes/my-domain/__tests__/my-domain.test.ts`
-- Utility tests: `lib/utils/__tests__/my-util.test.ts`
+**Co-location** — tests live next to the code they test, never in a separate
+top-level folder. Use a `__tests__/` subfolder within the relevant directory.
+e2e tests are the exception — these live in `e2e/` at project root.
 
-Focus on core functionality and critical paths. Ask: "Would a test here prevent
-future bugs or make refactoring easier?" If yes, write it.
+**Test-only exports** — grouped under a single `_forTests` export at the bottom
+of the file. Never export internals individually. Never import `_forTests`
+outside of `__tests__/` files.
 
-e2e tests are the exception — these live in `e2e/` at the project root as they
-test the full application, not individual units.
+## Quick Reference
+
+| Type      | Location                                      |
+| --------- | --------------------------------------------- |
+| Component | `components/features/my-component/__tests__/` |
+| Hook      | `hooks/__tests__/`                            |
+| Class     | `classes/my-domain/__tests__/`                |
+| Utility   | `utils/__tests__/`                            |
+| e2e       | `e2e/` (project root)                         |
+
+<!-- TODO: MOVE THE EXAMPLES TO FUMADOCS -->
+
+## Testing Exports
+
+Test-only exports are grouped under a single `_forTests` named export at the
+bottom of the file. Never export internal classes or utilities individually
+for test purposes — keep the public API clean.
+
+```typescript
+// public API
+export const myService = new MyService();
+
+// test-only exports
+export const _forTests = { MyService };
+```
+
+The `_` prefix signals to developers and agents that this export is not part
+of the public API and should never be imported outside of test files.
 
 ## Architecture
 
