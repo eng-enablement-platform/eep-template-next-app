@@ -136,8 +136,6 @@ SWR is used for all client-side data fetching. Never use useEffect for fetching.
 Hooks wrap SWR and live in `hooks/`. Each hook handles its own loading and error
 state and exposes a clean interface to components.
 
-## Folder Structure
-
 <!-- TODO: Cursor can re-write this once done -->
 
 ## Folder Structure
