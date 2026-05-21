@@ -17,8 +17,6 @@ confidently without asking anyone?
 
 ## Code Standards
 
-## Code Standards
-
 - DRY, readable, boring — avoid clever solutions
 - Error handling and edge cases are first class concerns, not afterthoughts
 - Use import aliases (`@/`) never relative paths
@@ -50,7 +48,7 @@ Branch format: `<type>/<ticket-number>-<brief-description>`
 
 Commit messages must follow conventional commits — at least one of:
 
-- `feat:` `fix:` `chore:` `BREAKING CHANGE:`
+- `feat:` `fix:` `chore:` `docs:` `BREAKING CHANGE:`
 
 ## Git Hooks
 
@@ -76,8 +74,9 @@ first line of defence, not CI.
 ## Testing & QA
 
 We work in a QA orientated manner — no regressions, no silly bugs, no shortcuts.
+
 Before writing a test ask: "Would this prevent future bugs or make refactoring
-easier?" If yes, write it. Focus on core functionality and critical paths.
+easier?" If yes, write it. We don't chase coverage metrics — we test what matters
 
 **Co-location** — tests live next to the code they test, never in a separate
 top-level folder. Use a `__tests__/` subfolder within the relevant directory.
