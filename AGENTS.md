@@ -48,7 +48,7 @@ Branch format: `<type>/<ticket-number>-<brief-description>`
 
 Commit messages must follow conventional commits — at least one of:
 
-- `feat:` `fix:` `chore:` `docs:` `BREAKING CHANGE:`
+- `feat:` `fix:` `refactor:` `chore:` `docs:` `BREAKING CHANGE:`
 
 ## Git Hooks
 
