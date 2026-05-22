@@ -76,7 +76,9 @@ first line of defence, not CI.
 We work in a QA orientated manner — no regressions, no silly bugs, no shortcuts.
 
 Before writing a test ask: "Would this prevent future bugs or make refactoring
-easier?" If yes, write it. We don't chase coverage metrics — we test what matters
+easier?" If yes, write it. We don't chase coverage metrics — we test what matters.
+
+**TDD where it pays off** — small isolated methods with a clear contract (pure functions, utilities, well-defined logic) get written test-first. Larger integration work doesn't — the spec is still being discovered and tests written against a moving API end up brittle.
 
 **Co-location** — tests live next to the code they test, never in a separate
 top-level folder. Use a `__tests__/` subfolder within the relevant directory.
