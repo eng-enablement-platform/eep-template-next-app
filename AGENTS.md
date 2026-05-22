@@ -7,7 +7,7 @@ hard to read it's wrong.
 
 We respect the codebase but don't over-engineer it. Remember that code is
 simply a vehicle to get to the outcome — but we'd rather drive there in a
-Ferrari than an old banger.
+Ferrari than an old banger. Simplicity is king!
 
 Move fast but always aim to keep things maintainable and scalable. When in
 doubt, boring is better.
