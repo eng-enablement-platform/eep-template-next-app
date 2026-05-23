@@ -43,7 +43,7 @@ export default defineConfig([
       '.next/**',
       'node_modules/**',
       'docs/**',
-      'e2e/**',
+      'e2e-tests/**',
       'out/**',
       'build/**',
       'dist/**',
