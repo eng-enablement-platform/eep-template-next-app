@@ -90,7 +90,7 @@ class ApplicationLogger {
  *
  * logger.info({message: 'Oops', detail: 'Something is going wrong'})
  * logger.warn('Very wrong...')
- * logger.error('Yep, we did do a boo boo!!')
+ * logger.error('Yep, we messed up!!')
  * ```
  */
 export const rootLogger = (logSource: string): Logger => {
