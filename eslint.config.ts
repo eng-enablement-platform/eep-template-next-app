@@ -69,7 +69,9 @@ export default defineConfig([
          * excluded from tsc but linted by ESLint, configure
          * `projectService.allowDefaultProject` instead.
          */
-        projectService: true,
+        projectService: {
+          allowDefaultProject: ['*.mjs', '*.cjs', '*.js'],
+        },
         tsconfigRootDir: __dirname,
       },
     },

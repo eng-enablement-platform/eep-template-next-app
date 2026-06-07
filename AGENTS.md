@@ -124,13 +124,91 @@ Three layers, strictly separated:
 **Server Layer (`classes/`)** — Business logic and external service interactions.
 Server-only. Organised by domain subdirectories.
 
-**API Layer (`app/api/`)** — Next.js route handlers only. GET requests via
-RESTful endpoints. All external service logic lives in `classes/`, not here.
+**API Layer (`app/api/`)** — Next.js route handlers only. All business logic
+lives in `classes/`, not here; handlers validate input, call a service, and
+shape the response. See **Read vs write paths** below for which mutations
+belong here versus in `actions/`.
 
 **Client Layer (`hooks/`, `components/`, `store/`)** — `hooks/` wraps SWR for
 all data fetching, providing declarative interfaces with built-in loading/error
 states. `store/` manages client state via Zustand. `components/` are purely
 presentational.
+
+## Patterns
+
+### Service instantiation
+
+Default to a **singleton** for service classes — third-party API clients
+(HubSpot, Slack, BambooHR), loggers, and any stateless, app-lifetime collaborator.
+These hold only config (base URL, API key, transports) that is identical for the
+whole app and cannot be corrupted by one request for the next, so one instance
+for the app's life is correct.
+
+Reach for a **factory or per-request instance** only when the object carries
+state that belongs to a single request — per-user/per-tenant auth (e.g. a Slack
+client built from the signed-in user's OAuth token, not an app-wide token),
+request/session context that must not leak between users, or a seam a test needs
+to swap. App-level token → singleton. Per-user token → per-request via factory.
+
+A factory is not an alternative to a singleton; it is how you build a
+non-singleton when the rule above demands one. Do not add a DI container to
+projects that do not need one.
+
+### Singleton style
+
+Default to the **eager** form — `export const x = new X()`. It is the right
+choice when construction is trivial and side-effect-free; the `getInstance()`
+ceremony would be pure noise.
+
+Use the **lazy** form — `private constructor` + `static getInstance()` — only
+when construction has side effects you must defer past import time (filesystem,
+network, env reads) or you genuinely need lazy initialisation. The
+`ApplicationLogger` uses this because its constructor creates `.logs/` file
+transports; `QueryLogger` uses the eager form because its constructor does
+nothing.
+
+### Domain Driven Design
+
+The three-layer split already captures the valuable 80% — logic out of handlers,
+domain in `classes/`, validation at boundaries. Heavier DDD machinery
+(aggregates, value objects, repositories, domain events) stays **opt-in per
+project**, reached for only when a domain earns it. Do not bake it into the base.
+
+### Integration class shape
+
+Every third-party integration class shares one shape so an agent can scaffold a
+new one by pattern-matching:
+
+- lives in `classes/<service>/`, server-only
+- takes its config/secret through one constructor
+- exposes only domain methods (`getContact`, `postMessage`) — never leaks the
+  raw HTTP client
+- throws a typed error on failure
+
+### Read vs write paths
+
+The default split for the data API:
+
+- **Reads** → `GET` route handlers in `app/api/`.
+- **Writes from our own UI** → Server Actions in `actions/` (`*-actions.ts`).
+- **Writes from an external caller** (webhook, cron, third-party, non-browser
+  client) → a route handler, validated with the **same Zod schema** the action
+  uses, so the two write surfaces cannot drift.
+
+A full-CRUD REST route (`GET`/`POST`/`PATCH`/`DELETE`) is provided at
+`app/api/example-items/` as a learning reference — it is **not** the default;
+use the read-route + write-action split unless an external caller forces the
+REST write path. See `src/app/README.md` for the worked example.
+
+### Input validation
+
+Input validation schemas live in `src/validation/`, one file per domain
+(`validation/example-item.ts`, `validation/invoice.ts`), mirroring how
+`classes/` is organised. They parse untrusted input at the boundary, so they
+belong here — not in `db/`, which only ever sees already-validated objects. The
+route and the action for a domain share the **same** schema, so the read and
+write surfaces cannot validate differently. Name the folder for what it is
+(validation), never for the library (`zod-*`).
 
 ## Data Fetching
 
@@ -239,15 +317,16 @@ README covers what the project is and how to run it. agents.md covers rules only
 
 ## Quick Reference
 
-| Concern          | Location            | Convention                              |
-| ---------------- | ------------------- | --------------------------------------- |
-| Business logic   | `classes/`          | Domain subdirectories, server-only      |
-| Route handlers   | `app/api/`          | Next.js route handlers, GET only        |
-| Mutations        | `actions/`          | `*-actions.ts` naming                   |
-| UI               | `components/`       | ui / common / features split            |
-| Data fetching    | `hooks/`            | SWR hooks, never useEffect for fetching |
-| State management | `store/`            | Zustand, co-located types               |
-| Shared types     | `types/`            | Pull up when shared across siblings     |
-| Third party libs | `lib/`              | Instantiation and config only           |
-| Constants        | `config/constants/` | App-wide constants                      |
-| Scripts          | `scripts/` (root)   | DB seeding, outside Next.js context     |
+| Concern          | Location            | Convention                                   |
+| ---------------- | ------------------- | -------------------------------------------- |
+| Business logic   | `classes/`          | Domain subdirectories, server-only           |
+| Route handlers   | `app/api/`          | Reads (GET) + external writes; Zod-validated |
+| Mutations        | `actions/`          | UI writes, `*-actions.ts`, shared Zod schema |
+| Validation       | `validation/`       | Zod schemas, one file per domain             |
+| UI               | `components/`       | ui / common / features split                 |
+| Data fetching    | `hooks/`            | SWR hooks, never useEffect for fetching      |
+| State management | `store/`            | Zustand, co-located types                    |
+| Shared types     | `types/`            | Pull up when shared across siblings          |
+| Third party libs | `lib/`              | Instantiation and config only                |
+| Constants        | `config/constants/` | App-wide constants                           |
+| Scripts          | `scripts/` (root)   | DB seeding, outside Next.js context          |
