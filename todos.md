@@ -43,7 +43,7 @@ full-CRUD REST routes, server action, seed). Outstanding:
       the per-project container model (spin up/down per repo). To verify live:
       resolve the 5432 clash (stop `container-pg` or run template compose on 5433),
       then `cp env.local_template .env.local && docker compose up -d && pnpm
-    db:generate && pnpm db:migrate && pnpm db:seed` and hit the endpoints.
+  db:generate && pnpm db:migrate && pnpm db:seed` and hit the endpoints.
 - [ ] **Make the template compose safe-to-copy** — `docker-compose.yml` hardcodes
       `container_name: next-template-postgres` (a global name) and volume
       `postgres_data`. Two scaffolded apps using these verbatim cannot run at once.
@@ -72,3 +72,5 @@ full-CRUD REST routes, server action, seed). Outstanding:
 - Dev Container
 - Full docs and deep dive write up on all tech and tools in `/docs`/
 - Gtihub CI/CD
+- Tidy AGENTS.md up (needs trimmign and refning), mke sure to emtion not verbosity in docs, good wuality notes on the why not jsut the how
+- Think about testing hooks and checking if api routes they call get removed (had that issue before where i deleted an api route but it never got flagged even though the hook was using it)
