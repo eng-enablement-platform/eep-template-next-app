@@ -7,10 +7,10 @@ hard to read it's wrong.
 
 We respect the codebase but don't over-engineer it. Remember that code is
 simply a vehicle to get to the outcome — but we'd rather drive there in a
-Ferrari than an old banger. Simplicity is king!
+Ferrari than an old banger.
 
 Move fast but always aim to keep things maintainable and scalable. When in
-doubt, boring is better.
+doubt, boring is better. Simplicity is king!
 
 **The north star:** could a developer or an agent pick this up and work
 confidently without asking anyone?
