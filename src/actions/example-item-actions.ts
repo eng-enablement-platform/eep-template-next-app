@@ -2,8 +2,8 @@
 
 import { revalidatePath } from 'next/cache';
 
-import { exampleItemService } from '@/classes/example-item';
 import { rootLogger } from '@/classes/loggers/application';
+import { exampleItemService } from '@/classes/services/example-item';
 import type { ExampleItem } from '@/db/types';
 import {
   exampleItemSchema,

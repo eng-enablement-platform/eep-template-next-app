@@ -5,9 +5,9 @@ import { SWRConfig } from 'swr';
 
 import { fetcher } from '@/lib/swr/fetcher';
 
-interface SwrProviderProps {
+type SwrProviderProps = {
   children: ReactNode;
-}
+};
 
 /**
  * Global SWR provider.

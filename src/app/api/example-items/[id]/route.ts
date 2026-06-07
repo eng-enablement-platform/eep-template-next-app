@@ -5,8 +5,8 @@ import {
   routeErrorHandler,
   validationErrorResponse,
 } from '@/app/api/lib/utils';
-import { exampleItemService } from '@/classes/example-item';
 import { rootLogger } from '@/classes/loggers/application';
+import { exampleItemService } from '@/classes/services/example-item';
 import { exampleItemUpdateSchema } from '@/validation/example-item';
 
 const logger = rootLogger('api');

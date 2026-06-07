@@ -48,8 +48,8 @@ above unless an external caller forces the REST write path.
 ```
 src/db/schema.ts            // exampleItemsTable + status pgEnum
 src/db/types.ts             // inferred ExampleItem / NewExampleItem
-src/db/validation.ts        // exampleItemSchema — the single source of truth
-src/classes/example-item/   // exampleItemService — CRUD over Drizzle (server-only)
+src/validation/example-item.ts   // exampleItemSchema — the single source of truth
+src/classes/services/example-item/   // exampleItemService — CRUD over Drizzle (server-only)
 src/app/api/example-items/  // REST reference (GET/POST/PATCH/DELETE)
 src/actions/example-item-actions.ts // recommended UI write path
 scripts/seed.ts             // pnpm db:seed — live data to test against

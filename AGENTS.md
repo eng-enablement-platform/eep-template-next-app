@@ -29,7 +29,12 @@ confidently without asking anyone?
 - Named exports everywhere — default exports only where Next.js requires
 - Components declared as function declarations, never const arrow functions
 - Arrow functions for utilities, callbacks, and inline handlers
-- Props typed as a named interface above the component, never inline
+- Props typed as a named type above the component, never inline
+- Default to `type` for all type declarations. Reach for `interface` only when
+  you need declaration merging (augmenting a third-party module or global) or an
+  `extends` contract. `type` is strictly more capable (unions, intersections,
+  mapped/conditional types) and keeps shapes uniform — no switching from
+  `interface` to `type` the day a shape needs a union.
 - Do not add dependencies arbitrarily — check if native TS/JS can do it first
 - Comments required for anything non-obvious — explain the why, not the what
 - Multi-line comments must always use /\* \*/ block syntax, never consecutive
@@ -94,7 +99,7 @@ outside of `__tests__/` files.
 | --------- | --------------------------------------------- |
 | Component | `components/features/my-component/__tests__/` |
 | Hook      | `hooks/__tests__/`                            |
-| Class     | `classes/my-domain/__tests__/`                |
+| Class     | `classes/services/my-domain/__tests__/`       |
 | Utility   | `utils/__tests__/`                            |
 | e2e       | `e2e/` (project root)                         |
 
@@ -121,8 +126,18 @@ of the public API and should never be imported outside of test files.
 
 Three layers, strictly separated:
 
-**Server Layer (`classes/`)** — Business logic and external service interactions.
-Server-only. Organised by domain subdirectories.
+**Server Layer (`classes/`)** — The home for **all class definitions**, grouped
+by role so there is one obvious place to look. Three buckets:
+
+- `classes/services/<domain>/` — business logic and third-party integrations
+  (HubSpot, Slack, `example-item`). **Server-only** — this is where the
+  server-only guarantee actually lives. One subfolder per domain.
+- `classes/errors/` — universal error types (e.g. `ApplicationError`). **Not**
+  server-only: thrown from both server and client, so no `server-only` import.
+- `classes/loggers/` — cross-cutting logger classes.
+
+The server-only invariant is scoped to `services/`, not the whole folder —
+`errors/` and `loggers/` are cross-cutting infra that the client may touch.
 
 **API Layer (`app/api/`)** — Next.js route handlers only. All business logic
 lives in `classes/`, not here; handlers validate input, call a service, and
@@ -179,7 +194,7 @@ project**, reached for only when a domain earns it. Do not bake it into the base
 Every third-party integration class shares one shape so an agent can scaffold a
 new one by pattern-matching:
 
-- lives in `classes/<service>/`, server-only
+- lives in `classes/services/<domain>/`, server-only
 - takes its config/secret through one constructor
 - exposes only domain methods (`getContact`, `postMessage`) — never leaks the
   raw HTTP client
@@ -233,7 +248,10 @@ src/
 app/ # Next.js routing only — routes, layouts, pages, globals.css
 (root)/ # main app routes and layout
 api/ # Next.js route handlers only
-classes/ # business logic, domain subdirectories, server-only
+classes/ # all classes grouped by role
+services/ # business logic + integrations, server-only, one folder per domain
+errors/ # universal error types, not server-only
+loggers/ # cross-cutting logger classes
 components/
 ui/ # shadcn primitives — never edit
 common/ # reusable components shared across features
@@ -291,7 +309,7 @@ top level of `components/`, `hooks/`, or `store/`.
 
 ✅ Feature level: `components/features/dashboard/index.ts`
 
-- ✅ Domain level: `classes/payments/index.ts`
+- ✅ Domain level: `classes/services/payments/index.ts`
 - ✅ Split utility/domain folder: `billing-utils/index.ts` (see Naming Rules → Utility modules)
 - ❌ Never: `components/index.ts`, `hooks/index.ts`
 - ❌ Never mix server and client exports in the same barrel
@@ -317,16 +335,17 @@ README covers what the project is and how to run it. agents.md covers rules only
 
 ## Quick Reference
 
-| Concern          | Location            | Convention                                   |
-| ---------------- | ------------------- | -------------------------------------------- |
-| Business logic   | `classes/`          | Domain subdirectories, server-only           |
-| Route handlers   | `app/api/`          | Reads (GET) + external writes; Zod-validated |
-| Mutations        | `actions/`          | UI writes, `*-actions.ts`, shared Zod schema |
-| Validation       | `validation/`       | Zod schemas, one file per domain             |
-| UI               | `components/`       | ui / common / features split                 |
-| Data fetching    | `hooks/`            | SWR hooks, never useEffect for fetching      |
-| State management | `store/`            | Zustand, co-located types                    |
-| Shared types     | `types/`            | Pull up when shared across siblings          |
-| Third party libs | `lib/`              | Instantiation and config only                |
-| Constants        | `config/constants/` | App-wide constants                           |
-| Scripts          | `scripts/` (root)   | DB seeding, outside Next.js context          |
+| Concern          | Location                              | Convention                                   |
+| ---------------- | ------------------------------------- | -------------------------------------------- |
+| Business logic   | `classes/services/`                   | Domain subdirectories, server-only           |
+| Errors / loggers | `classes/errors/`, `classes/loggers/` | Cross-cutting classes, not server-only       |
+| Route handlers   | `app/api/`                            | Reads (GET) + external writes; Zod-validated |
+| Mutations        | `actions/`                            | UI writes, `*-actions.ts`, shared Zod schema |
+| Validation       | `validation/`                         | Zod schemas, one file per domain             |
+| UI               | `components/`                         | ui / common / features split                 |
+| Data fetching    | `hooks/`                              | SWR hooks, never useEffect for fetching      |
+| State management | `store/`                              | Zustand, co-located types                    |
+| Shared types     | `types/`                              | Pull up when shared across siblings          |
+| Third party libs | `lib/`                                | Instantiation and config only                |
+| Constants        | `config/constants/`                   | App-wide constants                           |
+| Scripts          | `scripts/` (root)                     | DB seeding, outside Next.js context          |

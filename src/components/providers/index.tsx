@@ -4,9 +4,9 @@ import type { ReactNode } from 'react';
 
 import { SwrProvider } from './swr';
 
-interface ProvidersProps {
+type ProvidersProps = {
   children: ReactNode;
-}
+};
 
 /**
  * Composes every client-side provider into a single wrapper.
