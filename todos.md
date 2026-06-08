@@ -23,8 +23,14 @@ full-CRUD REST routes, server action, seed). Outstanding:
       from the Zod schemas via `zod-openapi` (`.meta()` annotations + an output
       entity schema in `src/validation/example-item.ts`), assembled in
       `src/lib/openapi/`, served as JSON at `/api/openapi`, and rendered as an
-      interactive Scalar UI at `/api-docs` (live "Test Request" against seeded
-      data). All five methods verified via curl + browser.
+      interactive **Swagger UI** at `/api-docs` with a live "Try it out" console
+      (verified firing `GET /api/example-items` 200 against seeded data in the
+      browser). All five methods verified via curl + browser. Renderer is
+      `swagger-ui-dist` assets vendored into `public/swagger-ui/` by
+      `scripts/copy-swagger-ui.ts` (gitignored, wired to `predev`/`prebuild`),
+      so it self-hosts with no third-party CDN and deploys to Vercel as-is
+      (prod build verified regenerating the assets). Adding a route to the docs
+      is documented in `src/app/README.md`.
 - [ ] **Fumadocs page** for the data API — teach the read-route vs write-action
       split using the worked `example_item` example (mirror `src/app/README.md`).
 - [ ] **Service + route tests** — `exampleItemService` unit tests and a route
@@ -65,6 +71,15 @@ full-CRUD REST routes, server action, seed). Outstanding:
   Full-CRUD REST route kept at `app/api/example-items/` as a reference, not the default.
 - **Example data**: table `example_items` / route `example-items` — named to be
   obviously demo data (replaced the original `users` test route).
+
+- **API docs renderer = Swagger UI** (`swagger-ui-dist`). Trialled Scalar
+  (great UI but bundles hosted "Ask AI"/Deploy chrome with no clean local
+  toggle) and Redoc (clean but read-only — no live request console). Settled on
+  Swagger UI: keeps "Try it out" against seeded data, no AI/Deploy chrome, and
+  the `swagger-ui-dist` standalone assets avoid `swagger-ui-react`'s React <19
+  peer pin. Assets are vendored into `public/swagger-ui/` (gitignored) rather
+  than CDN-loaded, so docs deploy self-contained. The OpenAPI spec
+  (`/api/openapi`) is renderer-agnostic, so swapping again later is cheap.
 
 - **Drizzle is the committed ORM** (not optional). Base uses the `pg` /
   `node-postgres` driver so the same `db.ts` serves local Docker in dev and
