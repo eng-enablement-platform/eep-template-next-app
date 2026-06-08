@@ -15,8 +15,9 @@ For most apps the data API splits along how the two halves actually behave:
 | Writes from our UI  | Server Actions in `actions/`       | Type-safe args, progressive enhancement, no fetch glue |
 | Writes from outside | Route handlers in `app/api/`       | Webhooks/cron/3rd-party need a real HTTP surface       |
 
-Both write surfaces validate with the **same Zod schema** (`src/db/validation.ts`),
-so a route and an action can never disagree about what valid input is.
+Both write surfaces validate with the **same Zod schema**
+(`src/validation/example-item.ts`), so a route and an action can never disagree
+about what valid input is.
 
 ### Why a server action for UI writes?
 
@@ -43,6 +44,66 @@ above unless an external caller forces the REST write path.
       route.ts     // GET list, POST new item
 ```
 
+## Documenting a route in OpenAPI
+
+The interactive docs at `/api-docs` (and the spec at `/api/openapi`) are **not**
+auto-discovered from the filesystem. The spec is assembled by hand in
+`src/lib/openapi/index.ts` from your Zod schemas. This is deliberate: the spec
+stays exact and fully typed, and the docs match reality because you state the
+responses rather than letting a scanner guess them.
+
+The cost is a small, bounded amount of config per operation. Most of it is
+reused `$ref`s, so a second route on the same resource is mostly copy-paste.
+
+### Steps to add a new route to the docs
+
+Say you add `GET /api/widgets`:
+
+1. **Build the route as normal** — `app/api/widgets/route.ts`, validating input
+   with a Zod schema in `src/validation/widget.ts`. (Standard Next.js; nothing
+   OpenAPI-specific yet. If you skip the rest, the route still works — it just
+   won't appear in the docs.)
+
+2. **Annotate the schema with `.meta()`** so it carries its own docs. Add
+   `description` / `example` per field, and an `id` on the object to register it
+   as a reusable component:
+
+   ```ts
+   export const widgetSchema = z
+     .object({
+       label: z.string().meta({ description: 'Widget label.', example: 'A' }),
+     })
+     .meta({ id: 'WidgetInput', description: 'Body for creating a widget.' });
+   ```
+
+   Also export an **entity** schema (the full row the API returns, including
+   generated `id` / `createdAt`) with its own `.meta({ id: 'Widget' })` — that
+   is the response contract. See `exampleItemEntitySchema` for the pattern.
+
+3. **Register the operation** in `src/lib/openapi/index.ts`: add a `paths` entry
+   keyed by the URL, with the method, `summary`, `tags`, any `requestParams` /
+   `requestBody`, and the `responses` (wire each to the relevant schema via the
+   `jsonContent` helper). Reuse the shared `validationErrorResponse` /
+   `notFoundResponse` for 400 / 404 so error shapes stay consistent.
+
+4. **Done** — no build step. The spec is rebuilt on the next request to
+   `/api/openapi`, and `/api-docs` reflects it on refresh. Because the same
+   schema validates the request and generates the doc, the two cannot drift.
+
+### Why this isn't fully automatic
+
+Two philosophies exist:
+
+- **Explicit (this template):** hand-write the small `paths` entry. Verbose but
+  exact, typed, and honest about responses. Fits the boring-by-default ethos.
+- **Annotation-scanning** (e.g. `next-openapi-gen`): JSDoc tags above each
+  handler + a CLI that scans the tree and emits the spec. Less typing, but it's
+  a build step that can drift and it re-states info already in your Zod schemas.
+
+If the per-route boilerplate ever outgrows its value, the explicit `paths`
+object in one file is also the easiest thing to later generate from a helper —
+the schemas are already the source of truth.
+
 ## The layers behind it
 
 ```
@@ -52,7 +113,11 @@ src/validation/example-item.ts   // exampleItemSchema — the single source of t
 src/classes/services/example-item/   // exampleItemService — CRUD over Drizzle (server-only)
 src/app/api/example-items/  // REST reference (GET/POST/PATCH/DELETE)
 src/actions/example-item-actions.ts // recommended UI write path
+src/lib/openapi/index.ts    // assembles the OpenAPI spec from the Zod schemas
+src/app/api/openapi/route.ts // serves the spec JSON at /api/openapi
+src/app/api-docs/route.ts   // Swagger UI at /api-docs (renders the spec)
 scripts/seed.ts             // pnpm db:seed — live data to test against
+scripts/db-smoke-check.ts   // pnpm db:check — read-only data-path sanity check
 ```
 
 Routes and the action both call `exampleItemService` rather than touching

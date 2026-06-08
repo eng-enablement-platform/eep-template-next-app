@@ -19,14 +19,23 @@ Every tool in the stack needs a proper write-up in the Fumadocs `stack/` section
 The `example_item` reference vertical is built (schema, validation, service,
 full-CRUD REST routes, server action, seed). Outstanding:
 
-- [ ] **Swagger / OpenAPI** over `app/api/example-items/` — derive the spec from
-      the Zod schemas (`src/validation/example-item.ts`) so docs + validation
-      share one source, and serve an interactive UI to exercise every method with
-      seeded data.
+- [x] **Swagger / OpenAPI** over `app/api/example-items/` — done. Spec derived
+      from the Zod schemas via `zod-openapi` (`.meta()` annotations + an output
+      entity schema in `src/validation/example-item.ts`), assembled in
+      `src/lib/openapi/`, served as JSON at `/api/openapi`, and rendered as an
+      interactive Scalar UI at `/api-docs` (live "Test Request" against seeded
+      data). All five methods verified via curl + browser.
 - [ ] **Fumadocs page** for the data API — teach the read-route vs write-action
       split using the worked `example_item` example (mirror `src/app/README.md`).
 - [ ] **Service + route tests** — `exampleItemService` unit tests and a route
       integration test against the seeded DB.
+
+- [x] **PATCH resets defaulted fields** — fixed. Validation now derives both
+      schemas from a default-free base (`exampleItemFields`): the create schema
+      layers defaults back on, the update (PATCH) schema uses the base directly
+      so omitted fields are left untouched. Regression test at
+      `src/validation/__tests__/example-item.test.ts`; verified live (`PATCH`
+      status-only keeps quantity, coercion still works).
 
 ## Parked — pick up next session
 
@@ -37,13 +46,12 @@ full-CRUD REST routes, server action, seed). Outstanding:
 - [ ] **Fix stale TSDoc in `src/components/providers/swr.tsx`** — the comment says
       "Mounted in the root layout", which isn't true until the task above is done.
       Either soften the wording or let mounting make it true.
-- [ ] **Run the Drizzle vertical live** — docker port clash unresolved. Existing
-      `container-pg` (creds `admin`/`root`/`test_db`) holds port 5432; the template
-      compose wants `postgres`/`postgres`/`app` on the same port. Decided to keep
-      the per-project container model (spin up/down per repo). To verify live:
-      resolve the 5432 clash (stop `container-pg` or run template compose on 5433),
-      then `cp env.local_template .env.local && docker compose up -d && pnpm
-  db:generate && pnpm db:migrate && pnpm db:seed` and hit the endpoints.
+- [x] **Run the Drizzle vertical live** — done. `container-pg` was already
+      stopped so 5432 was free; brought up the template compose, generated +
+      ran the migration, seeded 3 rows, and verified reads through Drizzle.
+      Added `pnpm db:check` (`scripts/db-smoke-check.ts`) as a reusable
+      read-only sanity check of the full DATABASE_URL → pool → Drizzle path.
+      Endpoints exercised live (POST/GET/PATCH/DELETE/400/404 all correct).
 - [ ] **Make the template compose safe-to-copy** — `docker-compose.yml` hardcodes
       `container_name: next-template-postgres` (a global name) and volume
       `postgres_data`. Two scaffolded apps using these verbatim cannot run at once.

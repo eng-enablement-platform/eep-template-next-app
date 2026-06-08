@@ -45,6 +45,10 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# Swagger UI assets — vendored from `swagger-ui-dist` by
+# scripts/copy-swagger-ui.ts (regenerated on predev / prebuild), not committed.
+/public/swagger-ui/
+
 # GSD / agent runtime (per-developer, regenerated on demand — not project code)
 .gsd/
 .agents/
