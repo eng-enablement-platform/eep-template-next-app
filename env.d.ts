@@ -10,7 +10,7 @@
 declare namespace NodeJS {
   interface ProcessEnv {
     NODE_ENV?: 'production' | 'development' | 'test';
-    DB_URL: string;
+    DATABASE_URL: string;
 
     // Clerk Authentication
     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: string;
