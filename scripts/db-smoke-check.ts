@@ -13,14 +13,6 @@ import { exampleItemsTable } from '../src/db/schema';
  * exercises a list query, a `getById`-style filtered query, and reports the row
  * count and the set of `status` values present.
  *
- * Use it after `pnpm db:migrate && pnpm db:seed` to confirm the DB is reachable
- * and the seed landed, or any time you want a 1-second confidence check that a
- * dev's local Postgres is healthy and migrated. It mutates nothing.
- *
- * Runs outside Next.js via `tsx`, so it loads `.env.local` itself and builds
- * (and tears down) its own pool — it does not import the `server-only` DB
- * singleton in `src/db/db.ts`, which would refuse to load outside Next.
- *
  * Run with `pnpm db:check`. Exits non-zero if the DB is unreachable or empty.
  */
 

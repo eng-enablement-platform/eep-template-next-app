@@ -10,8 +10,7 @@ import type { NewExampleItem } from '../src/db/types';
  *
  * Populates the `example_items` table with a small, deterministic dataset so
  * the REST routes, server actions, and Swagger docs all have live data to
- * exercise against. Runs outside Next.js via `tsx`, so it loads `.env.local`
- * itself and builds (and tears down) its own pool.
+ * exercise against.
  *
  * Run with `pnpm db:seed`. Safe to re-run: it clears the table first.
  */

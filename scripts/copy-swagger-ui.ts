@@ -7,12 +7,6 @@ import path from 'node:path';
  * `/api-docs` can load them as plain static assets (`/swagger-ui/...`) with no
  * third-party CDN.
  *
- * Why a copy step rather than a route handler: Next's bundler tries to
- * statically analyse any file referenced from app code and chokes on these
- * pre-built vendor bundles. Serving them from `public/` sidesteps the bundler
- * entirely — they are just files on disk. The copied assets are gitignored and
- * regenerated, so this is wired to `predev` / `prebuild` in package.json.
- *
  * Source paths are resolved via `require.resolve` (not hard-coded) so this
  * works regardless of how the package manager lays out `node_modules`. Runs
  * outside Next via `tsx`.

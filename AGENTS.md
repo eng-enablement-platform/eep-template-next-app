@@ -321,6 +321,8 @@ top level of `components/`, `hooks/`, or `store/`.
 All code documented with TSDoc. Methods include purpose, business context,
 `@param` and `@returns`. Components document props, purpose, and a usage example.
 
+Keep documentation lean, no verbose prose or pointless waffle. Focus on the why, not the how. Contextual knowledge ("this exists because…") beats mechanical description ("this function does X")
+
 ### Documentation Site
 
 Full developer handbook lives in `docs/` powered by Fumadocs. Covers setup,
