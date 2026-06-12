@@ -97,3 +97,4 @@ full-CRUD REST routes, server action, seed). Outstanding:
 - Gtihub CI/CD
 - Tidy AGENTS.md up (needs trimmign and refning), mke sure to emtion not verbosity in docs, good wuality notes on the why not jsut the how
 - Think about testing hooks and checking if api routes they call get removed (had that issue before where i deleted an api route but it never got flagged even though the hook was using it)
+- add https://storybook.js.org/
