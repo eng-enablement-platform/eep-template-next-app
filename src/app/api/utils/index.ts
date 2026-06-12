@@ -3,7 +3,7 @@ import type { ZodError } from 'zod';
 
 import { rootLogger } from '@/classes/loggers/application';
 
-const logger = rootLogger('api');
+const logger = rootLogger('API');
 
 /**
  * Return a consistent 400 response for a failed Zod validation.

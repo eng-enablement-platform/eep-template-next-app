@@ -1,14 +1,11 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
-import {
-  routeErrorHandler,
-  validationErrorResponse,
-} from '@/app/api/lib/utils';
+import { routeErrorHandler, validationErrorResponse } from '@/app/api/utils';
 import { rootLogger } from '@/classes/loggers/application';
 import { exampleItemService } from '@/classes/services/example-item';
 import { exampleItemSchema } from '@/validation/example-item';
 
-const logger = rootLogger('api');
+const logger = rootLogger('API');
 
 /**
  * Collection route for `example_items`.
@@ -30,8 +27,8 @@ const logger = rootLogger('api');
  * @returns 200 with `{ exampleItems }`.
  *
  * @example
- * // GET http://localhost:3000/api/example-items
- * // Response: `{ "exampleItems": [{ "id": 1, "name": "...", ... }] }`
+ * GET http://localhost:3000/api/example-items
+ * Response: `{ "exampleItems": [{ "id": 1, "name": "...", ... }] }`
  */
 export async function GET(_request: NextRequest): Promise<NextResponse> {
   try {
@@ -49,9 +46,9 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
  * @returns 201 with `{ exampleItem }`, or 400 with field errors on invalid input.
  *
  * @example
- * // POST http://localhost:3000/api/example-items
- * // Body: `{ "name": "First item", "quantity": 3, "status": "active" }`
- * // Response: `{ "exampleItem": { "id": 1, "name": "First item", ... } }`
+ * POST http://localhost:3000/api/example-items
+ * Body: `{ "name": "First item", "quantity": 3, "status": "active" }`
+ * Response: `{ "exampleItem": { "id": 1, "name": "First item", ... } }`
  */
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {

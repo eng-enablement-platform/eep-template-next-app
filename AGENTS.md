@@ -282,9 +282,11 @@ point. Sub-components go in a nested `components/` folder. Component-specific
 types go in a `types/` folder alongside the component.
 
 **Utility modules** — single `index.ts` until the file exceeds ~200 lines or
-~3 distinct concerns, or its functions have grown dedicated test files. Then
-split into kebab-named per-function files along meaningful seams (not
-one-file-per-export). After splitting, `index.ts` becomes the folder's barrel
+~3 distinct concerns, or its functions have grown dedicated test files. Count
+concerns, not functions — three functions serving one cohesive concern (e.g.
+HTTP response shaping) stay together; three unrelated utilities (math, error
+formatting, class merging) are three concerns. Then split into kebab-named
+per-function files along meaningful seams (not one-file-per-export). After splitting, `index.ts` becomes the folder's barrel
 (see Barrel Exports) — consumers import from the folder, internal siblings
 import directly.
 

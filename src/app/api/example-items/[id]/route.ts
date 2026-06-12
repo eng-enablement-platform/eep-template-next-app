@@ -4,12 +4,12 @@ import {
   parseId,
   routeErrorHandler,
   validationErrorResponse,
-} from '@/app/api/lib/utils';
+} from '@/app/api/utils';
 import { rootLogger } from '@/classes/loggers/application';
 import { exampleItemService } from '@/classes/services/example-item';
 import { exampleItemUpdateSchema } from '@/validation/example-item';
 
-const logger = rootLogger('api');
+const logger = rootLogger('API');
 
 /**
  * Single-resource route for `example_items` (read, update, delete by id).
@@ -31,8 +31,8 @@ type RouteContext = { params: Promise<{ id: string }> };
  * @returns 200 with `{ exampleItem }`, 400 on a bad id, or 404 if not found.
  *
  * @example
- * // GET http://localhost:3000/api/example-items/1
- * // Response: `{ "exampleItem": { "id": 1, "name": "...", ... } }`
+ * GET http://localhost:3000/api/example-items/1
+ * Response: `{ "exampleItem": { "id": 1, "name": "...", ... } }`
  */
 export async function GET(
   _request: NextRequest,
@@ -68,9 +68,9 @@ export async function GET(
  * @returns 200 with `{ exampleItem }`, 400 on bad id/body, or 404 if not found.
  *
  * @example
- * // PATCH http://localhost:3000/api/example-items/1
- * // Body: `{ "status": "archived" }`
- * // Response: `{ "exampleItem": { "id": 1, "status": "archived", ... } }`
+ * PATCH http://localhost:3000/api/example-items/1
+ * Body: `{ "status": "archived" }`
+ * Response: `{ "exampleItem": { "id": 1, "status": "archived", ... } }`
  */
 export async function PATCH(
   request: NextRequest,
@@ -114,8 +114,8 @@ export async function PATCH(
  * @returns 204 on success, 400 on a bad id, or 404 if not found.
  *
  * @example
- * // DELETE http://localhost:3000/api/example-items/1
- * // Response: 204 No Content
+ * DELETE http://localhost:3000/api/example-items/1
+ * Response: 204 No Content
  */
 export async function DELETE(
   _request: NextRequest,
