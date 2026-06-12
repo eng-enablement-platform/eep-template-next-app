@@ -25,15 +25,6 @@ Playwright will auto-start `pnpm dev` if nothing is listening on `:3000`;
 otherwise it reuses what's already running. Leaving `pnpm dev` warm in a
 second terminal makes subsequent runs noticeably faster.
 
-## Troubleshooting
-
-Seeing `Process from config.webServer exited early`, a 60s/180s webServer
-timeout, or `next-server` / `kernel_task` pegging your CPU? There's a full
-postmortem + diagnostic checklist in the [root README's Troubleshooting
-section](../README.md#troubleshooting). TL;DR: the spike is almost always
-the cold compile of `/` in `next dev`, not Playwright — let it complete
-once, and leave `pnpm dev` warm in another terminal between runs.
-
 ## When the suite grows
 
 Add scaffolding lazily, not up front:

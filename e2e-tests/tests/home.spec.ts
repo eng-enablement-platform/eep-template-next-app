@@ -1,9 +1,8 @@
 import { expect, test } from '@playwright/test';
 
-test('home page renders the welcome heading', async ({ page }) => {
+test('home page renders the counter at zero', async ({ page }) => {
   await page.goto('/');
 
-  await expect(page.getByRole('heading', { level: 1 })).toContainText(
-    'get started',
-  );
+  await expect(page.getByText('Count: 0')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Increment' })).toBeVisible();
 });
