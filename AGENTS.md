@@ -293,7 +293,16 @@ import directly.
 **Hooks** — one file per hook, named `use-*.ts`.
 
 **Stores** — one file per domain (e.g. `domain-store.ts`). Co-locate types
-unless shared, in which case pull up to `types/`.
+unless shared, in which case pull up to `types/`. Split the type into a data
+shape and an actions shape, then intersect them — `type FooState` (data only),
+`type FooActions` (behaviours only), `type FooStore = FooState & FooActions`.
+Derive the `defaultFooState` from the state shape alone so defaults can't drift
+from the fields they back. Use `type` throughout, never `interface` (no
+declaration merging is needed here). Co-located types are the default even when
+there are several — only break that for a store large enough (~200 lines, per
+the utility-module threshold) that the types earn their own sibling file, or
+when a type is genuinely shared (then it goes to `src/types/`, not a per-store
+types file). See `src/store/counter-store.ts` for the reference shape.
 
 **Variables** — full descriptive names, never abbreviated.
 
