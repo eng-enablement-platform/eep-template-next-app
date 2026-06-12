@@ -13,13 +13,10 @@ import { create } from 'zustand';
  * them — pull them up to `types/` only once a second module needs them.
  */
 
-/** The serialisable data held by the counter store. */
 type CounterState = {
-  /** The current count value. */
   count: number;
 };
 
-/** The behaviours exposed by the counter store. */
 type CounterActions = {
   /** Increment the count by one. */
   increment: () => void;
