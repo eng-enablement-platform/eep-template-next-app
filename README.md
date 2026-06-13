@@ -76,6 +76,37 @@ once. The flip side is that the docs are only as correct as the schema — a
 subtly wrong schema produces subtly wrong docs (which is exactly how a PATCH
 default-reset bug got caught).
 
+## Authentication (Clerk)
+
+Auth is handled by [Clerk](https://clerk.com). Two things are worth knowing
+before you build for anything other than Vercel — both are candidates for fuller
+write-ups on the docs site.
+
+### Request gating lives in `proxy.ts`, not `middleware.ts`
+
+Next.js 16 renamed the root `middleware.ts` convention to `proxy.ts` (it now
+runs on the Node.js runtime and makes the network boundary explicit). Our Clerk
+route gate lives in `src/proxy.ts` — same logic as the old middleware, default
+export, `config.matcher` unchanged. Keep this layer to lightweight network
+checks (redirects, rewrites, reading session claims). Heavier auth (DB lookups,
+full session validation) belongs in the Data Access Layer or Route Handlers —
+the proxy is not a security boundary on its own.
+
+### The `NEXT_PUBLIC` publishable key is a BUILD-time value
+
+`NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` (like all `NEXT_PUBLIC_*` vars) is **inlined
+into the client bundle at `next build`**, not read at runtime. On Vercel this is
+fine — each environment builds with its own env vars present.
+
+It breaks if you build **one Docker image and promote it across environments**
+(or inject env only at `docker run` / k8s deploy time): the key is frozen at
+build time, so a runtime-provided value never reaches the bundle. The fix is to
+serve the key from a server route that reads a non-`NEXT_PUBLIC` env var at
+request time and mount `<ClerkProvider publishableKey={...}>` once it resolves.
+The full reasoning and the runtime-fetch recipe are documented inline in
+`src/app/clerk-client-wrapper.tsx`. This template defaults to the build-time
+path because it targets Vercel.
+
 ## Deploy on Vercel
 
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.

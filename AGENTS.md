@@ -83,11 +83,32 @@ We work in a QA orientated manner — no regressions, no silly bugs, no shortcut
 Before writing a test ask: "Would this prevent future bugs or make refactoring
 easier?" If yes, write it. We don't chase coverage metrics — we test what matters.
 
+**What earns a test (test behaviour, not appearance):**
+
+- **Pure logic** — functions, stores, validation, reducers. _Always test._ This
+  is where bugs hide and tests are cheap and stable (`utils/`, `store/`,
+  `validation/`).
+- **Components with branches, state, or effects** — conditional rendering,
+  timers, event handlers, anything that makes a _decision_. _Test the decision_
+  (e.g. "selecting Dark calls `setTheme('dark')`", "the moon icon shows in dark
+  mode"), not the surrounding markup. See `components/common/theme-toggle` for
+  the reference shape.
+- **Pure presentational components** — take props, render markup, no branching.
+  _Do not test._ Asserting "the markup rendered" tests that React works; it
+  catches no bugs and breaks on every cosmetic change. In this repo that means
+  `error`, `page-not-found`, `toast`, `auth` get no unit test.
+
+The one-line filter: **if you can break it by changing a branch, a prop's
+effect, a timer, or state, test that; if the only thing to assert is that markup
+rendered, skip it.**
+
 **TDD where it pays off** — small isolated methods with a clear contract (pure functions, utilities, well-defined logic) get written test-first. Larger integration work doesn't — the spec is still being discovered and tests written against a moving API end up brittle.
 
 **Co-location** — tests live next to the code they test, never in a separate
-top-level folder. Use a `__tests__/` subfolder within the relevant directory.
-e2e tests are the exception — these live in `e2e/` at project root.
+top-level folder. Use a `__tests__/` subfolder within the relevant directory,
+mirroring the directory's files (this holds whether the directory contains flat
+files like `utils/` or flat components like `components/common/`). e2e tests are
+the exception — these live in `e2e-tests/tests/` at project root.
 
 **Test-only exports** — grouped under a single `_forTests` export at the bottom
 of the file. Never export internals individually. Never import `_forTests`
@@ -95,13 +116,19 @@ outside of `__tests__/` files.
 
 ## Quick Reference
 
-| Type      | Location                                      |
-| --------- | --------------------------------------------- |
-| Component | `components/features/my-component/__tests__/` |
-| Hook      | `hooks/__tests__/`                            |
-| Class     | `classes/services/my-domain/__tests__/`       |
-| Utility   | `utils/__tests__/`                            |
-| e2e       | `e2e/` (project root)                         |
+| Type      | Location                                        |
+| --------- | ----------------------------------------------- |
+| Component | `components/common/__tests__/` (or `features/`) |
+| Hook      | `hooks/__tests__/`                              |
+| Class     | `classes/services/my-domain/__tests__/`         |
+| Utility   | `utils/__tests__/`                              |
+| e2e       | `e2e-tests/tests/` (project root)               |
+
+A component's test lives in the `__tests__/` folder of the directory the
+component file sits in — `components/common/auth.tsx` →
+`components/common/__tests__/auth.test.tsx`. A flat component file does **not**
+get its own folder just to hold a test (see Naming Rules → Components); the
+shared `__tests__/` mirrors the directory, exactly like `utils/` and `store/`.
 
 <!-- TODO: MOVE THE EXAMPLES TO FUMADOCS -->
 
@@ -148,6 +175,16 @@ belong here versus in `actions/`.
 all data fetching, providing declarative interfaces with built-in loading/error
 states. `store/` manages client state via Zustand. `components/` are purely
 presentational.
+
+**The `app/` boundary** — `app/` holds **only Next.js file-convention files**:
+`page.tsx`, `layout.tsx`, `error.tsx`, `not-found.tsx`, `loading.tsx`,
+`route.ts`, plus `globals.css` and `favicon.ico`. These are reserved filenames
+the router discovers by location, so they _must_ live here. Keep them **thin**
+— a route file resolves params/wires the framework and delegates to a real
+component in `components/` (e.g. `app/error.tsx` renders
+`components/common/error`, `app/page.tsx` renders a feature component). Our own
+components — even app-shell ones like the client root layout — never live loose
+in `app/`; they belong in `components/` and are imported via `@/`.
 
 ## Patterns
 
@@ -277,9 +314,16 @@ env.d.ts # TypeScript env var declarations, must stay at root
 grouping or domain. Do not create a folder + index.ts just to wrap a single
 file — name the file directly instead (e.g. `this-class.ts`, `this-component.tsx`).
 
-**Components** — each in its own kebab-cased folder with `index.tsx` as entry
-point. Sub-components go in a nested `components/` folder. Component-specific
-types go in a `types/` folder alongside the component.
+**Components** — name the file for the component: a single-file component is a
+flat `kebab-name.tsx` (e.g. `components/common/auth.tsx`), imported as
+`@/components/common/auth`. Do **not** wrap a lone component in a
+folder+`index.tsx` — that is the "fold a single file" anti-pattern above, and it
+fills the editor with indistinguishable `index.tsx` tabs. Promote to a
+kebab-cased **folder** only once the component grows parts (sub-components in a
+nested `components/`, a split `types/`, helpers); then `index.tsx` becomes the
+entry barrel that curates the public surface. Same "earn the folder" threshold
+as utilities and types. Component types are inline by default; extract to a
+sibling `types.ts` (or a `types/` folder once split) per the Types section.
 
 **Utility modules** — single `index.ts` until the file exceeds ~200 lines or
 ~3 distinct concerns, or its functions have grown dedicated test files. Count
@@ -308,10 +352,38 @@ types file). See `src/store/counter-store.ts` for the reference shape.
 
 ## Types
 
-Global shared types live in `src/types/`. Component-scoped types live in a
-`types/` folder next to the component. Store types are co-located in the store
-file unless shared. Pull types up one level when two or more siblings need them
-— never duplicate.
+Two axes decide where a type lives: **scope** (who consumes it) and **size**
+(how big it has grown). Scope sets the default home; size can override it.
+
+**By scope:**
+
+- **Used only by this component** → declare it **inline** at the top of the
+  component file. No separate file, no ceremony.
+- **Shared by 2+ siblings in the same feature/folder** → pull it up one level
+  to a `types.ts` at that **feature boundary** (e.g.
+  `components/features/dashboard/types.ts`). Still co-located, never duplicated.
+- **Shared across unrelated features or layers** (a component _and_ a service
+  _and_ a hook) → `src/types/`. Smell test: _would this type still make sense
+  if I deleted the component?_ If yes (a domain concept like `User`,
+  `Invoice`), it is global; if no (`ButtonProps`), it stays co-located.
+
+**By size (overrides "inline"):** a single-consumer type stays inline until it
+crosses a complexity threshold, then it moves to a sibling `types.ts` _even
+though nothing else consumes it_ — so a component file never becomes majority
+type declarations. Extract when **any** of:
+
+- the file has **~3+ type declarations**, or
+- a single type is **large** (>15–20 lines, nested/discriminated unions), or
+- the inline types are visually drowning the component logic.
+
+**File vs folder:** a single types file is a flat sibling `types.ts` — never a
+`types/` folder wrapping one `index.ts` (that ceremony is forbidden under
+Naming Rules). Promote to a `types/` **folder** only when the types themselves
+split into multiple files (`types/props.ts`, `types/api.ts`), the same
+threshold that splits a utility module.
+
+Store types follow the same logic but are co-located in the store file by
+default (see Naming Rules → Stores); pull up to `src/types/` only when shared.
 
 ## Barrel Exports
 
@@ -329,10 +401,34 @@ top level of `components/`, `hooks/`, or `store/`.
 
 ## Documentation
 
-All code documented with TSDoc. Methods include purpose, business context,
-`@param` and `@returns`. Components document props, purpose, and a usage example.
+All code documented with TSDoc. Keep it lean — focus on the _why_, not the
+_what_. Contextual knowledge ("this exists because…") beats mechanical
+description ("this function does X"). No verbose prose or pointless waffle.
 
-Keep documentation lean, no verbose prose or pointless waffle. Focus on the why, not the how. Contextual knowledge ("this exists because…") beats mechanical description ("this function does X")
+**Methods** document purpose, business context, `@param`, and `@returns`.
+
+**Components** follow one canonical shape — a one-line _what_, a sentence or two
+of _why it exists / when to use it_, `@param` notes for any **non-obvious**
+props, and one `@example`:
+
+````tsx
+/**
+ * One line: what it is.
+ * Why it exists / when to reach for it (the contextual bit).
+ *
+ * @param subtitle - Only NON-obvious props need a note; skip the self-evident.
+ * @example
+ * ```tsx
+ * <Auth type='sign-in' />
+ * ```
+ */
+export function Auth({ type, subtitle }: AuthProps) { ... }
+````
+
+**Never re-list props as a prose/markdown block** (`**Props:** - x: ...`). The
+type is the single source of truth; a hand-maintained prose copy duplicates it
+and rots the moment a prop changes. Use `@param` for the few props that need a
+_why_, and let the type speak for the rest. Do not over-document types.
 
 ### Documentation Site
 

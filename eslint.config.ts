@@ -25,6 +25,8 @@ const NEXT_DEFAULT_EXPORT_FILES = [
   '**/app/**/error.tsx',
   '**/app/**/loading.tsx',
   '**/app/**/not-found.tsx',
+  // Root proxy (formerly middleware) must default-export per Next.js convention.
+  'src/proxy.ts',
 ];
 
 /*
@@ -48,6 +50,11 @@ export default defineConfig([
       'build/**',
       'dist/**',
       'next-env.d.ts',
+      /*
+       * Vendored static assets (e.g. swagger-ui bundle copied in by
+       * scripts/copy-swagger-ui.ts) are not ours to lint.
+       */
+      'public/**',
     ],
   },
 
