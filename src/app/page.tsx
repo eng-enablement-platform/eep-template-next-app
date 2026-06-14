@@ -1,6 +1,10 @@
+import { BookOpen } from 'lucide-react';
+import Link from 'next/link';
+
 import { ThemeToggle } from '@/components/common/theme-toggle';
 import { Counter } from '@/components/features/counter';
 import { HomeProfile } from '@/components/features/home-profile';
+import { Button } from '@/components/ui/button';
 
 /**
  * EXAMPLE ENTRY POINT — replace this with your real landing page.
@@ -14,9 +18,21 @@ export default function Home() {
         className='bg-foreground/3 pointer-events-none absolute top-1/2 left-1/2 -z-10 size-160 -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl'
       />
 
-      <div className='absolute top-4 right-4'>
-        <ThemeToggle />
-      </div>
+      <header className='absolute inset-x-0 top-0 flex items-center justify-between p-4'>
+        <Button asChild variant='link' className='text-muted-foreground'>
+          <Link
+            href='/api-docs'
+            title='Requires the Admin role — others get a 403'
+          >
+            <BookOpen />
+            API docs
+          </Link>
+        </Button>
+        <div className='flex items-center gap-3'>
+          <HomeProfile />
+          <ThemeToggle />
+        </div>
+      </header>
 
       <main className='flex w-full max-w-xl flex-col items-center gap-8 text-center'>
         <div className='flex flex-col items-center gap-4'>
@@ -31,8 +47,6 @@ export default function Home() {
             to make it yours.
           </p>
         </div>
-
-        <HomeProfile />
 
         <div className='border-border bg-card/50 mt-2 w-full rounded-xl border p-8 shadow-md backdrop-blur-sm'>
           <Counter />
