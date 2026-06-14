@@ -12,6 +12,11 @@ declare namespace NodeJS {
     NODE_ENV?: 'production' | 'development' | 'test';
     DATABASE_URL: string;
 
+    // Logging. Winston verbosity floor; defaults per env when unset.
+    LOG_LEVEL?: 'error' | 'warn' | 'info' | 'http' | 'debug';
+    // Set to '1' to stream Drizzle query/param output in dev. Off by default.
+    DB_QUERY_LOG?: string;
+
     // Clerk Authentication
     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: string;
     CLERK_SECRET_KEY: string;

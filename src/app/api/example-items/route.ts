@@ -1,11 +1,11 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
 import { routeErrorHandler, validationErrorResponse } from '@/app/api/utils';
-import { rootLogger } from '@/classes/loggers/application';
+import { LOG_SOURCE, rootLogger } from '@/classes/loggers/application';
 import { exampleItemService } from '@/classes/services/example-item';
 import { exampleItemSchema } from '@/validation/example-item';
 
-const logger = rootLogger('API');
+const logger = rootLogger(LOG_SOURCE.API);
 
 /**
  * Collection route for `example_items`.

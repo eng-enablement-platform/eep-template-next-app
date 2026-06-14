@@ -30,7 +30,7 @@ async function smokeCheck(): Promise<void> {
       throw new Error('No rows found — did you run `pnpm db:seed`?');
     }
 
-    /* Confirm a filtered single-row read returns the row we asked for. */
+    // Confirm a filtered single-row read returns the row we asked for.
     const [first] = all;
     const byId = await db
       .select()

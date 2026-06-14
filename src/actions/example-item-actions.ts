@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 
-import { rootLogger } from '@/classes/loggers/application';
+import { LOG_SOURCE, rootLogger } from '@/classes/loggers/application';
 import { exampleItemService } from '@/classes/services/example-item';
 import type { ExampleItem } from '@/db/types';
 import {
@@ -22,7 +22,7 @@ import {
  * success vs validation failure (e.g. with `useActionState`) without throwing.
  */
 
-const logger = rootLogger('action');
+const logger = rootLogger(LOG_SOURCE.ACTION);
 
 /**
  * Field-level validation errors keyed by field name, as produced by Zod's
@@ -57,12 +57,26 @@ export async function createExampleItem(
     };
   }
 
-  const data = await exampleItemService.create(parsed.data);
-  logger.info({ message: 'Example item created via action', id: data.id });
+  try {
+    const data = await exampleItemService.create(parsed.data);
+    logger.info({ message: 'Example item created via action', id: data.id });
 
-  revalidatePath('/');
+    revalidatePath('/');
 
-  return { ok: true, data };
+    return { ok: true, data };
+  } catch (error) {
+    /*
+     * The write boundary owns the decision about what a failed mutation means,
+     * so it is the one place we log it — the service rethrows without logging to
+     * avoid double-logging the same failure under two sources.
+     */
+    logger.error({
+      message: 'Failed to create example item',
+      scope: 'example-items',
+      error,
+    });
+    return { ok: false, error: 'Something went wrong' };
+  }
 }
 
 /**
@@ -86,17 +100,27 @@ export async function updateExampleItem(
     };
   }
 
-  const data = await exampleItemService.update(id, parsed.data);
+  try {
+    const data = await exampleItemService.update(id, parsed.data);
 
-  if (data === null) {
-    return { ok: false, error: 'Example item not found' };
+    if (data === null) {
+      return { ok: false, error: 'Example item not found' };
+    }
+
+    logger.info({ message: 'Example item updated via action', id });
+
+    revalidatePath('/');
+
+    return { ok: true, data };
+  } catch (error) {
+    logger.error({
+      message: 'Failed to update example item',
+      scope: 'example-items',
+      id,
+      error,
+    });
+    return { ok: false, error: 'Something went wrong' };
   }
-
-  logger.info({ message: 'Example item updated via action', id });
-
-  revalidatePath('/');
-
-  return { ok: true, data };
 }
 
 /**
@@ -108,15 +132,25 @@ export async function updateExampleItem(
 export async function deleteExampleItem(
   id: number,
 ): Promise<ActionResult<{ id: number }>> {
-  const deleted = await exampleItemService.delete(id);
+  try {
+    const deleted = await exampleItemService.delete(id);
 
-  if (!deleted) {
-    return { ok: false, error: 'Example item not found' };
+    if (!deleted) {
+      return { ok: false, error: 'Example item not found' };
+    }
+
+    logger.info({ message: 'Example item deleted via action', id });
+
+    revalidatePath('/');
+
+    return { ok: true, data: { id } };
+  } catch (error) {
+    logger.error({
+      message: 'Failed to delete example item',
+      scope: 'example-items',
+      id,
+      error,
+    });
+    return { ok: false, error: 'Something went wrong' };
   }
-
-  logger.info({ message: 'Example item deleted via action', id });
-
-  revalidatePath('/');
-
-  return { ok: true, data: { id } };
 }

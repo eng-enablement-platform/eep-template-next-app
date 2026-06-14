@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
 import type { ZodError } from 'zod';
 
-import { rootLogger } from '@/classes/loggers/application';
+import { LOG_SOURCE, rootLogger } from '@/classes/loggers/application';
 
-const logger = rootLogger('API');
+const logger = rootLogger(LOG_SOURCE.API);
 
 /**
  * Return a consistent 400 response for a failed Zod validation.

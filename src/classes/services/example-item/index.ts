@@ -106,5 +106,5 @@ class ExampleItemService {
  */
 export const exampleItemService = new ExampleItemService();
 
-/* test-only exports */
+// test-only exports
 export const _forTests = { ExampleItemService };

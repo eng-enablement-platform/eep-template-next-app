@@ -4,12 +4,17 @@ import { type Logger } from 'drizzle-orm/logger';
 
 /**
  * Custom logger class for Drizzle ORM queries.
- * This class implements the Logger interface from drizzle-orm and provides
- * custom logging functionality for database queries.
+ *
+ * This is a developer diagnostic, not part of the structured `logSource`
+ * contract — it dumps raw SQL and params to the console so you can watch
+ * queries and mutations live while building. It is intentionally noisy, so it
+ * is off by default and only fires when `DB_QUERY_LOG=1`. DB *errors* that you
+ * want greppable belong in the structured logger at the calling layer (action
+ * or service), not here.
  */
 class QueryLogger implements Logger {
   /**
-   * Logs a database query with its parameters.
+   * Logs a database query with its parameters when query logging is enabled.
    *
    * @param query - The SQL query string to be logged.
    * @param params - An array of parameter values used in the query.
@@ -17,6 +22,11 @@ class QueryLogger implements Logger {
   logQuery(query: string, params: unknown[]): void {
     // Skip logging during build time
     if (process.env.NEXT_PHASE === 'phase-production-build') {
+      return;
+    }
+
+    // Opt-in firehose: silent unless explicitly switched on for a dev session.
+    if (process.env.DB_QUERY_LOG !== '1') {
       return;
     }
 

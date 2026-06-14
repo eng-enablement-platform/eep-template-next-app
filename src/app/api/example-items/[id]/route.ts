@@ -5,11 +5,11 @@ import {
   routeErrorHandler,
   validationErrorResponse,
 } from '@/app/api/utils';
-import { rootLogger } from '@/classes/loggers/application';
+import { LOG_SOURCE, rootLogger } from '@/classes/loggers/application';
 import { exampleItemService } from '@/classes/services/example-item';
 import { exampleItemUpdateSchema } from '@/validation/example-item';
 
-const logger = rootLogger('API');
+const logger = rootLogger(LOG_SOURCE.API);
 
 /**
  * Single-resource route for `example_items` (read, update, delete by id).

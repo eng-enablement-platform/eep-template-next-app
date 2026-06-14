@@ -38,7 +38,7 @@ describe('exampleItemUpdateSchema (PATCH)', () => {
   it('does not inject a default quantity when only status is sent', () => {
     const parsed = exampleItemUpdateSchema.parse({ status: 'archived' });
 
-    /* The regression: quantity must be absent, not reset to 0. */
+    // The regression: quantity must be absent, not reset to 0.
     expect(parsed).toStrictEqual({ status: 'archived' });
     expect('quantity' in parsed).toBe(false);
   });

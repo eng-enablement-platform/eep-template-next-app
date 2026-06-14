@@ -20,36 +20,34 @@ import {
  * renders.
  */
 
-/* The list endpoint wraps rows in `{ exampleItems: [...] }`. */
+// The list endpoint wraps rows in `{ exampleItems: [...] }`.
 const exampleItemListSchema = z
   .object({ exampleItems: z.array(exampleItemEntitySchema) })
   .meta({ id: 'ExampleItemList' });
 
-/* Single-resource responses wrap the row in `{ exampleItem: {...} }`. */
+// Single-resource responses wrap the row in `{ exampleItem: {...} }`.
 const exampleItemEnvelopeSchema = z
   .object({ exampleItem: exampleItemEntitySchema })
   .meta({ id: 'ExampleItemEnvelope' });
 
-/* 400 body shape from `validationErrorResponse` in app/api/lib/utils. */
+// 400 body shape from `validationErrorResponse` in app/api/lib/utils.
 const validationErrorSchema = z
   .object({
     error: z.string().meta({ example: 'Validation failed' }),
-    fieldErrors: z
-      .record(z.string(), z.array(z.string()))
-      .meta({
-        description: 'Per-field rejection messages, keyed by field name.',
-      }),
+    fieldErrors: z.record(z.string(), z.array(z.string())).meta({
+      description: 'Per-field rejection messages, keyed by field name.',
+    }),
   })
   .meta({ id: 'ValidationError' });
 
-/* 404 / generic single-message error body. */
+// 404 / generic single-message error body.
 const messageErrorSchema = z
   .object({ error: z.string().meta({ example: 'Example item not found' }) })
   .meta({ id: 'MessageError' });
 
 const jsonContent = <T>(schema: T) => ({ 'application/json': { schema } });
 
-/* Path param shared by the single-resource operations. */
+// Path param shared by the single-resource operations.
 const idParam = z.object({
   id: z
     .string()

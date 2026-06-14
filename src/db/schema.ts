@@ -15,7 +15,7 @@ import {
  * Uses the public schema by default.
  */
 
-/* ############ ENUMS ################### */
+// ############ ENUMS ###################
 
 /**
  * Lifecycle status for an example item.
@@ -30,7 +30,7 @@ export const exampleItemStatus = pgEnum('example_item_status', [
   'archived',
 ]);
 
-/* ############ TABLES ################### */
+// ############ TABLES ###################
 
 /**
  * Represents the example `example_items` table.

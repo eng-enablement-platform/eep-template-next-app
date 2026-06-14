@@ -37,8 +37,12 @@ confidently without asking anyone?
   `interface` to `type` the day a shape needs a union.
 - Do not add dependencies arbitrarily — check if native TS/JS can do it first
 - Comments required for anything non-obvious — explain the why, not the what
-- Multi-line comments must always use /\* \*/ block syntax, never consecutive
-  // single-line comments. Single // is fine for single line inline comments only.
+- Comment syntax is total and enforced both ways by ESLint (auto-fixable):
+  **one line is always `//`, multiple lines are always `/* */`**. Never stack
+  consecutive `//` lines, and never use a single-line `/* */`. TSDoc (`/** */`)
+  and tooling directives (`eslint-*`, `ts-*`) are exempt. The single-line
+  direction is enforced by the local `single-line-comment-style` rule in
+  `eslint-rules/`; the multi-line direction by `@stylistic/multiline-comment-style`.
 - TSDoc on all `.ts` files — pre-commit will enforce this
 - If disabling a lint rule, leave a comment explaining why
 - Tailwind only for styles, no exceptions
@@ -261,6 +265,49 @@ belong here — not in `db/`, which only ever sees already-validated objects. Th
 route and the action for a domain share the **same** schema, so the read and
 write surfaces cannot validate differently. Name the folder for what it is
 (validation), never for the library (`zod-*`).
+
+### Logging
+
+Backend logging goes through `rootLogger` from `classes/loggers/application`.
+The whole point is debugging by source: every log line carries a `logSource`
+so you can follow a layer with
+`grep '"logSource":"action"' .logs/winston-combined.log`.
+
+**Source = layer, not concern.** `logSource` is constrained to the `LOG_SOURCE`
+enum so casing and the set can't drift. The values are architectural layers,
+because a layer maps 1:1 to a folder and never needs a judgement call:
+
+| Source               | Layer                        |
+| -------------------- | ---------------------------- |
+| `LOG_SOURCE.API`     | `app/api/` route handlers    |
+| `LOG_SOURCE.ACTION`  | `actions/` server actions    |
+| `LOG_SOURCE.SERVICE` | `classes/services/<domain>/` |
+
+For the specific module or concern (`auth`, `example-items`, `migrations`),
+pass a free-form `scope` field on the log call itself —
+`logger.error({ scope: 'auth', ... })`. Never invent a new `logSource` for a
+concern; the enum stays closed, `scope` is the open escape hatch.
+
+**Log at the boundary that owns the outcome, not in the service.** Domain
+services are thin wrappers around a data call with nothing to add to a failure,
+so they rethrow rather than log — log-and-rethrow would record the same failure
+twice under two sources. The write boundary (a server action, or a route
+handler) is where an exception becomes a user-facing result, so that is the one
+place it is caught and logged. See `actions/example-item-actions.ts` for the
+reference shape: each mutation wraps the service call, logs the failure once
+with a `scope`, and returns a structured error.
+
+**Verbosity is env-gated, off-noisy-by-default.** Two independent knobs, both
+optional:
+
+- `LOG_LEVEL` — the winston level floor for all `rootLogger` output. Defaults
+  per env (`info` in prod, `debug` in dev, `warn` in test). Override for a
+  single run when you want more: `LOG_LEVEL=debug pnpm dev`.
+- `DB_QUERY_LOG` — the Drizzle query firehose (raw SQL + params to the
+  console). Off by default; set `DB_QUERY_LOG=1` to watch queries and mutations
+  live while building. It is a dev diagnostic, **not** a `logSource` — DB
+  _errors_ you want greppable belong in the structured logger at the calling
+  layer instead.
 
 ## Data Fetching
 

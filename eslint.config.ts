@@ -9,6 +9,8 @@ import jsdoc from 'eslint-plugin-jsdoc';
 import simpleImportSort from 'eslint-plugin-simple-import-sort';
 import tsdoc from 'eslint-plugin-tsdoc';
 
+import { singleLineCommentStyle } from './eslint-rules/single-line-comment-style';
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -85,6 +87,11 @@ export default defineConfig([
     plugins: {
       'simple-import-sort': simpleImportSort,
       '@stylistic': stylistic,
+      local: {
+        rules: {
+          'single-line-comment-style': singleLineCommentStyle,
+        },
+      },
     },
     rules: {
       '@typescript-eslint/consistent-type-imports': [
@@ -106,11 +113,17 @@ export default defineConfig([
         },
       ],
       /*
-       * Enforce AGENTS.md: multi-line comments must use `/* ... *\/` block
-       * syntax, never stacked `//` lines. Single-line `//` comments are
-       * still fine. This rule is auto-fixable via `eslint --fix`.
+       * The project comment contract, enforced in both directions and
+       * auto-fixable via `eslint --fix`:
+       *   - multi-line comments must be `/* ... *\/` starred blocks, never
+       *     stacked `//` lines (`multiline-comment-style`).
+       *   - single-line comments must be `//`, never `/* ... *\/`
+       *     (`local/single-line-comment-style`).
+       * Together: one line is always `//`, multiple lines are always a block.
+       * TSDoc (`/** *\/`) and tooling directives are exempt from both.
        */
       '@stylistic/multiline-comment-style': ['error', 'starred-block'],
+      'local/single-line-comment-style': 'error',
     },
   },
 
