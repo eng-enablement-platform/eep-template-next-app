@@ -37,12 +37,26 @@ confidently without asking anyone?
   `interface` to `type` the day a shape needs a union.
 - Do not add dependencies arbitrarily — check if native TS/JS can do it first
 - Comments required for anything non-obvious — explain the why, not the what
-- Comment syntax is total and enforced both ways by ESLint (auto-fixable):
-  **one line is always `//`, multiple lines are always `/* */`**. Never stack
-  consecutive `//` lines, and never use a single-line `/* */`. TSDoc (`/** */`)
-  and tooling directives (`eslint-*`, `ts-*`) are exempt. The single-line
-  direction is enforced by the local `single-line-comment-style` rule in
-  `eslint-rules/`; the multi-line direction by `@stylistic/multiline-comment-style`.
+- Comment syntax signals **intent**, not just line count. Two different things
+  share angle-bracket syntax and the rule keeps them apart: **commentary** is
+  throwaway notes that live and die in the source, while **TSDoc (`/** \*/`) is a
+  tooling-consumed API surface\*\* — editors render it on hover, doc generators
+  publish it. Picking the wrong one either buries a note in fake doc syntax or
+  silently fails to document a symbol, so the form must match the intent. Ask
+  _"who is this for?"_:
+  - **Commentary** — notes for whoever reads this source file (the _why_ behind
+    the code). One line is always `//` (inline or standalone, no exceptions);
+    multi-line is always a `/* */` starred block. Never a single-line `/* */`,
+    and never `/** */` — a doc comment is not commentary.
+  - **Documentation** — TSDoc describing a symbol (function, type, member) so
+    consumers see it on hover. Use `/** */` **only** when attached directly
+    above the symbol it documents. It is an API surface, not a prettier
+    comment — never reach for `/**` just to write a note, even to satisfy the
+    single-line rule.
+  - Enforced and auto-fixable: `local/single-line-comment-style`
+    (`eslint-rules/`) bans single-line `/* */`; `@stylistic/multiline-comment-style`
+    forces multi-line commentary into starred blocks. TSDoc and tooling
+    directives (`eslint-*`, `ts-*`) are exempt because they are not commentary.
 - TSDoc on all `.ts` files — pre-commit will enforce this
 - If disabling a lint rule, leave a comment explaining why
 - Tailwind only for styles, no exceptions
