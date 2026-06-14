@@ -1,5 +1,4 @@
 import { BookOpen } from 'lucide-react';
-import Link from 'next/link';
 
 import { ThemeToggle } from '@/components/common/theme-toggle';
 import { Counter } from '@/components/features/counter';
@@ -19,14 +18,22 @@ export default function Home() {
       />
 
       <header className='absolute inset-x-0 top-0 flex items-center justify-between p-4'>
+        {/*
+         * Opens in a new tab on purpose. /api-docs is a raw HTML document
+         * (Swagger UI), not an App Router page, so navigating the SPA to it and
+         * back unmounts and fails to re-establish Clerk's client session,
+         * leaving the auth gate stuck on a dead spinner.
+         */}
         <Button asChild variant='link' className='text-muted-foreground'>
-          <Link
+          <a
             href='/api-docs'
+            target='_blank'
+            rel='noopener noreferrer'
             title='Requires the Admin role — others get a 403'
           >
             <BookOpen />
             API docs
-          </Link>
+          </a>
         </Button>
         <div className='flex items-center gap-3'>
           <HomeProfile />
