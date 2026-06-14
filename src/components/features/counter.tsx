@@ -3,13 +3,11 @@
 import { Button } from '@/components/ui/button';
 import { useCounterStore } from '@/store/counter-store';
 
-/*
- * Reference feature component demonstrating how a client component consumes a
- * Zustand store. It exists for learning — not a production feature.
- */
-
 /**
+ * This is an EXAMPLE component.
+ *
  * A minimal counter wired to `useCounterStore`.
+ * Demonstrates how a client component consumes a Zustand store.
  *
  * @example
  * ```tsx
@@ -28,11 +26,11 @@ export function Counter() {
         Count: {count}
       </p>
       <div className='flex gap-2'>
-        <Button variant='outline' size='sm' onClick={decrement}>
-          Decrement
-        </Button>
         <Button size='sm' onClick={increment}>
           Increment
+        </Button>
+        <Button variant='outline' size='sm' onClick={decrement}>
+          Decrement
         </Button>
         <Button variant='ghost' size='sm' onClick={reset}>
           Reset
