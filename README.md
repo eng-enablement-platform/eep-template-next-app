@@ -175,3 +175,8 @@ Save, then **sign out and back in** so a fresh token is minted with the claim.
 missing the claim — step 2 wasn't applied, or you're on a stale session (→
 re-login). A quick way to confirm is logging `sessionClaims` in the proxy: no
 `metadata` key in the claim list means step 2 is the culprit.
+
+### OTHER THINGS...
+
+- Think about testing hooks and checking if api routes they call get removed (had that issue before where i deleted an api route but it never got flagged even though the hook was using it)
+- add https://storybook.js.org/ or https://ladle.dev/docs/setup
