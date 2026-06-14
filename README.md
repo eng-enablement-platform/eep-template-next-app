@@ -37,6 +37,30 @@ pnpm db:check                      # read-only sanity check the data path
 the full `DATABASE_URL → pg.Pool → Drizzle → example_items` path — handy after a
 fresh clone or when a teammate's local DB is misbehaving.
 
+## Logging
+
+Backend logs go through a winston logger; each line carries a `logSource` (the
+layer it came from — `api`, `action`, `service`) so you can follow a source when
+debugging. Two optional env vars control noise, both off-by-default-loud:
+
+```bash
+# See everything for one run (default level is info in prod, debug in dev).
+LOG_LEVEL=debug pnpm dev
+
+# Stream raw Drizzle SQL + params to the console (noisy — for watching
+# queries/mutations live while building). Off unless explicitly set.
+DB_QUERY_LOG=1 pnpm dev
+
+# Combine them.
+LOG_LEVEL=debug DB_QUERY_LOG=1 pnpm dev
+```
+
+Structured logs are also written to `.logs/` (`winston-combined.log`,
+`winston-error.log`) — follow a layer with
+`grep '"logSource":"action"' .logs/winston-combined.log`. See `AGENTS.md` →
+Logging for the source/scope conventions and why query logging is a separate
+toggle.
+
 ## API docs (OpenAPI + Swagger UI)
 
 With the dev server running, the `example_items` REST API documents itself:
@@ -112,3 +136,42 @@ path because it targets Vercel.
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Clerk RBAC
+
+Admin-only routes (`/admin/*`, `/api-docs/*`) are gated in `src/proxy.ts`, which
+reads the role from the **session-token claim** `sessionClaims.metadata.role`
+(typed in `src/types/clerk.d.ts`). Granting a user admin access takes **two
+steps** — missing either one results in a silent 403 / redirect.
+
+**1. Set the user's public metadata.** Clerk Dashboard → **Users** → pick the
+user → **Metadata** → **Public**, and add:
+
+```json
+{
+  "role": "Admin"
+}
+```
+
+Must be **public** metadata (not private/unsafe) and the value is
+case-sensitive — the proxy checks `=== 'Admin'`.
+
+**2. Map that metadata into the session token.** This is the easily-missed step:
+setting public metadata updates the _user record_ but does **not** put it in the
+JWT. The proxy reads the JWT, so until you map it the claim is `undefined`.
+Clerk Dashboard → **Configure** → **Sessions** → **Customize session token** →
+**Edit**, and add:
+
+```json
+{
+  "metadata": "{{user.public_metadata}}"
+}
+```
+
+Save, then **sign out and back in** so a fresh token is minted with the claim.
+
+**Verify:** after both steps the JWT carries a `metadata` claim
+(`{"role":"Admin"}`) and `/api-docs` loads. If you still get a 403, the token is
+missing the claim — step 2 wasn't applied, or you're on a stale session (→
+re-login). A quick way to confirm is logging `sessionClaims` in the proxy: no
+`metadata` key in the claim list means step 2 is the culprit.
