@@ -54,3 +54,15 @@ next-env.d.ts
 .agents/
 .bg-shell/
 skills-lock.json
+
+# Winston log output — runtime artefacts, never committed
+.logs/
+
+# pnpm local store — machine-specific cache
+.pnpm-store/
+
+# Diagram icons — generated at runtime by diagrams/main.py, not committed
+diagrams/icons/
+
+# Dev Containers lockfile — auto-generated, machine-specific
+.devcontainer/devcontainer-lock.json

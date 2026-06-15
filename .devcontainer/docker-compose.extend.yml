@@ -6,8 +6,10 @@ services:
   app:
     image: mcr.microsoft.com/devcontainers/base:debian
     volumes:
-      # Mount the repo into the container
-      - ..:/workspaces/eep-template-next-app:cached
+      # Absolute path avoids the ambiguity of '..' which Rancher Desktop resolves
+      # relative to its own working directory rather than the compose file location,
+      # causing the entire repos folder to be mounted instead of just this repo.
+      - /Users/hectorkurtyanek/Desktop/repos/eep-template-next-app:/workspaces/eep-template-next-app:cached
     # Keep the container alive while VS Code attaches
     command: sleep infinity
     depends_on:

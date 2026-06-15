@@ -20,6 +20,19 @@ fi
 
 echo '🏗️👷 Pre commit checks being completed...'
 
+# ── Deps sync check ────────────────────────────────────────────────────────
+# Run this FIRST before any pnpm command. If node_modules is out of sync
+# with package.json, pnpm will abort with a cryptic no-TTY error on every
+# subsequent command. Catch it here with a clear fix instruction instead.
+if ! pnpm install --frozen-lockfile --silent 2>/dev/null; then
+    echo ''
+    echo '📦❌ node_modules is out of sync with package.json / pnpm-lock.yaml.'
+    echo ''
+    echo '   Fix: run `pnpm install` then try committing again.'
+    echo ''
+    exit 1
+fi
+
 # Function to check if files matching a pattern have changed
 files_changed() {
     git diff --cached --name-only | grep -E "$1"

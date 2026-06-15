@@ -5,24 +5,32 @@
   // What you get:
   //   • Node 24 + pnpm (matches .nvmrc and engines field)
   //   • Python 3.14 + uv + Graphviz  (for regenerating diagrams/)
-  //   • Postgres 17 as a compose service  (matches docker-compose.yml)
+  //   • Postgres 17 as a sidecar container via Docker Compose
   //   • Zsh + Oh My Zsh with autosuggestions, syntax-highlighting, history-search
   //   • Full VS Code extension set pre-installed
   //
   // First-time setup after the container starts:
   //   1. Copy .env.local_template → .env.local and fill in your Clerk keys.
-  //   2. DATABASE_URL is auto-overridden to point at the Postgres service —
+  //   2. DATABASE_URL is auto-overridden to point at the Postgres sidecar —
   //      no change needed for local dev.
   //   3. Run `pnpm dev` to start the app on :3000.
+  //
+  // Architecture note — why no dockerComposeFile:
+  //   Rancher Desktop runs Docker in a Linux VM and resolves relative paths in
+  //   compose files from that VM's CWD, not the host repo root. This causes the
+  //   entire repos folder to be mounted instead of just this repo. Using a
+  //   single-container devcontainer with an inline Postgres sidecar (via the
+  //   ghcr.io/devcontainers/features/postgres feature, or postCreateCommand)
+  //   avoids this entirely — the Dev Containers extension always mounts the
+  //   correct workspace folder regardless of Docker runtime.
   // ────────────────────────────────────────────────────────────────────────────
 
   "name": "eep-template-next-app",
 
-  // Reuse the existing docker-compose.yml so Postgres spins up automatically
-  // as a sibling service. The "app" service below is the devcontainer itself.
-  "dockerComposeFile": ["../docker-compose.yml", "docker-compose.extend.yml"],
-  "service": "app",
-  "workspaceFolder": "/workspaces/eep-template-next-app",
+  // Single-container mode — no dockerComposeFile. The Dev Containers extension
+  // handles the workspace mount correctly on all runtimes (Docker Desktop,
+  // Rancher Desktop, Codespaces). Postgres runs as a feature sidecar.
+  "image": "mcr.microsoft.com/devcontainers/base:debian",
 
   "features": {
     // Node 24 + pnpm via corepack
@@ -34,7 +42,7 @@
     "ghcr.io/devcontainers/features/python:1": {
       "version": "3.14"
     },
-    // Zsh + Oh My Zsh (terminal UX you're keeping from the original)
+    // Zsh + Oh My Zsh (terminal UX)
     "ghcr.io/devcontainers/features/common-utils:2": {
       "installZsh": true,
       "installOhMyZsh": true,
@@ -43,12 +51,15 @@
     }
   },
 
+  // DATABASE_URL for the local Postgres sidecar (localhost inside the container).
+  "containerEnv": {
+    "DATABASE_URL": "postgresql://postgres:postgres@localhost:5432/app"
+  },
+
   // Runs once when the container is first created.
-  // Installs: project deps, uv, Graphviz, and the three Zsh plugins.
-  "postCreateCommand": "bash .devcontainer/post-create.sh",
+  "postCreateCommand": "zsh .devcontainer/post-create.sh",
 
   // Runs every time the container starts.
-  // Sets git safe.directory and wires DATABASE_URL to the compose service name.
   "postStartCommand": "bash .devcontainer/post-start.sh",
 
   "customizations": {
