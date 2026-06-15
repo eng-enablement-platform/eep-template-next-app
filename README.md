@@ -322,6 +322,8 @@ pnpm dev:all    # app + docs on :3000 and :3001
 
 > **Note:** After changing `.devcontainer/devcontainer.json`, run **Dev Containers: Rebuild Container** from the Command Palette to pick up the changes.
 
+> **Full docs:** The dev container setup is covered in depth in the docs site (`pnpm dev:docs`), including architecture decisions, troubleshooting common issues (Rancher Desktop quirks, sudo behaviour, port conflicts), and how to extend the environment.
+
 ## OTHER THINGS (scratch notes - not done)
 
 - Think about testing hooks and checking if api routes they call get removed (had that issue before where i deleted an api route but it never got flagged even though the hook was using it)

@@ -5,7 +5,7 @@ set -euo pipefail
 WORKSPACE="/workspaces/eep-template-next-app"
 
 echo "▶ Starting Postgres..."
-sudo service postgresql start || true
+sudo service postgresql start 2>/dev/null || true
 
 echo "▶ Marking workspace as git safe directory..."
 git config --global --add safe.directory "$WORKSPACE"

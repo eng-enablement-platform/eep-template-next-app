@@ -7,23 +7,8 @@ set -euo pipefail
 echo "▶ Installing project dependencies..."
 pnpm install
 
-echo "▶ Installing Postgres 17..."
-sudo apt-get update -qq
-sudo apt-get install -y -qq gnupg curl
-curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/postgresql.gpg
-echo "deb https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list > /dev/null
-sudo apt-get update -qq
-sudo apt-get install -y -qq postgresql-17
-
-# Configure Postgres: create the app user + database matching DATABASE_URL
-sudo -u postgres psql -c "ALTER USER postgres WITH PASSWORD 'postgres';" 2>/dev/null || true
-sudo -u postgres psql -c "CREATE DATABASE app;" 2>/dev/null || true
-
-# Start Postgres and enable on boot
-sudo service postgresql start
-
-echo "▶ Installing Graphviz (required by diagrams/ Python lib)..."
-sudo apt-get update -qq && sudo apt-get install -y -qq graphviz
+# Postgres 17 and Graphviz are pre-installed in the Dockerfile as root.
+# post-create only handles user-level setup that needs the workspace mounted.
 
 echo "▶ Installing uv (Python package manager for diagrams/)..."
 pip install -U pip uv --quiet

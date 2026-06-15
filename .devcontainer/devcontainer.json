@@ -29,8 +29,10 @@
 
   // Single-container mode — no dockerComposeFile. The Dev Containers extension
   // handles the workspace mount correctly on all runtimes (Docker Desktop,
-  // Rancher Desktop, Codespaces). Postgres runs as a feature sidecar.
-  "image": "mcr.microsoft.com/devcontainers/base:debian",
+  // Rancher Desktop, Codespaces).
+  // Postgres and Graphviz are installed as root in the Dockerfile (avoids sudo
+  // password prompts that occur when installing via postCreateCommand).
+  "build": { "dockerfile": "Dockerfile" },
 
   "features": {
     // Node 24 + pnpm via corepack
