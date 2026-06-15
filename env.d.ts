@@ -20,5 +20,8 @@ declare namespace NodeJS {
     // Clerk Authentication
     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: string;
     CLERK_SECRET_KEY: string;
+
+    // Docs site URL. When set, a "Docs" link appears in the homepage header.
+    NEXT_PUBLIC_DOCS_URL?: string;
   }
 }

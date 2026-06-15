@@ -1,23 +1,47 @@
-## Getting Started
+# EEP Next.js Template
+
+A production-grade Next.js scaffold built on [Engineering Enablement Platform
+(EEP)](https://github.com/your-org/eep) principles. Ships full — authentication,
+database, API docs, logging, and conventions all wired and demonstrated — so you
+can strip what you don't need rather than bolt on what you do.
+
+## Prerequisites
+
+- Node.js ≥ 20
+- [pnpm](https://pnpm.io) ≥ 9
+- Docker (for local Postgres)
+
+## Setup
 
 ```bash
 pnpm install
+cp env.local_template .env.local   # fill in your secrets
 ```
 
-First, run the development server:
+## Dev servers
+
+The repo contains two apps: the **Next.js app** (`:3000`) and the **docs site**
+(`:3001`). Run them independently or together.
+
+| Command         | What starts                            |
+| --------------- | -------------------------------------- |
+| `pnpm dev`      | App only — `http://localhost:3000`     |
+| `pnpm dev:docs` | Docs only — `http://localhost:3001`    |
+| `pnpm dev:all`  | Both concurrently, colour-coded output |
 
 ```bash
-pnpm dev
-```
-
-```bash
-# Terminal 1 — leave running
+# Most common — just the app
 pnpm dev
 
-# Terminal 2 — iterate freely against the warm server
-pnpm e2e
-pnpm e2e:ui
+# Full environment — app + docs side-by-side
+pnpm dev:all
+
+# Docs site only (e.g. writing content without the app overhead)
+pnpm dev:docs
 ```
+
+> The docs site is a separate Fumadocs workspace (`docs/`). It runs its own
+> Next.js process and does not share the app's env vars or database.
 
 ## Local database
 
@@ -25,159 +49,143 @@ Local dev runs Postgres in Docker; production points the same driver at a hosted
 provider (e.g. Neon) by changing only `DATABASE_URL`.
 
 ```bash
-cp env.local_template .env.local   # local dev default already filled in
-docker compose up -d               # start Postgres on :5432
-pnpm db:generate                   # SQL migration from src/db/schema.ts
-pnpm db:migrate                    # apply migrations
-pnpm db:seed                       # insert demo example_items rows
-pnpm db:check                      # read-only sanity check the data path
+docker compose up -d     # start Postgres on :5432
+pnpm db:generate         # generate SQL migration from src/db/schema.ts
+pnpm db:migrate          # apply migrations
+pnpm db:seed             # insert demo rows
+pnpm db:check            # read-only sanity check of the full data path
 ```
 
 `pnpm db:check` (`scripts/db-smoke-check.ts`) is a fast, mutation-free probe of
-the full `DATABASE_URL → pg.Pool → Drizzle → example_items` path — handy after a
-fresh clone or when a teammate's local DB is misbehaving.
+the full `DATABASE_URL → pg.Pool → Drizzle → example_items` path — useful after
+a fresh clone or when a local DB is misbehaving.
+
+## Builds
+
+```bash
+pnpm build        # app only
+pnpm build:docs   # docs site only
+pnpm build:all    # both
+```
+
+## Testing
+
+```bash
+pnpm test          # unit tests (Vitest)
+pnpm test:watch    # watch mode
+pnpm typecheck     # TypeScript, no emit
+pnpm lint          # ESLint
+```
+
+### End-to-end
+
+```bash
+# Terminal 1 — leave running
+pnpm dev
+
+# Terminal 2
+pnpm e2e         # headless
+pnpm e2e:ui      # Playwright UI mode
+pnpm e2e:debug   # step-through debugger
+```
 
 ## Logging
 
-Backend logs go through a winston logger; each line carries a `logSource` (the
-layer it came from — `api`, `action`, `service`) so you can follow a source when
-debugging. Two optional env vars control noise, both off-by-default-loud:
+Backend logs go through Winston; every line carries a `logSource` (the
+architectural layer: `api`, `action`, `service`) so you can follow one source
+while debugging.
 
 ```bash
-# See everything for one run (default level is info in prod, debug in dev).
-LOG_LEVEL=debug pnpm dev
-
-# Stream raw Drizzle SQL + params to the console (noisy — for watching
-# queries/mutations live while building). Off unless explicitly set.
-DB_QUERY_LOG=1 pnpm dev
-
-# Combine them.
-LOG_LEVEL=debug DB_QUERY_LOG=1 pnpm dev
+LOG_LEVEL=debug pnpm dev              # see all levels (default: info in prod, debug in dev)
+DB_QUERY_LOG=1 pnpm dev              # stream raw Drizzle SQL + params to the console
+LOG_LEVEL=debug DB_QUERY_LOG=1 pnpm dev  # both
 ```
 
 Structured logs are also written to `.logs/` (`winston-combined.log`,
-`winston-error.log`) — follow a layer with
-`grep '"logSource":"action"' .logs/winston-combined.log`. See `AGENTS.md` →
-Logging for the source/scope conventions and why query logging is a separate
-toggle.
+`winston-error.log`). Grep by source:
+
+```bash
+grep '"logSource":"action"' .logs/winston-combined.log
+```
+
+See `AGENTS.md` → Logging for the source/scope conventions.
 
 ## API docs (OpenAPI + Swagger UI)
 
-With the dev server running, the `example_items` REST API documents itself:
+With the dev server running:
 
-- **Interactive UI:** http://localhost:3000/api-docs — Swagger UI for every
-  method, with a live "Try it out" console to fire requests against the running
-  app and seeded data.
-- **Raw spec (JSON):** http://localhost:3000/api/openapi — the OpenAPI 3.1
-  document, for Postman, codegen, or SDK builders.
+- **Interactive UI:** http://localhost:3000/api-docs — live "Try it out" console
+- **Raw spec (JSON):** http://localhost:3000/api/openapi — for Postman, codegen, SDK builders
+
+Requires the **Admin role** — others receive a 403. See Authentication below.
 
 ### How it works
 
-Three layers, each with one job, none duplicating the others:
-
 ```
-Zod schema (.meta)  →  zod-openapi createDocument()  →  OpenAPI JSON  →  Swagger UI renders it
-  validation + docs       converts + registers $refs       /api/openapi      /api-docs
+Zod schema (.meta)  →  zod-openapi createDocument()  →  OpenAPI JSON  →  Swagger UI
+  validation + docs      converts + registers $refs       /api/openapi      /api-docs
 ```
 
-- **Zod** (`src/validation/example-item.ts`) is the single source of truth. The
-  same schemas validate incoming requests _and_ carry their own documentation
-  via Zod 4's native `.meta()` (descriptions, examples, and a component `id`).
-- **`zod-openapi`** (`src/lib/openapi/`) walks those schemas in
-  `createDocument()`, converts them to OpenAPI, and auto-registers anything with
-  a `.meta({ id })` as a reusable `components/schemas` entry (so models are
-  `$ref`'d, not inlined). It reads Zod's native `.meta()` directly — no
-  `extendZodWithOpenApi` shim is needed on Zod 4.
-- **Swagger UI** (`src/app/api-docs/route.ts`) is purely the renderer — served
-  from prebuilt assets (`/swagger-ui/...`, vendored from `swagger-ui-dist` by
-  `scripts/copy-swagger-ui.ts`, no third-party CDN). It reads the spec URL and
-  renders the page. Swapping it for another renderer changes only the chrome,
-  not the spec.
-
-The payoff is that the schema, the validator, and the docs cannot drift: add a
-field to the Zod schema and it appears in validation, the spec, and the docs at
-once. The flip side is that the docs are only as correct as the schema — a
-subtly wrong schema produces subtly wrong docs (which is exactly how a PATCH
-default-reset bug got caught).
+Zod (`src/validation/`) is the single source of truth. The same schemas validate
+requests and carry their documentation via Zod 4's native `.meta()`. Adding a
+route to the spec: annotate its schema with `.meta({ id })` and add a `paths`
+entry in `src/lib/openapi/index.ts`. Full steps in `src/app/README.md`.
 
 ## Authentication (Clerk)
 
-Auth is handled by [Clerk](https://clerk.com). Two things are worth knowing
-before you build for anything other than Vercel — both are candidates for fuller
-write-ups on the docs site.
+### Route gating lives in `proxy.ts`
 
-### Request gating lives in `proxy.ts`, not `middleware.ts`
+Next.js 16 renamed `middleware.ts` to `proxy.ts` (Node.js runtime, explicit
+network boundary). Our Clerk gate lives in `src/proxy.ts`. Keep this layer to
+lightweight checks (redirects, session-claim reads) — heavier auth belongs in
+route handlers or the DAL.
 
-Next.js 16 renamed the root `middleware.ts` convention to `proxy.ts` (it now
-runs on the Node.js runtime and makes the network boundary explicit). Our Clerk
-route gate lives in `src/proxy.ts` — same logic as the old middleware, default
-export, `config.matcher` unchanged. Keep this layer to lightweight network
-checks (redirects, rewrites, reading session claims). Heavier auth (DB lookups,
-full session validation) belongs in the Data Access Layer or Route Handlers —
-the proxy is not a security boundary on its own.
+### The publishable key is a build-time value
 
-### The `NEXT_PUBLIC` publishable key is a BUILD-time value
+`NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` is inlined into the client bundle at
+`next build`, not read at runtime. Fine on Vercel (each env builds separately).
+Breaks if you build one Docker image and promote it across envs — the runtime
+value never reaches the bundle. Fix: serve the key from a server route and mount
+`<ClerkProvider publishableKey={...}>` once it resolves. This template defaults
+to the Vercel path.
 
-`NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` (like all `NEXT_PUBLIC_*` vars) is **inlined
-into the client bundle at `next build`**, not read at runtime. On Vercel this is
-fine — each environment builds with its own env vars present.
+### Granting Admin access
 
-It breaks if you build **one Docker image and promote it across environments**
-(or inject env only at `docker run` / k8s deploy time): the key is frozen at
-build time, so a runtime-provided value never reaches the bundle. The fix is to
-serve the key from a server route that reads a non-`NEXT_PUBLIC` env var at
-request time and mount `<ClerkProvider publishableKey={...}>` once it resolves.
-The full reasoning and the runtime-fetch recipe are documented inline in
-`src/app/clerk-client-wrapper.tsx`. This template defaults to the build-time
-path because it targets Vercel.
+Admin-only routes (`/admin/*`, `/api-docs/*`) are gated in `src/proxy.ts` via
+`sessionClaims.metadata.role`. Two steps required — missing either gives a
+silent 403.
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-
-## Clerk RBAC
-
-Admin-only routes (`/admin/*`, `/api-docs/*`) are gated in `src/proxy.ts`, which
-reads the role from the **session-token claim** `sessionClaims.metadata.role`
-(typed in `src/types/clerk.d.ts`). Granting a user admin access takes **two
-steps** — missing either one results in a silent 403 / redirect.
-
-**1. Set the user's public metadata.** Clerk Dashboard → **Users** → pick the
-user → **Metadata** → **Public**, and add:
+**1. Set public metadata.** Clerk Dashboard → Users → pick user → Metadata →
+Public:
 
 ```json
-{
-  "role": "Admin"
-}
+{ "role": "Admin" }
 ```
 
-Must be **public** metadata (not private/unsafe) and the value is
-case-sensitive — the proxy checks `=== 'Admin'`.
-
-**2. Map that metadata into the session token.** This is the easily-missed step:
-setting public metadata updates the _user record_ but does **not** put it in the
-JWT. The proxy reads the JWT, so until you map it the claim is `undefined`.
-Clerk Dashboard → **Configure** → **Sessions** → **Customize session token** →
-**Edit**, and add:
+**2. Map it into the session token.** Clerk Dashboard → Configure → Sessions →
+Customize session token → Edit:
 
 ```json
-{
-  "metadata": "{{user.public_metadata}}"
-}
+{ "metadata": "{{user.public_metadata}}" }
 ```
 
-Save, then **sign out and back in** so a fresh token is minted with the claim.
+Save, then sign out and back in so a fresh token is minted. If you still get a
+403, the claim is missing from the JWT — step 2 wasn't applied, or the session
+is stale.
 
-**Verify:** after both steps the JWT carries a `metadata` claim
-(`{"role":"Admin"}`) and `/api-docs` loads. If you still get a 403, the token is
-missing the claim — step 2 wasn't applied, or you're on a stale session (→
-re-login). A quick way to confirm is logging `sessionClaims` in the proxy: no
-`metadata` key in the claim list means step 2 is the culprit.
+## Deploy
 
-### OTHER THINGS...
+The simplest deployment target is [Vercel](https://vercel.com/new). Set the same
+env vars from `.env.local` in the Vercel project settings and deploy from `main`.
+
+For other targets, note the `NEXT_PUBLIC_*` build-time caveat above.
+
+## OTHER THINGS (scratch notes — not done)
 
 - Think about testing hooks and checking if api routes they call get removed (had that issue before where i deleted an api route but it never got flagged even though the hook was using it)
 - add https://storybook.js.org/ or https://ladle.dev/docs/setup
 - diagrams library
+- dev containers
+- base components + design system (optional strip-out)
+- AGENTS.md refinement
+- docs content (EEP philosophy, architecture, decisions per layer)

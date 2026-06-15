@@ -1,4 +1,4 @@
-import { BookOpen } from 'lucide-react';
+import { BookOpen, FileText } from 'lucide-react';
 
 import { ThemeToggle } from '@/components/common/theme-toggle';
 import { Counter } from '@/components/features/counter';
@@ -12,29 +12,42 @@ export default function Home() {
   return (
     <div className='bg-background relative flex flex-1 flex-col items-center justify-center overflow-hidden px-6'>
       <div
-        // Subtle radial backdrop for depth — purely decorative.
         aria-hidden
         className='bg-foreground/3 pointer-events-none absolute top-1/2 left-1/2 -z-10 size-160 -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl'
       />
 
       <header className='absolute inset-x-0 top-0 flex items-center justify-between p-4'>
-        {/*
-         * Opens in a new tab on purpose. /api-docs is a raw HTML document
-         * (Swagger UI), not an App Router page, so navigating the SPA to it and
-         * back unmounts and fails to re-establish Clerk's client session,
-         * leaving the auth gate stuck on a dead spinner.
-         */}
-        <Button asChild variant='link' className='text-muted-foreground'>
-          <a
-            href='/api-docs'
-            target='_blank'
-            rel='noopener noreferrer'
-            title='Requires the Admin role — others get a 403'
-          >
-            <BookOpen />
-            API docs
-          </a>
-        </Button>
+        {/* Left nav — external links that open in new tabs. Both /api-docs
+            (Swagger UI) and the docs site are separate documents, not App
+            Router pages; navigating the SPA to them and back unmounts Clerk's
+            client and leaves the auth gate stuck on a dead spinner. */}
+        <div className='flex items-center gap-1'>
+          {process.env.NEXT_PUBLIC_DOCS_URL && (
+            <Button asChild variant='link' className='text-muted-foreground'>
+              <a
+                href={process.env.NEXT_PUBLIC_DOCS_URL}
+                target='_blank'
+                rel='noopener noreferrer'
+              >
+                <FileText />
+                Repo Docs
+              </a>
+            </Button>
+          )}
+          <Button asChild variant='link' className='text-muted-foreground'>
+            <a
+              href='/api-docs'
+              target='_blank'
+              rel='noopener noreferrer'
+              title='Requires the Admin role — others get a 403'
+            >
+              <BookOpen />
+              API docs
+            </a>
+          </Button>
+          {/* DOCS LINK — rendered only when NEXT_PUBLIC_DOCS_URL is set.
+           */}
+        </div>
         <div className='flex items-center gap-3'>
           <HomeProfile />
           <ThemeToggle />
