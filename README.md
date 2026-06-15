@@ -51,6 +51,18 @@ pnpm dev:docs
 > The docs site is a separate Fumadocs workspace (`docs/`). It runs its own
 > Next.js process and does not share the app's env vars or database.
 
+> **Docs site Turbopack errors / read-only filesystem in devcontainer:** If the
+> docs dev server spams `Read-only file system` errors or Turbopack panics in a
+> loop, it means `docs/.next/` was built on the host machine and then mounted
+> into the container where the `vscode` user can't write to it. Fix:
+>
+> ```bash
+> rm -rf docs/.next && pnpm dev:docs
+> ```
+>
+> This is a one-time issue — once `.next` is rebuilt inside the container it
+> stays writable across restarts.
+
 ## Local database
 
 Local dev runs Postgres in Docker; production points the same driver at a hosted

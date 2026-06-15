@@ -1,0 +1,4 @@
+{
+  "title": "Dev Environment",
+  "pages": ["local-setup", "dev-container", "database"]
+}

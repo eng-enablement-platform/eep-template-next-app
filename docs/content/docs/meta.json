@@ -1,0 +1,11 @@
+{
+  "title": "EEP Next.js Template",
+  "pages": [
+    "index",
+    "the-stack",
+    "architecture",
+    "layers",
+    "conventions",
+    "dev-environment"
+  ]
+}
