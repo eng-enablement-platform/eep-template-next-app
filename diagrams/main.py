@@ -68,15 +68,15 @@ graph_attr = {
     "bgcolor": "white",
     "pad": "1.0",
     "splines": "ortho",
-    "nodesep": "0.9",
-    "ranksep": "1.2",
+    "nodesep": "0.6",
+    "ranksep": "0.9",
 }
 
 with Diagram(
     "EEP Next.js Template — Architecture",
     filename="architecture",
     show=False,
-    direction="TB",
+    direction="LR",
     graph_attr=graph_attr,
 ):
     user = Users("Browser\n/ Client")

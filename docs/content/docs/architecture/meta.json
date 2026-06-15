@@ -1,4 +1,4 @@
 {
   "title": "Architecture",
-  "pages": ["index", "data-flow", "read-vs-write"]
+  "pages": ["overview", "data-flow", "read-vs-write"]
 }
