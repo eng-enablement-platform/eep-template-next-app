@@ -5,6 +5,14 @@ A production-grade Next.js scaffold built on [Engineering Enablement Platform
 database, API docs, logging, and conventions all wired and demonstrated — so you
 can strip what you don't need rather than bolt on what you do.
 
+## Architecture
+
+![Architecture diagram](diagrams/architecture.png)
+
+Three strict layers — Client (`components/`, `hooks/`, `store/`), API (`app/api/`, `actions/`), and Server (`classes/`) — with Zod schemas as the shared validation surface between them. Auth is handled externally by Clerk; the database is Postgres via Drizzle ORM (Docker locally, Neon in production).
+
+See `diagrams/` for the source and [Regenerating the diagram](#regenerating-the-diagram) below.
+
 ## Prerequisites
 
 - Node.js ≥ 20
@@ -173,6 +181,61 @@ Save, then sign out and back in so a fresh token is minted. If you still get a
 403, the claim is missing from the JWT — step 2 wasn't applied, or the session
 is stale.
 
+## Regenerating the diagram
+
+The architecture diagram (`diagrams/architecture.png`) is generated from Python
+code using the [Diagrams](https://diagrams.mingrammer.com/) library and
+[Graphviz](https://graphviz.org/). The PNG is committed so you never need Python
+just to view it — only to regenerate it after changes.
+
+### Prerequisites
+
+```bash
+brew install graphviz   # macOS — Graphviz must be on PATH for Diagrams to render
+```
+
+Python deps are managed with [uv](https://docs.astral.sh/uv/) (faster, safer
+alternative to pip+venv). Install it once:
+
+```bash
+brew install uv         # macOS
+# or
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+### Regenerate
+
+```bash
+cd diagrams
+uv run python main.py   # outputs architecture.png in diagrams/
+```
+
+`uv run` automatically creates an isolated virtualenv and installs deps from
+`pyproject.toml` on first run — no manual `pip install` needed.
+
+### How the icons work
+
+The diagram uses two icon sources:
+
+**Real logos** (React, Next.js, Vercel, Docker) come from the `diagrams` library's
+built-in node catalogue — these just work out of the box.
+
+**Custom icons** use `diagrams.custom.Custom`, which takes any PNG file. We pull
+icons from two sources:
+
+- **[Material Icon Theme](https://github.com/PKief/vscode-material-icon-theme)** —
+  the same icon set used in VS Code. SVGs are fetched from the GitHub repo at
+  `icons/folder-*.svg` and converted to PNG via `cairosvg`. This gives folder
+  nodes the exact icons you'd see in the VS Code sidebar for `hooks/`, `store/`,
+  `api/`, etc.
+- **[Simple Icons](https://simpleicons.org/)** — brand SVGs for services not in
+  the diagrams library (Clerk, Neon). Fetched from `cdn.simpleicons.org` and
+  composited onto an appropriate background colour before converting to PNG.
+
+Generated PNGs land in `diagrams/icons/material-png/` (gitignored — they're
+reproducible). The `main.py` script regenerates any missing icons automatically
+on each run via Pillow, so a fresh clone only needs Graphviz + uv installed.
+
 ## Deploy
 
 The simplest deployment target is [Vercel](https://vercel.com/new). Set the same
@@ -184,7 +247,7 @@ For other targets, note the `NEXT_PUBLIC_*` build-time caveat above.
 
 - Think about testing hooks and checking if api routes they call get removed (had that issue before where i deleted an api route but it never got flagged even though the hook was using it)
 - add https://storybook.js.org/ or https://ladle.dev/docs/setup
-- diagrams library
+- ~~diagrams library~~ ✅
 - dev containers
 - base components + design system (optional strip-out)
 - AGENTS.md refinement

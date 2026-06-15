@@ -1,0 +1,10 @@
+# Generated icon PNGs — reproduced automatically by main.py (needs uv + graphviz)
+icons/material-png/
+icons/material/
+icons/folder-*.png
+icons/typescript.png
+
+# Python tooling
+.venv/
+__pycache__/
+*.pyc
