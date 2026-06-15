@@ -1,0 +1,87 @@
+A unified engineering platform built around templates, constrained agent workflows, and strong architectural standards. It provides a central interface for selecting templates, creating projects, running engineering tasks, and monitoring execution, while using workflow orchestration behind the scenes for reliability and observability
+
+This page outlines the ideas, vision and roadmap for EEP! 
+
+  What is it?
+
+The Engineering Enablement Platform (EEP) is a suite of tools designed to help engineers build projects in a repeatable, standardised, and structured way.
+
+More than a platform, EEP is a philosophy grounded in strong project management and engineering principles. It places a heavy emphasis on planning, documentation, and templating solid foundations into codebases so they can support fast iteration and safe agentic development.
+
+It is about creating systems that are easy to reason about, easy to extend, and resilient under rapid development. The goal is not just to move fast, but to move fast without losing the shape of the system.
+
+ Why
+
+Agentic engineering is here, and it is not going anywhere!
+
+The speed of code generation is now high enough that it is no longer realistic to review every single line while also maintaining velocity. That is where strong templating, standards, and architectural constraints come in.
+
+EEP is built around the idea that agents should operate inside tightly defined structures. By enforcing repeatable patterns across every codebase, we reduce cognitive load and make systems easier to navigate, debug, and evolve. We may not always hold every feature implementation fully in our heads, but we should never lose the mental model of the architecture of our code.
+
+If something goes wrong at the database level, we know to look in the database layer. If a service layer has an issue, we know to look in the classes or services folder. If an API contract breaks, we know exactly where that boundary lives. The codebase stays legible because its shape stays consistent every time. 
+
+ The philosophy behind EEP
+
+Real enablement is not just about speeding up output, but about building capability over time. That is a core part of what EEP stands for. It is built on the belief in autonomy and ownership: engineers should be trusted to think, make decisions, and move work forward without needing every step prescribed for them. But autonomy only works when it sits inside strong shared standards and stays close to the problems being solved. Clear architecture, good documentation, repeatable patterns, and strong communication are what make that sustainable. EEP is as much about how people work as it is about what they build, because good engineering is shaped by context, not by sitting alone in front of a computer.
+
+This is exactly why EEP also doesn’t gate keep; that would be the antithesis of the philosophy. The goal here is as much about strong engineering as it is about creating a stronger connection with other disciplines. In this regard, EEP can also be thought of as a translation layer: it gives us a shared way to shape ideas using the same core patterns and structures. That means people can vibe, explore, and build in a controlled way, and if an engineer is needed later (which they may not be) they are stepping into something familiar and structured.
+
+One of the things EEP also supports is learning. Not in a preachy way, and not by forcing everyone to become an architect, but by making the depth available if they want it. You should be able to vibe your way to something useful and still keep standards, structure, and control of your codebase. But if you want to go deeper, the docs should be there and the patterns should be visible. The platform supports both building and understanding, because the more you understand systems, architecture, and patterns, the better outcomes you will get!
+
+ Core principles
+
+EEP is built around a small set of core principles that guide both the platform and the way of working around it.
+
+1. Accept comprehension debt, never technical debt
+
+AI-assisted development means we will not always read, understand, or remember every line of code immediately. That is the reality of moving fast. Some comprehension deb is acceptable. Technical debt is not.
+
+2. Constrain agents to predefined structures
+
+Agents should not operate in open-ended, undefined environments. They should work inside known templates, known boundaries, and known workflows.
+
+3. Keep architecture legible
+
+A codebase should be navigable by its architecture, not by having to read everything.
+
+4. Document as part of the work
+
+Documentation is not optional admin added at the end. It is part of the engineering work itself.
+
+5. Put engineers close to the problem
+
+Engineers should understand the business process they are supporting, not just the ticket in front of them.
+
+6. Create autonomy through standards
+
+Autonomy does not come from a lack of process. It comes from having enough shared standards that people can make decisions confidently without creating chaos.
+
+7. Prefer repeatability over heroics
+
+EEP is not about relying on exceptional effort, tribal knowledge, or one person knowing how everything works. It is about building systems, habits, and foundations that make good engineering repeatable, understandable, and scalable.
+
+8. Make understanding available, not mandatory
+
+EEP should not require every builder to understand every pattern or architectural decision before they can begin. People should be able to move quickly, build something useful, and still benefit from strong standards and structure.
+
+
+
+  What EEP consists of?
+
+EEP is one platform, but it serves several connected capabilities
+
+At a high level, EEP consists of:
+
+Project templates that provide strong starting foundations with clear architectural boundaries
+
+Documentation systems that explain how projects are structured, why they are shaped that way, and how they should evolve
+
+Agent workflows that carry out predefined engineering tasks inside known constraints
+
+Workflow orchestration that manages long-running and asynchronous tasks reliably
+
+Observability tooling for tracking execution flow, logs, and model or token cost
+
+Self-hosted infrastructure that keeps the platform simple, controlled, and extensible
+
+The key idea is that these are not separate tools bolted together, but parts of the same system. Templates give agents known structures to work within. Documentation preserves the mental model of the codebase. Workflow orchestration makes execution reliable. Observability makes automation inspectable. Together, these capabilities make fast iteration possible without collapsing into chaos.
