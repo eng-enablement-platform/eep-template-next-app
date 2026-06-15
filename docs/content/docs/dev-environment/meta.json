@@ -1,4 +1,10 @@
 {
   "title": "Dev Environment",
-  "pages": ["local-setup", "dev-container", "database"]
+  "pages": [
+    "local-setup",
+    "authentication",
+    "neon",
+    "dev-container",
+    "database"
+  ]
 }
