@@ -1,0 +1,19 @@
+# Extends docker-compose.yml with the devcontainer "app" service.
+# The base compose file brings up Postgres; this file adds the dev environment
+# itself so VS Code / Cursor / Codespaces can attach to it.
+
+services:
+  app:
+    image: mcr.microsoft.com/devcontainers/base:debian
+    volumes:
+      # Mount the repo into the container
+      - ..:/workspaces/eep-template-next-app:cached
+    # Keep the container alive while VS Code attaches
+    command: sleep infinity
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      # Override DATABASE_URL so the app talks to the compose service name,
+      # not localhost (which doesn't resolve across the Docker network).
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/app

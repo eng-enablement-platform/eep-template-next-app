@@ -18,7 +18,29 @@ import { exampleItemsTable } from '../src/db/schema';
 
 config({ path: '.env.local' });
 
+/*
+ * Parse the host out of DATABASE_URL so it's obvious which DB is being hit.
+ * Catches the classic footgun of pointing at a cloud DB (e.g. Neon) while
+ * expecting to hit local Docker Postgres, or vice versa.
+ */
+function getDatabaseHost(): string {
+  const url = process.env.DATABASE_URL;
+  if (!url) return 'unknown (DATABASE_URL not set)';
+  try {
+    return new URL(url).hostname;
+  } catch {
+    return 'unknown (could not parse DATABASE_URL)';
+  }
+}
+
 async function smokeCheck(): Promise<void> {
+  const host = getDatabaseHost();
+  const isLocal =
+    host === 'localhost' || host === '127.0.0.1' || host === 'postgres';
+  console.log(
+    `Connecting to: ${host} ${isLocal ? '(local)' : '(remote — make sure this is intentional)'}`,
+  );
+
   const pool = buildPool();
   try {
     const db = drizzle(pool, { schema: { exampleItemsTable } });

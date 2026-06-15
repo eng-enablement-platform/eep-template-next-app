@@ -1,0 +1,96 @@
+{
+  // ─── EEP Template — Next.js devcontainer ────────────────────────────────────
+  // Opens a zero-setup environment in VS Code / Cursor / GitHub Codespaces.
+  //
+  // What you get:
+  //   • Node 24 + pnpm (matches .nvmrc and engines field)
+  //   • Python 3.14 + uv + Graphviz  (for regenerating diagrams/)
+  //   • Postgres 17 as a compose service  (matches docker-compose.yml)
+  //   • Zsh + Oh My Zsh with autosuggestions, syntax-highlighting, history-search
+  //   • Full VS Code extension set pre-installed
+  //
+  // First-time setup after the container starts:
+  //   1. Copy .env.local_template → .env.local and fill in your Clerk keys.
+  //   2. DATABASE_URL is auto-overridden to point at the Postgres service —
+  //      no change needed for local dev.
+  //   3. Run `pnpm dev` to start the app on :3000.
+  // ────────────────────────────────────────────────────────────────────────────
+
+  "name": "eep-template-next-app",
+
+  // Reuse the existing docker-compose.yml so Postgres spins up automatically
+  // as a sibling service. The "app" service below is the devcontainer itself.
+  "dockerComposeFile": ["../docker-compose.yml", "docker-compose.extend.yml"],
+  "service": "app",
+  "workspaceFolder": "/workspaces/eep-template-next-app",
+
+  "features": {
+    // Node 24 + pnpm via corepack
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "24.16.0",
+      "pnpmVersion": "latest"
+    },
+    // Python 3.14 for diagrams/
+    "ghcr.io/devcontainers/features/python:1": {
+      "version": "3.14"
+    },
+    // Zsh + Oh My Zsh (terminal UX you're keeping from the original)
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "installZsh": true,
+      "installOhMyZsh": true,
+      "configureZshAsDefaultShell": true,
+      "upgradePackages": true
+    }
+  },
+
+  // Runs once when the container is first created.
+  // Installs: project deps, uv, Graphviz, and the three Zsh plugins.
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
+
+  // Runs every time the container starts.
+  // Sets git safe.directory and wires DATABASE_URL to the compose service name.
+  "postStartCommand": "bash .devcontainer/post-start.sh",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        // TypeScript / JS
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        // Tailwind
+        "bradlc.vscode-tailwindcss",
+        // Testing
+        "ms-playwright.playwright",
+        "vitest.explorer",
+        // Git
+        "eamodio.gitlens",
+        // Python (for diagrams/)
+        "ms-python.python",
+        "charliermarsh.ruff",
+        // Icons + theme
+        "pkief.material-icon-theme",
+        // Misc DX
+        "streetsidesoftware.code-spell-checker",
+        "usernamehw.errorlens"
+      ],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "zsh",
+        "terminal.integrated.profiles.linux": {
+          "zsh": {
+            "path": "/bin/zsh"
+          }
+        },
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "[typescript]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode"
+        },
+        "[typescriptreact]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode"
+        }
+      }
+    }
+  },
+
+  "remoteUser": "vscode"
+}
