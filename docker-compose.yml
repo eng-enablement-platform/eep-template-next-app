@@ -6,7 +6,7 @@
 #
 #   docker compose up -d      # start
 #   docker compose down       # stop (keeps data volume)
-#   docker compose down -v     # stop and wipe data
+#   docker compose down -v    # stop and wipe data
 
 services:
   postgres:
