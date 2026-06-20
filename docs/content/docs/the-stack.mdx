@@ -2,3 +2,262 @@
 title: The Stack
 description: Every technology in this template, why it's here, and how it connects.
 ---
+
+---
+
+## Framework
+
+### Next.js
+
+[Next.js](https://nextjs.org/docs) is the application framework. We use the App
+Router with React Server Components and a strict three-layer architecture
+(`components/`, `app/api/`, `classes/`). The `app/` directory holds only
+Next.js file-convention files (`page.tsx`, `layout.tsx`, `error.tsx`) — all
+real components live in `components/`.
+
+### React
+
+[React](https://react.dev/) handles UI rendering. We use named exports, function
+declarations for components, and arrow functions for callbacks. No default
+exports except where Next.js requires them.
+
+### TypeScript
+
+[TypeScript](https://www.typescriptlang.org/) is strict throughout. We default
+to `type` for all declarations and reach for `interface` only when declaration
+merging is genuinely needed. `import type` is enforced for type-only imports.
+
+---
+
+## Styling
+
+### Tailwind CSS
+
+[Tailwind CSS](https://tailwindcss.com/docs) is the only styling mechanism, no CSS modules, no styled-components
+
+### shadcn/ui
+
+[shadcn/ui](https://ui.shadcn.com/) provides unstyled, accessible component
+primitives copied directly into `src/components/ui/` and owned by the project.
+
+### Radix UI
+
+[Radix UI](https://www.radix-ui.com/) is the headless primitive layer that backs
+shadcn/ui. Provides focus management, keyboard navigation, and ARIA roles
+without styling opinions.
+
+### Lucide React
+
+[Lucide React](https://lucide.dev/) is the SVG icon library used throughout the
+UI for consistent iconography.
+
+### tw-animate-css
+
+[tw-animate-css](https://github.com/joe-bell/tw-animate-css) is a thin Tailwind
+plugin that maps `animate-*` utilities to CSS `@keyframes`, keeping animation
+tokens in the same layer as everything else.
+
+### tailwind-merge & clsx
+
+[clsx](https://github.com/lukeed/clsx) composes conditional class strings;
+[tailwind-merge](https://github.com/dcastil/tailwind-merge) resolves Tailwind
+class conflicts so the last value wins. Both are wrapped in the `cn()` utility
+at `src/utils/tailwind-merge.ts`.
+
+### class-variance-authority
+
+[class-variance-authority](https://cva.style/) provides a type-safe variant API
+used by shadcn/ui components to define button, badge, and other variant sets as
+typed config objects rather than ad-hoc class strings.
+
+### next-themes
+
+[next-themes](https://github.com/pacocoursey/next-themes) handles light/dark
+mode by injecting a `class` on `<html>` to drive Tailwind's `dark:` utilities,
+persisted to `localStorage` across reloads.
+
+---
+
+## Authentication
+
+### Clerk
+
+[Clerk](https://clerk.com/docs) is the external auth provider handling sign-up,
+sign-in, session management, and user profiles.
+
+---
+
+## Database
+
+### Drizzle ORM
+
+[Drizzle ORM](https://orm.drizzle.team/docs) is the type-safe query builder and
+migration runner.
+
+### PostgreSQL
+
+[PostgreSQL](https://www.postgresql.org/) (via the [`pg`](https://node-postgres.com/)
+driver) is the backing database. Locally it runs in Docker; production uses the
+same driver pointed at a hosted provider via `DATABASE_URL`.
+[Neon](https://neon.tech/) is the recommended production option, serverless
+Postgres with branch-per-PR support.
+
+### Drizzle Kit
+
+[Drizzle Kit](https://orm.drizzle.team/kit-docs) is the CLI companion for
+generating SQL migration files (`pnpm db:generate`) and running Drizzle Studio
+(`pnpm db:studio`).
+
+---
+
+## API & Validation
+
+### Zod
+
+[Zod](https://zod.dev/) handles runtime validation at every boundary: route
+handlers, server actions, and environment variables. Schemas live in
+`src/validation/`, one file per domain, and are shared between the read route
+and the write action so they can never drift.
+
+### zod-openapi
+
+[zod-openapi](https://github.com/samchungy/zod-openapi) generates an OpenAPI
+3.1 spec from the same Zod schemas used for validation — no duplicate schema
+definitions, the spec is always in sync.
+
+### swagger-ui-dist
+
+[swagger-ui-dist](https://swagger.io/tools/swagger-ui/) serves the generated
+OpenAPI spec as an interactive UI at `/api-docs`, copied into `public/` at build
+time via `scripts/copy-swagger-ui.ts`.
+
+---
+
+## Data Fetching & State
+
+### SWR
+
+[SWR](https://swr.vercel.app/) handles all client-side data fetching. Every API
+call from the browser goes through a SWR hook in `src/hooks/`. Never
+`useEffect` for fetching — SWR provides deduplication, revalidation, and a
+consistent loading/error pattern.
+
+### Zustand
+
+[Zustand](https://zustand.pmnd.rs/) manages UI state that doesn't belong in a
+server fetch: modals, selections, ephemeral form state. Stores live in
+`src/store/`, one file per domain. See `src/store/counter-store.ts` for the
+reference shape.
+
+---
+
+## Logging
+
+### Winston — v3
+
+[Winston](https://github.com/winstonjs/winston) handles all structured
+server-side logging via `rootLogger` in `src/classes/loggers/application/`.
+Every log line carries a `logSource` (`api`, `action`, `service`) so logs can
+be filtered by architectural layer. See [Logging conventions](/docs/conventions/logging).
+
+---
+
+## Testing
+
+### Vitest
+
+[Vitest](https://vitest.dev/) is the unit and integration test runner, configured
+with the jsdom environment for component tests. It replaced Jest — same
+`@testing-library/*` API, significantly faster, and native to the ESM module
+graph.
+
+### React Testing Library & user-event
+
+[React Testing Library](https://testing-library.com/) and
+[user-event](https://testing-library.com/docs/user-event/intro/) are used to
+test behaviour (decisions, branches, state changes), not appearance.
+`user-event` simulates realistic user interactions rather than direct DOM events.
+
+### @testing-library/jest-dom
+
+[@testing-library/jest-dom](https://github.com/testing-library/jest-dom) adds
+readable Vitest matchers (`toBeInTheDocument`, `toHaveClass`, etc.), bootstrapped
+in `vitest.setup.ts`.
+
+### Playwright
+
+[Playwright](https://playwright.dev/) runs end-to-end tests in `e2e-tests/`,
+covering full user flows against a running app. Run with `pnpm e2e`.
+
+---
+
+## Code Quality
+
+### ESLint
+
+[ESLint](https://eslint.org/) handles static analysis via flat config in
+`eslint.config.ts`. Key plugins: `eslint-plugin-tsdoc` (enforces TSDoc),
+`eslint-plugin-import` + `simple-import-sort` (import hygiene),
+`@stylistic/eslint-plugin` (comment style rules), and a local
+`single-line-comment-style` rule.
+
+### Prettier
+
+[Prettier](https://prettier.io/) is the opinionated formatter, running on all
+staged files via lint-staged. `prettier-plugin-tailwindcss` sorts Tailwind
+class strings automatically.
+
+### Husky & lint-staged
+
+[Husky](https://typicode.github.io/husky/) and
+[lint-staged](https://github.com/lint-staged/lint-staged) power the pre-commit
+hook. On `.ts/.tsx` changes the full `tsc --noEmit`, test suite, and build run.
+Use `SKIP_CHECKS=1 git commit` only for intentional WIP.
+
+---
+
+## Tooling
+
+### Fumadocs
+
+[Fumadocs](https://fumadocs.vercel.app/) is the documentation framework
+powering this site. MDX-based with full-text search and a clean default theme.
+Lives in `docs/` as a separate pnpm workspace package.
+
+### pnpm
+
+[pnpm](https://pnpm.io/) is the package manager. Workspace-aware with `docs/`
+as a separate package — faster installs and stricter hoisting than npm or yarn.
+
+### tsx
+
+[tsx](https://github.com/privatenumber/tsx) runs TypeScript files directly
+without a compile step. Used by all `scripts/*.ts` and `src/db/*.ts` entry
+points (migrations, seed, smoke check).
+
+### TSDoc
+
+[TSDoc](https://tsdoc.org/) is the documentation annotation standard for
+TypeScript. All public symbols are documented with `/** */` blocks, enforced by
+the ESLint `tsdoc` plugin on pre-commit. See [Code Style](/docs/conventions/code-style)
+for the canonical shape.
+
+### concurrently
+
+[concurrently](https://github.com/open-cli-tools/concurrently) runs the app and
+docs dev servers in parallel via `pnpm dev:all` with colour-coded output per
+process.
+
+### Sonner
+
+[Sonner](https://sonner.emilkowal.ski/) is the toast notification library, wired
+in `src/components/common/toast.tsx` and provided at the app root for
+non-blocking user feedback on mutations.
+
+### dotenv
+
+[dotenv](https://github.com/motdotla/dotenv) loads `.env.local` for scripts
+running outside the Next.js context. Next.js handles `.env` loading natively for
+the app itself.
+
+---
