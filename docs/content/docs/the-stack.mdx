@@ -12,8 +12,8 @@ description: Every technology in this template, why it's here, and how it connec
 [Next.js](https://nextjs.org/docs) is the application framework. We use the App
 Router with React Server Components and a strict three-layer architecture
 (`components/`, `app/api/`, `classes/`). The `app/` directory holds only
-Next.js file-convention files (`page.tsx`, `layout.tsx`, `error.tsx`) — all
-real components live in `components/`.
+Next.js file-convention files (`page.tsx`, `layout.tsx`, `error.tsx`). All
+main components live in `components/`.
 
 ### React
 
@@ -33,7 +33,8 @@ merging is genuinely needed. `import type` is enforced for type-only imports.
 
 ### Tailwind CSS
 
-[Tailwind CSS](https://tailwindcss.com/docs) is the only styling mechanism, no CSS modules, no styled-components
+[Tailwind CSS](https://tailwindcss.com/docs) is the only styling mechanism — no
+CSS modules, no styled-components.
 
 ### shadcn/ui
 
@@ -99,7 +100,7 @@ migration runner.
 [PostgreSQL](https://www.postgresql.org/) (via the [`pg`](https://node-postgres.com/)
 driver) is the backing database. Locally it runs in Docker; production uses the
 same driver pointed at a hosted provider via `DATABASE_URL`.
-[Neon](https://neon.tech/) is the recommended production option, serverless
+[Neon](https://neon.tech/) is the recommended production option — serverless
 Postgres with branch-per-PR support.
 
 ### Drizzle Kit
@@ -153,7 +154,7 @@ reference shape.
 
 ## Logging
 
-### Winston — v3
+### Winston
 
 [Winston](https://github.com/winstonjs/winston) handles all structured
 server-side logging via `rootLogger` in `src/classes/loggers/application/`.
@@ -234,6 +235,9 @@ as a separate package — faster installs and stricter hoisting than npm or yarn
 [tsx](https://github.com/privatenumber/tsx) runs TypeScript files directly
 without a compile step. Used by all `scripts/*.ts` and `src/db/*.ts` entry
 points (migrations, seed, smoke check).
+[npx](https://docs.npmjs.com/cli/v10/commands/npx) (the Node package runner)
+is the recommended way to run a script one-off: `npx tsx ./scripts/<script>.ts`
+— it resolves `tsx` from local `node_modules` without needing a global install.
 
 ### TSDoc
 
@@ -241,6 +245,19 @@ points (migrations, seed, smoke check).
 TypeScript. All public symbols are documented with `/** */` blocks, enforced by
 the ESLint `tsdoc` plugin on pre-commit. See [Code Style](/docs/conventions/code-style)
 for the canonical shape.
+
+### Diagrams
+
+[Diagrams](https://diagrams.mingrammer.com/) is a Python library for generating
+the architecture diagram as code. The definition lives in `diagrams/main.py`
+and outputs `architecture.png`. Run it with `uv run python main.py` from the
+`diagrams/` directory.
+
+### uv
+
+[uv](https://docs.astral.sh/uv/) is a fast Python package manager used solely
+to run the diagrams script. It handles the Python environment and dependencies
+in `diagrams/pyproject.toml` without needing a manual `venv` setup.
 
 ### concurrently
 
@@ -261,3 +278,22 @@ running outside the Next.js context. Next.js handles `.env` loading natively for
 the app itself.
 
 ---
+
+## Development Environment
+
+### Docker Desktop / Rancher Desktop
+
+[Docker Desktop](https://www.docker.com/products/docker-desktop/) and
+[Rancher Desktop](https://rancherdesktop.io/) are both supported for running
+the local Postgres container. Rancher Desktop is free and works well on Apple
+Silicon; Docker Desktop requires a paid licence for larger teams. Either
+provides the `docker` CLI needed for `docker compose up -d`.
+
+### Dev Containers
+
+[Dev Containers](https://containers.dev/) provide a fully configured,
+reproducible development environment inside a Docker container. The
+configuration lives in `.devcontainer/` — it installs Postgres 17, pnpm, uv,
+and all project dependencies automatically on first start. Open the project in
+VS Code and choose **Reopen in Container** to get a working environment without
+any manual setup.
