@@ -1,9 +1,8 @@
 /**
- * Adds two numbers together.
+ * EXAMPLE UTILITY
  *
- * Exists purely as a reference example for the testing and learning patterns
- * in this template (co-located `__tests__`, arrow-function utilities, TSDoc) —
- * it is not a genuine utility intended for production use.
+ * Adds two numbers together. Exists to demonstrate co-located tests,
+ * arrow-function utilities, and TSDoc — not a production utility.
  *
  * @param a - the first addend
  * @param b - the second addend

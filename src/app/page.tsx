@@ -3,6 +3,7 @@ import { BookOpen, FileText } from 'lucide-react';
 import { ThemeToggle } from '@/components/common/theme-toggle';
 import { Counter } from '@/components/features/counter';
 import { HomeProfile } from '@/components/features/home-profile';
+import { Posts } from '@/components/features/posts';
 import { Button } from '@/components/ui/button';
 
 /**
@@ -70,6 +71,13 @@ export default function Home() {
 
         <div className='border-border bg-card/50 mt-2 w-full rounded-xl border p-8 shadow-md backdrop-blur-sm'>
           <Counter />
+        </div>
+
+        <div className='border-border bg-card/50 w-full rounded-xl border p-8 shadow-md backdrop-blur-sm'>
+          <p className='text-muted-foreground mb-4 text-xs font-medium tracking-wide uppercase'>
+            Recent posts (SWR example)
+          </p>
+          <Posts />
         </div>
       </main>
     </div>

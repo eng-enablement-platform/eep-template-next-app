@@ -6,6 +6,7 @@ import type { ReactNode } from 'react';
 
 import { ErrorBoundary } from '@/components/common/error-boundary';
 import { Spinner } from '@/components/common/loading';
+import { Providers } from '@/components/providers';
 
 type RootLayoutClientProps = {
   children: ReactNode;
@@ -22,7 +23,10 @@ type RootLayoutClientProps = {
  *     next/navigation's redirect() because, in a client component, it throws
  *     the NEXT_REDIRECT control-flow exception during render.
  *   - Signed-in users get the app, wrapped in an error boundary.
+ *   - <Providers> mounts all client-side providers.
+ *     New providers get added to components/providers/index.tsx.
  */
+
 export function RootLayoutClient({ children }: RootLayoutClientProps) {
   const pathname = usePathname();
   const { isLoaded, isSignedIn } = useUser();
@@ -42,5 +46,9 @@ export function RootLayoutClient({ children }: RootLayoutClientProps) {
     return <RedirectToSignIn />;
   }
 
-  return <ErrorBoundary>{children}</ErrorBoundary>;
+  return (
+    <Providers>
+      <ErrorBoundary>{children}</ErrorBoundary>
+    </Providers>
+  );
 }

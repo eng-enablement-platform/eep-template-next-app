@@ -1,9 +1,8 @@
 import { create } from 'zustand';
 
 /*
- * Reference store demonstrating the Zustand pattern used across this template.
- * It exists for testing and learning — it is not a genuine store intended for
- * production use.
+ * EXAMPLE STORE — demonstrates the Zustand pattern used across this template.
+ * Exists for testing and learning, not production use.
  *
  * Type pattern: split the data shape (`CounterState`) from the behaviours
  * (`CounterActions`), then intersect them into the public store type
@@ -45,7 +44,9 @@ export const defaultCounterState: CounterState = {
 const ASYNC_INCREMENT_DELAY_MS = 300;
 
 /**
- * Reference counter store.
+ * EXAMPLE STORE
+ *
+ * A minimal counter demonstrating the Zustand store pattern.
  *
  * @example
  * ```tsx

@@ -466,7 +466,50 @@ All code documented with TSDoc. Keep it lean — focus on the _why_, not the
 _what_. Contextual knowledge ("this exists because…") beats mechanical
 description ("this function does X"). No verbose prose or pointless waffle.
 
+**Example / reference code** — any file that exists to demonstrate a pattern
+rather than serve a real feature must open its TSDoc with `EXAMPLE <TYPE>` as
+the first line, where `<TYPE>` is the kind of thing it is (capitalised):
+
+```ts
+/**
+ * EXAMPLE COMPONENT
+ * ...
+ */
+
+/**
+ * EXAMPLE HOOK
+ * ...
+ */
+
+/**
+ * EXAMPLE STORE
+ * ...
+ */
+
+/**
+ * EXAMPLE UTILITY
+ * ...
+ */
+```
+
+This makes example files grep-able and immediately obvious to any reader.
+Never use prose variants like "This is an example", "Reference store", or
+"Exists purely as a reference" — the `EXAMPLE <TYPE>` prefix is the only
+approved form.
+
 **Methods** document purpose, business context, `@param`, and `@returns`.
+
+**Hooks and utility functions** follow the same shape as methods: purpose/context
+sentence, `@param` for every parameter, `@returns` describing the return value,
+and one `@example`. The `jsdoc/require-returns` ESLint rule enforces `@returns`
+on all exported functions — omitting it is a lint error. Keep the description
+concise: one line stating _what_ is returned is enough unless the shape needs
+explaining.
+
+<!-- TODO: AGENTS.md refinement pass — expand this section with a concrete
+hook example (analogous to the component example below) and verify the full
+TSDoc rule set (require-param, require-returns, require-example) is documented
+here so agents have a single authoritative reference. -->
 
 **Components** follow one canonical shape — a one-line _what_, a sentence or two
 of _why it exists / when to use it_, `@param` notes for any **non-obvious**

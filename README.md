@@ -338,8 +338,11 @@ pnpm dev:all    # app + docs on :3000 and :3001
 
 - Think about testing hooks and checking if api routes they call get removed (had that issue before where i deleted an api route but it never got flagged even though the hook was using it)
 - add https://storybook.js.org/ or https://ladle.dev/docs/setup
-- ~~diagrams library~~ ✅
-- dev containers
 - base components + design system (optional strip-out)
 - AGENTS.md refinement
-- docs content (EEP philosophy, architecture, decisions per layer)
+- Wire up SWR example
+- docs content (EEP philosophy, architecture, decisions per layer) - IN PROGRESS
+- Example code: SWR, Zustand, Hooks, mention for most CRUD apps this server layer is perfect (
+  may not be approrpiate form more complext applcitiations etc.
+  )
+- Scripts / Docker / DB notes (where to put these, in the README, in the code or in the docs site?)

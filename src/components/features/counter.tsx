@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useCounterStore } from '@/store/counter-store';
 
 /**
- * This is an EXAMPLE component.
+ * EXAMPLE COMPONENT
  *
  * A minimal counter wired to `useCounterStore`.
  * Demonstrates how a client component consumes a Zustand store.
