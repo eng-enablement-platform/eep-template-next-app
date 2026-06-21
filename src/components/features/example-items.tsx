@@ -42,6 +42,7 @@ import {
  *
  * In practice the browser input already gives us a real number via `valueAsNumber`
  * before Zod ever runs, so there is no actual problem — just a TypeScript mismatch.
+ *
  * We define local form types with `quantity: number`
  * and cast the resolver to match them.
  */
