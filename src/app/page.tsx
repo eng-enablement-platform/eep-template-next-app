@@ -7,7 +7,9 @@ import { Posts } from '@/components/features/posts';
 import { Button } from '@/components/ui/button';
 
 /**
- * EXAMPLE ENTRY POINT — replace this with your real landing page.
+ * EXAMPLE ENTRY POINT
+ *
+ * Replace this with your real landing page.
  */
 export default function Home() {
   return (

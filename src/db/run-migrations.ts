@@ -11,8 +11,8 @@ config({ path: '.env.local' });
  * Run Drizzle migrations against the database described by `DATABASE_URL`.
  *
  * Constructs an explicit `pg.Pool` (via `buildPool`) and tears it down before
- * exit so the process terminates cleanly. Runs outside Next.js, so it loads
- * `.env.local` itself via `dotenv`.
+ * exit so the process terminates cleanly.
+ *
  */
 export async function runMigrations() {
   const pool = buildPool();

@@ -3,7 +3,7 @@
 import { UserButton, useUser } from '@clerk/nextjs';
 
 /**
- * This is an EXAMPLE component.
+ * EXAMPLE COMPONENT.
  *
  * Signed-in welcome card for the home page
  *

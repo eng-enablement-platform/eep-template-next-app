@@ -11,17 +11,13 @@ import type {
 } from '@/validation/example-item';
 
 /**
- * Example Item Service
+ * EXAMPLE SERVICE CLASS
  *
  * The reference domain service for the template. All `example_items` business
  * logic lives here behind a small, typed surface — routes and server actions
  * call these methods rather than touching Drizzle directly, so the data-access
  * pattern is defined in exactly one place.
  *
- * It is a stateless, app-lifetime collaborator (a configured gateway to the
- * database), so it is exported as a singleton. It resolves the Drizzle instance
- * lazily on each call via `getDb()`, so importing this module never opens a
- * connection pool at build time.
  */
 class ExampleItemService {
   /**

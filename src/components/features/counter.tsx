@@ -7,7 +7,6 @@ import { useCounterStore } from '@/store/counter-store';
  * EXAMPLE COMPONENT
  *
  * A minimal counter wired to `useCounterStore`.
- * Demonstrates how a client component consumes a Zustand store.
  *
  * @example
  * ```tsx

@@ -340,9 +340,20 @@ pnpm dev:all    # app + docs on :3000 and :3001
 - add https://storybook.js.org/ or https://ladle.dev/docs/setup
 - base components + design system (optional strip-out)
 - AGENTS.md refinement
-- Wire up SWR example
+- ~~Wire up SWR example~~ (done — `use-posts` / `posts.tsx` / `src/types/post.ts`)
 - docs content (EEP philosophy, architecture, decisions per layer) - IN PROGRESS
 - Example code: SWR, Zustand, Hooks, mention for most CRUD apps this server layer is perfect (
   may not be approrpiate form more complext applcitiations etc.
   )
+- docs/conventions: good worked example for the Constants rules — `JSONPLACEHOLDER_BASE_URL`,
+  `POSTS_LIMIT`, and `POSTS_KEY` in `hooks/use-posts.ts` stay co-located because they have a
+  single consumer. They'd only move to `config/constants/` if a second module needed the same
+  base URL. Reference this when writing the constants/folder-structure section of the conventions
+  docs.
+- docs/conventions: good worked example for the Types rules — `Post` in `src/types/post.ts`
+  illustrates when a type earns `src/types/` vs staying inline. Two consumers in unrelated
+  layers (`hooks/use-posts.ts` + `components/features/posts.tsx`) + passes the domain smell
+  test (type survives deleting the component) = lives in `src/types/`. Reference this when
+  writing the types section of the conventions docs.
 - Scripts / Docker / DB notes (where to put these, in the README, in the code or in the docs site?)
+- We need to think about dependency management, how we keep this constantly up to date and reviewed

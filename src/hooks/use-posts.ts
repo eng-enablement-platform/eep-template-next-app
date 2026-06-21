@@ -6,22 +6,12 @@ import type { Post } from '@/types/post';
  * EXAMPLE HOOK
  *
  * Demonstrates the SWR hook pattern used across this template.
- * It exists for learning — it is not intended for production use.
+ * It exists for learning — not intended for production use.
  *
- * Pattern:
- *  1. The hook owns its key and return type — callers never touch SWR directly.
- *  2. The fetcher is omitted because `SwrProvider` registers it globally.
- *  3. Loading and error states are surfaced explicitly so the component can
- *     branch on them without importing SWR itself.
  */
 
-/** Base URL for the JSONPlaceholder API used in this reference example. */
 const JSONPLACEHOLDER_BASE_URL = 'https://jsonplaceholder.typicode.com';
-
-/** Number of posts fetched by the reference hook. */
-const POSTS_LIMIT = 5;
-
-/** SWR key for the posts list — a stable string used to cache and dedupe. */
+const POSTS_LIMIT = 3;
 const POSTS_KEY = `${JSONPLACEHOLDER_BASE_URL}/posts?_limit=${POSTS_LIMIT}`;
 
 type UsePostsReturn = {

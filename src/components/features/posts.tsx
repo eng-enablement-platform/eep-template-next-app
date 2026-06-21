@@ -6,8 +6,6 @@ import { usePosts } from '@/hooks/use-posts';
  * EXAMPLE COMPONENT
  *
  * Renders a short list of posts fetched via the `usePosts` SWR hook.
- * Demonstrates how a client component consumes a data-fetching hook,
- * handling loading and error states before rendering data.
  *
  * @example
  * ```tsx

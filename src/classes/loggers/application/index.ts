@@ -4,9 +4,8 @@ import winston, { type Logger } from 'winston';
 
 /**
  * The layer a log line originated from. Sources are the architectural layers
- * (not concerns like `auth` or `db`) so that `logSource` always maps 1:1 to a
- * folder. Follow a layer in the logs with
- * e.g. `grep '"logSource":"action"' .logs/winston-combined.log`.
+ * so that `logSource` always maps 1:1 to a folder.
+ * Follow a layer in the logs with: `grep '"logSource":"action"' .logs/winston-combined.log`.
  *
  * For the specific module or concern, pass a free-form field on the log call
  * itself (e.g. `logger.error({ scope: 'auth', ... })`) rather than inventing a

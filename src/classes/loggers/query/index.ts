@@ -7,10 +7,10 @@ import { type Logger } from 'drizzle-orm/logger';
  *
  * This is a developer diagnostic, not part of the structured `logSource`
  * contract — it dumps raw SQL and params to the console so you can watch
- * queries and mutations live while building. It is intentionally noisy, so it
- * is off by default and only fires when `DB_QUERY_LOG=1`. DB *errors* that you
- * want greppable belong in the structured logger at the calling layer (action
- * or service), not here.
+ * queries and mutations live while building.
+ *
+ * It is intentionally noisy, so it is off by default and
+ * only fires when `DB_QUERY_LOG=1`.
  */
 class QueryLogger implements Logger {
   /**

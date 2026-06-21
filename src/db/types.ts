@@ -5,7 +5,8 @@ import type { exampleItemsTable } from './schema';
  *
  * Inferred row types for the schema tables. Drizzle derives these directly
  * from the table definitions in `schema.ts`, so they stay in lockstep with the
- * columns — never hand-maintain a parallel interface.
+ * columns
+ *
  */
 
 /**

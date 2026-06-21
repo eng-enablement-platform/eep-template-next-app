@@ -11,13 +11,8 @@ import * as schema from './schema';
  * Database Module
  *
  * Sets up the Drizzle ORM database connection using the `node-postgres`
- * driver. Environment variables are loaded by Next.js's native `.env.local`
- * loader at process boot, so no explicit `dotenv.config()` call is needed in
- * the app runtime. Standalone tsx scripts (e.g. `src/db/run-migrations.ts`)
- * load `dotenv` themselves since they run outside Next's env loader.
+ * driver.
  *
- * The full `schema` is passed so the relational query API
- * (`db.query.<table>.findMany({ with: { ... } })`) is available.
  */
 
 function getDrizzle() {
