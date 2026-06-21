@@ -1,8 +1,6 @@
 ---
-title: The Stack
+title: Tools & Technologies
 description: Every technology in this template, why it's here, and how it connects.
----
-
 ---
 
 ## Framework
@@ -11,9 +9,7 @@ description: Every technology in this template, why it's here, and how it connec
 
 [Next.js](https://nextjs.org/docs) is the application framework. We use the App
 Router with React Server Components and a strict three-layer architecture
-(`components/`, `app/api/`, `classes/`). The `app/` directory holds only
-Next.js file-convention files (`page.tsx`, `layout.tsx`, `error.tsx`). All
-main components live in `components/`.
+(`components/`, `app/api/`, `classes/`).
 
 ### React
 
@@ -100,8 +96,7 @@ migration runner.
 [PostgreSQL](https://www.postgresql.org/) (via the [`pg`](https://node-postgres.com/)
 driver) is the backing database. Locally it runs in Docker; production uses the
 same driver pointed at a hosted provider via `DATABASE_URL`.
-[Neon](https://neon.tech/) is the recommended production option — serverless
-Postgres with branch-per-PR support.
+[Neon](https://neon.tech/) is the recommended production option.
 
 ### Drizzle Kit
 
@@ -123,8 +118,7 @@ and the write action so they can never drift.
 ### zod-openapi
 
 [zod-openapi](https://github.com/samchungy/zod-openapi) generates an OpenAPI
-3.1 spec from the same Zod schemas used for validation — no duplicate schema
-definitions, the spec is always in sync.
+3.1 spec from the same Zod schemas used for validation.
 
 ### swagger-ui-dist
 
@@ -139,9 +133,7 @@ time via `scripts/copy-swagger-ui.ts`.
 ### SWR
 
 [SWR](https://swr.vercel.app/) handles all client-side data fetching. Every API
-call from the browser goes through a SWR hook in `src/hooks/`. Never
-`useEffect` for fetching — SWR provides deduplication, revalidation, and a
-consistent loading/error pattern.
+call from the browser goes through a SWR hook in `src/hooks/`.
 
 ### Zustand
 
@@ -168,9 +160,7 @@ be filtered by architectural layer. See [Logging conventions](/docs/conventions/
 ### Vitest
 
 [Vitest](https://vitest.dev/) is the unit and integration test runner, configured
-with the jsdom environment for component tests. It replaced Jest — same
-`@testing-library/*` API, significantly faster, and native to the ESM module
-graph.
+with the jsdom environment for component tests.
 
 ### React Testing Library & user-event
 
@@ -205,8 +195,7 @@ covering full user flows against a running app. Run with `pnpm e2e`.
 ### Prettier
 
 [Prettier](https://prettier.io/) is the opinionated formatter, running on all
-staged files via lint-staged. `prettier-plugin-tailwindcss` sorts Tailwind
-class strings automatically.
+staged files via lint-staged.
 
 ### Husky & lint-staged
 
@@ -222,13 +211,11 @@ Use `SKIP_CHECKS=1 git commit` only for intentional WIP.
 ### Fumadocs
 
 [Fumadocs](https://fumadocs.vercel.app/) is the documentation framework
-powering this site. MDX-based with full-text search and a clean default theme.
-Lives in `docs/` as a separate pnpm workspace package.
+powering this site.
 
 ### pnpm
 
-[pnpm](https://pnpm.io/) is the package manager. Workspace-aware with `docs/`
-as a separate package — faster installs and stricter hoisting than npm or yarn.
+[pnpm](https://pnpm.io/) is the package manager.
 
 ### tsx
 
@@ -236,8 +223,7 @@ as a separate package — faster installs and stricter hoisting than npm or yarn
 without a compile step. Used by all `scripts/*.ts` and `src/db/*.ts` entry
 points (migrations, seed, smoke check).
 [npx](https://docs.npmjs.com/cli/v10/commands/npx) (the Node package runner)
-is the recommended way to run a script one-off: `npx tsx ./scripts/<script>.ts`
-— it resolves `tsx` from local `node_modules` without needing a global install.
+is the recommended way to run a script one-off: `npx tsx ./scripts/<script>.ts`.
 
 ### TSDoc
 
