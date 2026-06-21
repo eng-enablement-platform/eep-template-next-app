@@ -340,10 +340,9 @@ pnpm dev:all    # app + docs on :3000 and :3001
 - add https://storybook.js.org/ or https://ladle.dev/docs/setup
 - base components + design system (optional strip-out)
 - AGENTS.md refinement
-- ~~Wire up SWR example~~ (done — `use-posts` / `posts.tsx` / `src/types/post.ts`)
 - docs content (EEP philosophy, architecture, decisions per layer) - IN PROGRESS
 - Example code: SWR, Zustand, Hooks, mention for most CRUD apps this server layer is perfect (
-  may not be approrpiate form more complext applcitiations etc.
+  may not be approrpiate form more complex applcitiations etc.
   )
 - docs/conventions: good worked example for the Constants rules — `JSONPLACEHOLDER_BASE_URL`,
   `POSTS_LIMIT`, and `POSTS_KEY` in `hooks/use-posts.ts` stay co-located because they have a

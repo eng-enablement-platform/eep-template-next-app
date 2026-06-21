@@ -15,3 +15,76 @@ description: The three-layer system, how they interact, and where things live.
     <div className='absolute inset-0 rounded-xl bg-blue-400/0 transition-colors duration-200 group-hover:bg-blue-400/10' />
   </a>
 </div>
+
+The template is built on three strict layers. Each layer has one job, and the
+boundaries between them are enforced by convention and, where possible, by the
+compiler.
+
+## The three layers
+
+### Client — `components/`, `hooks/`, `store/`
+
+Everything the browser runs.
+
+- All data fetching goes through SWR hooks in `hooks/`
+- All client state goes through Zustand stores in `store/`
+- Components are purely presentational, they receive
+  data and call handlers
+
+### Server — `classes/`
+
+All business logic lives here, and only here.
+
+- Services in
+  `classes/services/<domain>/` are `server-only`, they can never be imported by
+  client code.
+- Services own all data-access logic (Drizzle queries, third-party API calls)
+- Services expose a small typed surface to the API layer
+
+### API — `app/api/`, `actions/`
+
+The boundary between the browser and the server. Route handlers in `app/api/` own reads and any writes from external callers
+(webhooks, cron jobs, third-party clients). Server actions in `actions/` own
+writes from our own UI, typed functions that execute on the server, called
+directly from components with no hand-written `fetch` glue.
+
+- Route handlers own reads and external writes
+- Route handlers and actions call service methods, they never query the database directly
+- Server actions own UI writes (POST/mutations from our own UI). These are preferred over route handlers
+  for these operations, see [Read vs Write](/docs/architecture/read-vs-write) for the full breakdown of why.
+- Both surfaces validate all input with Zod schemas before anything reaches the service layer
+
+## Why this split?
+
+Clear separation of concerns and code reusability! Each layer has one job and one
+place it lives. Business logic never bleeds into route handlers, data access never
+appears in components. That makes the codebase predictable, so you always know where
+to look and where to add something new.
+
+## Where things live
+
+| Concern            | Location                                     | Rule                                                 |
+| ------------------ | -------------------------------------------- | ---------------------------------------------------- |
+| UI components      | `components/common/`, `components/features/` | Never import from `classes/`                         |
+| Data fetching      | `hooks/use-*.ts`                             | SWR only — no `useEffect` fetching                   |
+| Client state       | `store/*-store.ts`                           | Zustand; co-locate types                             |
+| Route handlers     | `app/api/`                                   | Reads + external writes; Zod-validated               |
+| Server actions     | `actions/*-actions.ts`                       | UI writes; same Zod schema as the route              |
+| Business logic     | `classes/services/<domain>/`                 | `server-only`; one folder per domain                 |
+| Error types        | `classes/errors/`                            | Not server-only — thrown from both layers            |
+| Loggers            | `classes/loggers/`                           | Cross-cutting; not server-only                       |
+| Validation schemas | `validation/`                                | One file per domain; shared between route and action |
+| Shared types       | `types/`                                     | Pull up only when consumed across unrelated layers   |
+| Third-party init   | `lib/`                                       | Instantiation and config only                        |
+| App-wide constants | `config/constants/`                          | Shared across multiple modules                       |
+
+## The `app/` boundary
+
+`app/` holds only Next.js file-convention files: `page.tsx`, `layout.tsx`,
+`error.tsx`, `not-found.tsx`, `loading.tsx`, `route.ts`, plus `globals.css` and
+`favicon.ico`. These are reserved filenames the router discovers by location —
+they must live here and nowhere else.
+
+Route files stay thin. A page resolves params and delegates to a real component
+in `components/`; a route handler validates input and delegates to a service.
+No business logic, no Drizzle queries, no component trees live loose in `app/`.
