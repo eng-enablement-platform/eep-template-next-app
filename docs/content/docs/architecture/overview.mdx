@@ -59,27 +59,34 @@ to look and where to add something new.
 
 ### `src/` — application code
 
-| Location                     | What lives here                      | Rule                                                                                                                                        |
-| ---------------------------- | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| `app/`                       | Next.js file-convention files only   | `page.tsx`, `layout.tsx`, `error.tsx`, `not-found.tsx` etc. — thin shells that delegate to `components/` and `classes/`. No business logic. |
-| `app/api/`                   | Route handlers                       | Reads + external writes; Zod-validated at the boundary                                                                                      |
-| `actions/`                   | Server actions                       | UI writes; share the same Zod schema as the route                                                                                           |
-| `components/ui/`             | shadcn primitives                    | Owned by you — edit freely to match your design system                                                                                      |
-| `components/common/`         | Shared UI components                 | Reusable across features; never import from `classes/`                                                                                      |
-| `components/features/`       | Feature-specific components          | Scoped to one feature; never import from `classes/`                                                                                         |
-| `components/providers/`      | Client-side providers                | Compose all providers here; mount in `layout-client.tsx`                                                                                    |
-| `hooks/`                     | SWR data-fetching hooks              | One file per resource (`use-*.ts`); no `useEffect` fetching                                                                                 |
-| `store/`                     | Zustand stores                       | One file per domain; co-locate types                                                                                                        |
-| `classes/services/<domain>/` | Business logic + integrations        | `server-only`; one folder per domain                                                                                                        |
-| `classes/errors/`            | Shared error types                   | Not server-only — thrown from both layers                                                                                                   |
-| `classes/loggers/`           | Logger classes                       | `server-only` — Winston writes to the filesystem (Node.js only)                                                                             |
-| `validation/`                | Zod schemas                          | One file per domain; shared between route and action                                                                                        |
-| `types/`                     | Shared TypeScript types              | Pull up only when consumed across unrelated layers                                                                                          |
-| `lib/`                       | Third-party instantiation            | Config and init only — no business logic                                                                                                    |
-| `config/constants/`          | App-wide constants                   | Only for values shared across multiple modules                                                                                              |
-| `utils/`                     | Shared utility functions             | Pure functions; co-locate tests in `__tests__/`                                                                                             |
-| `db/`                        | Drizzle schema, pool, migrations     | Schema is the source of truth; types inferred from it                                                                                       |
-| `proxy.ts`                   | Next.js middleware (Clerk auth gate) | Lightweight checks only — redirects and session reads                                                                                       |
+<Callout>
+  Tests live in a `__tests__/` subfolder co-located with the code they test —
+  this applies across `components/`, `hooks/`, `store/`, `utils/`, and
+  `validation/`. See [Testing](/docs/conventions/testing) for the full
+  convention.
+</Callout>
+
+| Location                     | What lives here                      | Rule                                                                                                                                                              |
+| ---------------------------- | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `app/`                       | Next.js file-convention files only   | `page.tsx`, `layout.tsx`, `error.tsx`, `not-found.tsx` etc. — thin shells that delegate to `components/` and `classes/`. No business logic.                       |
+| `app/api/`                   | Route handlers                       | Reads + external writes; Zod-validated at the boundary                                                                                                            |
+| `actions/`                   | Server actions                       | UI writes; share the same Zod schema as the route                                                                                                                 |
+| `components/ui/`             | shadcn primitives                    | Owned by you — edit freely to match your design system                                                                                                            |
+| `components/common/`         | Shared UI components                 | Reusable across features; never import from `classes/`                                                                                                            |
+| `components/features/`       | Feature-specific components          | Scoped to one feature; never import from `classes/`                                                                                                               |
+| `components/providers/`      | Client-side React context providers  | Wrappers that make a service available to the whole component tree via React context (e.g. SWR config, theme). Composed here, mounted once in `layout-client.tsx` |
+| `hooks/`                     | SWR data-fetching hooks              | One file per resource (`use-*.ts`); no `useEffect` fetching                                                                                                       |
+| `store/`                     | Zustand stores                       | One file per domain; co-locate types                                                                                                                              |
+| `classes/services/<domain>/` | Business logic + integrations        | `server-only`; one folder per domain                                                                                                                              |
+| `classes/errors/`            | Shared error types                   | Not server-only — thrown from both layers                                                                                                                         |
+| `classes/loggers/`           | Logger classes                       | `server-only` — Winston writes to the filesystem (Node.js only)                                                                                                   |
+| `validation/`                | Zod schemas                          | One file per domain; shared between route and action                                                                                                              |
+| `types/`                     | Shared TypeScript types              | Pull up only when consumed across unrelated layers                                                                                                                |
+| `lib/`                       | Third-party instantiation            | Config and init only — no business logic                                                                                                                          |
+| `config/constants/`          | App-wide constants                   | Only for values shared across multiple modules                                                                                                                    |
+| `utils/`                     | Shared utility functions             | Pure functions                                                                                                                                                    |
+| `db/`                        | Drizzle schema, pool, migrations     | Schema is the source of truth; types inferred from it                                                                                                             |
+| `proxy.ts`                   | Next.js middleware (Clerk auth gate) | Lightweight checks only — redirects and session reads                                                                                                             |
 
 ### Project root — tooling and infrastructure
 
