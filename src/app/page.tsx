@@ -2,6 +2,7 @@ import { BookOpen, FileText } from 'lucide-react';
 
 import { ThemeToggle } from '@/components/common/theme-toggle';
 import { Counter } from '@/components/features/counter';
+import { ExampleItems } from '@/components/features/example-items';
 import { HomeProfile } from '@/components/features/home-profile';
 import { Posts } from '@/components/features/posts';
 import { Button } from '@/components/ui/button';
@@ -57,7 +58,7 @@ export default function Home() {
         </div>
       </header>
 
-      <main className='flex w-full max-w-xl flex-col items-center gap-8 text-center'>
+      <main className='flex w-full max-w-5xl flex-col items-center gap-8 text-center'>
         <div className='flex flex-col items-center gap-4'>
           <span className='border-border bg-muted/50 text-muted-foreground inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium tracking-wide'>
             Next.js Template
@@ -75,11 +76,19 @@ export default function Home() {
           <Counter />
         </div>
 
-        <div className='border-border bg-card/50 w-full rounded-xl border p-8 shadow-md backdrop-blur-sm'>
-          <p className='text-muted-foreground mb-4 text-xs font-medium tracking-wide uppercase'>
-            Recent posts (SWR example)
-          </p>
-          <Posts />
+        <div className='grid w-full grid-cols-1 items-start gap-4 md:grid-cols-2'>
+          <div className='border-border bg-card/50 rounded-xl border p-8 shadow-md backdrop-blur-sm'>
+            <p className='text-muted-foreground mb-4 text-left text-xs font-medium tracking-wide uppercase'>
+              Example items (full CRUD)
+            </p>
+            <ExampleItems />
+          </div>
+          <div className='border-border bg-card/50 rounded-xl border p-8 shadow-md backdrop-blur-sm'>
+            <p className='text-muted-foreground mb-4 text-left text-xs font-medium tracking-wide uppercase'>
+              Recent posts (SWR · external API)
+            </p>
+            <Posts />
+          </div>
         </div>
       </main>
     </div>

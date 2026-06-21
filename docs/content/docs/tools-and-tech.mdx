@@ -106,6 +106,25 @@ generating SQL migration files (`pnpm db:generate`) and running Drizzle Studio
 
 ---
 
+## Forms
+
+### React Hook Form
+
+[React Hook Form](https://react-hook-form.com/) is the standard form library
+used throughout this template. It handles form state, validation, and submission
+with minimal re-renders. Always paired with `zodResolver` from
+`@hookform/resolvers` so the same Zod schema used by the server action also
+drives client-side validation — no duplicated rules.
+
+### @hookform/resolvers
+
+[`@hookform/resolvers`](https://github.com/react-hook-form/resolvers) bridges
+react-hook-form and Zod via `zodResolver`. Pass it to `useForm` and your Zod
+schema becomes the validation contract for both the client form and the server
+action.
+
+---
+
 ## API & Validation
 
 ### Zod
