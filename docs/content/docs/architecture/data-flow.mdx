@@ -17,9 +17,9 @@ description: How a request moves through the stack from browser to database and 
 </div>
 
 Every request through this template follows one of two paths: a **read** or a
-**write**. Both pass through the same three layers in the same order — client,
-API, server — and both hit the same service methods. What differs is the entry
-point and what happens after the database responds.
+**write**. Both pass through the same three layers in the same order, **client →
+API → server** and both hit the same service methods. What differs is the entry point
+and what happens after the database responds.
 
 ## The read path
 
@@ -72,18 +72,46 @@ server action. If it comes from anywhere else, it uses a route handler.
 
 ## External writes use the same schema
 
-When a write does need a route handler — a webhook, for example — it validates
-with the same Zod schema the server action uses. The same file, not two copies.
-This ensures the two write surfaces cannot diverge on validation for the same
-domain.
+When a write does need a route handler (i.e. a webhook, for example), it validates
+with the same Zod schema the server action uses.
+
+Concretely: `src/validation/example-item.ts` is the single source of truth for
+`example_items` input validation. Both the server action and the route handler
+import `exampleItemSchema` from that file, neither owns the rules.
+
+```ts
+// src/actions/example-item-actions.ts
+import { exampleItemSchema } from '@/validation/example-item';
+
+// src/app/api/example-items/route.ts
+import { exampleItemSchema } from '@/validation/example-item';
+```
+
+Imagine an external inventory system calling `POST /api/example-items` when a
+new product is created, while our UI creates items through a form that hits
+`createExampleItem()`. Both run `exampleItemSchema.safeParse()` — the same
+`name` length constraints, the same `status` enum values, the same numeric
+coercion on `quantity`. The inventory system and end users can never end up
+with items that passed different validation rules.
 
 ## Why the same service for both paths
 
 Neither route handlers nor server actions query the database directly. Both
-delegate to `classes/services/` — this is a hard rule, not a suggestion.
+delegate to `classes/services/`. This is a hard rule, not a suggestion!
 
 Keeping all data access inside services means business logic lives in one place.
 The API layer stays thin: validate input, call the service, shape the response.
 If the same query is needed in both a route handler and a server action, the
-service method is called twice — not duplicated, not shared via some cross-layer
-import.
+service method is simply called twice.
+
+The `update` method on `ExampleItemService` is a concrete example. The PATCH
+route handler and the `updateExampleItem` server action both need to update a
+row and both simply call the same method:
+
+```ts
+// src/app/api/example-items/[id]/route.ts
+const exampleItem = await exampleItemService.update(id, parsed.data);
+
+// src/actions/example-item-actions.ts
+const data = await exampleItemService.update(id, parsed.data);
+```
