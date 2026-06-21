@@ -24,8 +24,8 @@ confidently without asking anyone?
   in the same import
 - Use named imports from `react` — never `import * as React from 'react'`.
   Namespace imports break tree-shaking and prevent `import type` from working
-  cleanly. Exception: shadcn primitives in `src/components/ui/` are vendored
-  and may keep their upstream namespace imports.
+  cleanly. Exception: shadcn primitives in `src/components/ui/` are copied into
+  the codebase and owned by you — they may keep their upstream namespace imports.
 - Named exports everywhere — default exports only where Next.js requires
 - Components declared as function declarations, never const arrow functions
 - Arrow functions for utilities, callbacks, and inline handlers
@@ -179,10 +179,10 @@ by role so there is one obvious place to look. Three buckets:
   server-only guarantee actually lives. One subfolder per domain.
 - `classes/errors/` — universal error types (e.g. `ApplicationError`). **Not**
   server-only: thrown from both server and client, so no `server-only` import.
-- `classes/loggers/` — cross-cutting logger classes.
+- `classes/loggers/` — logger classes (`server-only` — Winston writes to the filesystem).
 
 The server-only invariant is scoped to `services/`, not the whole folder —
-`errors/` and `loggers/` are cross-cutting infra that the client may touch.
+`errors/` is cross-cutting infra that the client may touch; `loggers/` is `server-only` (Winston, filesystem writes).
 
 **API Layer (`app/api/`)** — Next.js route handlers only. All business logic
 lives in `classes/`, not here; handlers validate input, call a service, and
@@ -349,9 +349,9 @@ api/ # Next.js route handlers only
 classes/ # all classes grouped by role
 services/ # business logic + integrations, server-only, one folder per domain
 errors/ # universal error types, not server-only
-loggers/ # cross-cutting logger classes
+loggers/ # server-only logger classes (Winston, filesystem)
 components/
-ui/ # shadcn primitives — never edit
+ui/ # shadcn primitives — owned by you, edit freely
 common/ # reusable components shared across features
 features/ # feature-specific components
 config/
@@ -548,17 +548,18 @@ README covers what the project is and how to run it. agents.md covers rules only
 
 ## Quick Reference
 
-| Concern          | Location                              | Convention                                   |
-| ---------------- | ------------------------------------- | -------------------------------------------- |
-| Business logic   | `classes/services/`                   | Domain subdirectories, server-only           |
-| Errors / loggers | `classes/errors/`, `classes/loggers/` | Cross-cutting classes, not server-only       |
-| Route handlers   | `app/api/`                            | Reads (GET) + external writes; Zod-validated |
-| Mutations        | `actions/`                            | UI writes, `*-actions.ts`, shared Zod schema |
-| Validation       | `validation/`                         | Zod schemas, one file per domain             |
-| UI               | `components/`                         | ui / common / features split                 |
-| Data fetching    | `hooks/`                              | SWR hooks, never useEffect for fetching      |
-| State management | `store/`                              | Zustand, co-located types                    |
-| Shared types     | `types/`                              | Pull up when shared across siblings          |
-| Third party libs | `lib/`                                | Instantiation and config only                |
-| Constants        | `config/constants/`                   | App-wide constants                           |
-| Scripts          | `scripts/` (root)                     | DB seeding, outside Next.js context          |
+| Concern          | Location            | Convention                                   |
+| ---------------- | ------------------- | -------------------------------------------- |
+| Business logic   | `classes/services/` | Domain subdirectories, server-only           |
+| Errors           | `classes/errors/`   | Not server-only — thrown from both layers    |
+| Loggers          | `classes/loggers/`  | `server-only` — Winston, filesystem writes   |
+| Route handlers   | `app/api/`          | Reads (GET) + external writes; Zod-validated |
+| Mutations        | `actions/`          | UI writes, `*-actions.ts`, shared Zod schema |
+| Validation       | `validation/`       | Zod schemas, one file per domain             |
+| UI               | `components/`       | ui / common / features split                 |
+| Data fetching    | `hooks/`            | SWR hooks, never useEffect for fetching      |
+| State management | `store/`            | Zustand, co-located types                    |
+| Shared types     | `types/`            | Pull up when shared across siblings          |
+| Third party libs | `lib/`              | Instantiation and config only                |
+| Constants        | `config/constants/` | App-wide constants                           |
+| Scripts          | `scripts/` (root)   | DB seeding, outside Next.js context          |
