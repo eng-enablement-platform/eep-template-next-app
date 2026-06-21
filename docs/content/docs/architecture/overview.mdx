@@ -45,7 +45,7 @@ The boundary between the browser and the server.
 
 - Route handlers own reads and external writes
 - Route handlers and actions call service methods, they never query the database directly
-- Server actions own UI writes (POST/mutations from our own UI). See [Read vs Write](/docs/architecture/read-vs-write) for the full breakdown of why.
+- Server actions own UI writes (POST/mutations from our own UI). See [Read vs Write](/docs/architecture/data-flow#why-reads-and-writes-take-different-entry-points) for the full breakdown of why.
 - Both surfaces validate all input with Zod schemas before anything reaches the service layer
 
 ## Why this split?

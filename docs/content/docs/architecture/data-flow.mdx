@@ -1,4 +1,89 @@
 ---
 title: Data Flow
-description: How a request moves through the stack from browser to database and back.
+description: How a request moves through the stack from browser to database and back, and why reads and writes take different entry points.
 ---
+
+<div className='mx-4 my-8 overflow-hidden rounded-xl shadow-xl sm:-mx-8 md:-mx-16'>
+  <a
+    href='/data-flow.png'
+    target='_blank'
+    rel='noopener noreferrer'
+    title='Click to view full size'
+    className='group relative block'
+  >
+    ![Data flow diagram](/data-flow.png)
+    <div className='absolute inset-0 rounded-xl bg-blue-400/0 transition-colors duration-200 group-hover:bg-blue-400/10' />
+  </a>
+</div>
+
+Every request through this template follows one of two paths: a **read** or a
+**write**. Both pass through the same three layers in the same order — client,
+API, server — and both hit the same service methods. What differs is the entry
+point and what happens after the database responds.
+
+## The read path
+
+A read starts when a component mounts and its SWR hook fires a `GET` request
+to a route handler in `app/api/`.
+
+1. The SWR hook in `hooks/` calls `fetch()` against the route
+2. The route handler validates the request with a Zod schema
+3. It delegates to a service method in `classes/services/`
+4. The service runs a Drizzle `SELECT` query against Postgres
+5. The result travels back up — service → route handler → SWR
+6. SWR caches the response and re-renders the component
+
+SWR handles loading and error states automatically. Components never call
+`fetch()` directly and never use `useEffect` for data fetching.
+
+## The write path
+
+A write starts when a user submits a form. The component calls a server action
+in `actions/` — not a route handler.
+
+1. The component triggers a `POST / mutation` via a server action
+2. The action validates the input with the same Zod schema the route uses
+3. It delegates to the same service methods the read path uses
+4. The service runs a Drizzle `INSERT` or `UPDATE` against Postgres
+5. On success, the action calls `revalidatePath()` to invalidate the SWR cache
+6. SWR re-fetches automatically and the component re-renders with fresh data
+
+The key detail is step 5 — `revalidatePath()` is what closes the loop between
+a server action and the client cache. Without it, the UI would show stale data
+after a successful mutation.
+
+## Why reads and writes take different entry points
+
+Route handlers and server actions are not interchangeable. Each owns a specific
+surface and the split is intentional.
+
+**Route handlers (`app/api/`) own reads and external writes.** They are standard
+HTTP endpoints — any client can call them. This makes them the right choice for
+`GET` requests from SWR hooks, and also for writes that come from outside the
+UI: webhooks, cron jobs, third-party integrations, or any non-browser caller.
+
+**Server actions (`actions/`) own UI writes.** They run on the server but are
+called directly from components, which means they can call `revalidatePath()`
+to invalidate the SWR cache in the same request. No separate API call needed,
+no client-side coordination.
+
+The practical rule is simple: if the mutation comes from our own UI, it uses a
+server action. If it comes from anywhere else, it uses a route handler.
+
+## External writes use the same schema
+
+When a write does need a route handler — a webhook, for example — it validates
+with the same Zod schema the server action uses. The same file, not two copies.
+This ensures the two write surfaces cannot diverge on validation for the same
+domain.
+
+## Why the same service for both paths
+
+Neither route handlers nor server actions query the database directly. Both
+delegate to `classes/services/` — this is a hard rule, not a suggestion.
+
+Keeping all data access inside services means business logic lives in one place.
+The API layer stays thin: validate input, call the service, shape the response.
+If the same query is needed in both a route handler and a server action, the
+service method is called twice — not duplicated, not shared via some cross-layer
+import.
