@@ -35,7 +35,7 @@ All business logic lives here, and only here.
 
 - Services in
   `classes/services/<domain>/` are `server-only`, they can never be imported by
-  client code.
+  client code
 - Services own all data-access logic (Drizzle queries, third-party API calls)
 - Services expose a small typed surface to the API layer
 
@@ -50,7 +50,9 @@ The boundary between the browser and the server.
 
 ## Why this split?
 
-Clear separation of concerns and code reusability! Each layer has one job and one
+Clear separation of concerns and code reusability!
+
+Each layer has one job and one
 place to house the code. Business logic never bleeds into route handlers, data access never
 appears in components. That makes the codebase predictable and boring, so you always know where
 to look and where to add something new.

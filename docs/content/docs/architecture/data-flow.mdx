@@ -58,14 +58,11 @@ Route handlers and server actions are not interchangeable. Each owns a specific
 surface and the split is intentional.
 
 **Route handlers (`app/api/`) own reads and external writes.** They are standard
-HTTP endpoints — any client can call them. This makes them the right choice for
-`GET` requests from SWR hooks, and also for writes that come from outside the
-UI: webhooks, cron jobs, third-party integrations, or any non-browser caller.
+HTTP endpoints that any client can call.
 
 **Server actions (`actions/`) own UI writes.** They run on the server but are
 called directly from components, which means they can call `revalidatePath()`
-to invalidate the SWR cache in the same request. No separate API call needed,
-no client-side coordination.
+to invalidate the SWR cache in the same request.
 
 The practical rule is simple: if the mutation comes from our own UI, it uses a
 server action. If it comes from anywhere else, it uses a route handler.
@@ -86,13 +83,6 @@ import { exampleItemSchema } from '@/validation/example-item';
 // src/app/api/example-items/route.ts
 import { exampleItemSchema } from '@/validation/example-item';
 ```
-
-Imagine an external inventory system calling `POST /api/example-items` when a
-new product is created, while our UI creates items through a form that hits
-`createExampleItem()`. Both run `exampleItemSchema.safeParse()` — the same
-`name` length constraints, the same `status` enum values, the same numeric
-coercion on `quantity`. The inventory system and end users can never end up
-with items that passed different validation rules.
 
 ## Why the same service for both paths
 
