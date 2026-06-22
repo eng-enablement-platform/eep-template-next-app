@@ -1,6 +1,6 @@
 ---
 title: Client Layer
-description: Components, SWR hooks, and Zustand — how the client side is structured.
+description: How the client side is structured. Components, SWR hooks, and Zustand
 ---
 
 The client layer is split across three folders: `components/`, `hooks/`, and
@@ -8,56 +8,81 @@ The client layer is split across three folders: `components/`, `hooks/`, and
 
 | Folder        | Job                                  |
 | ------------- | ------------------------------------ |
-| `components/` | Render UI, nothing else              |
+| `components/` | Render UI                            |
 | `hooks/`      | Fetch data via SWR                   |
 | `store/`      | Manage client-side state via Zustand |
 
 ## Components
 
-Components are purely presentational. They receive data via props or read from a
-hook, and they render. They don't fetch, they don't mutate, and they don't own
+Components are purely presentational. They don't fetch, they don't mutate, and they don't own
 business logic.
 
 **Structure rules:**
 
-- Single-file components are flat `kebab-name.tsx` — no folder wrapping a lone file.
+- Single-file components are flat `kebab-name.tsx`.
   Promote to a folder only when the component grows real parts: sub-components, split types, helpers.
   A simple component stays flat; once it earns a folder, `index.tsx` becomes the entry barrel:
 
-  ```
-  components/common/theme-toggle.tsx        ← flat, nothing to split
-
-  components/common/sidebar/                ← promoted, has real parts
-    index.tsx                               ← entry barrel, the only public import
-    components/
-      nav-main.tsx
-      nav-user.tsx
-      settings-items.tsx
-    config/
-    utils/
-  ```
+  <Files>
+    <File name='theme-toggle.tsx' />
+    <Folder name='sidebar' defaultOpen>
+      <File name='index.tsx' />
+      <Folder name='components' defaultOpen>
+        <File name='nav-main.tsx' />
+        <File name='nav-user.tsx' />
+        <File name='settings-items.tsx' />
+      </Folder>
+      <Folder name='config' />
+      <Folder name='utils' />
+    </Folder>
+  </Files>
 
 - `components/ui/` — [shadcn](https://ui.shadcn.com/docs) primitives
 - `components/common/` — shared across features (layout, error states, auth):
 
-  ```
-  components/common/theme-toggle.tsx    ← used anywhere in the app
-  components/common/auth.tsx            ← shared auth UI
-  components/common/error-display.tsx   ← shared error state
-  ```
+  <Files>
+    <File name='theme-toggle.tsx' />
+    <File name='auth.tsx' />
+    <File name='error-display.tsx' />
+  </Files>
 
 - `components/features/` — domain-coupled components that only make sense within a specific feature:
 
-  ```
-  components/features/counter.tsx       ← belongs to the counter feature
-  components/features/posts.tsx         ← belongs to the posts feature
-  ```
+  <Files>
+    <File name='counter.tsx' />
+    <File name='posts.tsx' />
+  </Files>
 
 ## Data fetching with SWR
 
 [SWR](https://swr.vercel.app/) handles loading state, error state, caching, deduplication, and revalidation
 out of the box. All client-side fetching goes through
 SWR hooks in `hooks/`, one hook per data domain.
+
+<Callout>
+  SWR types `error` as `any` — always narrow it to `Error` before returning.
+</Callout>
+
+```ts
+// hooks/use-example-items.ts
+export function useExampleItems(): UseExampleItemsReturn {
+  const { data, isLoading, error, mutate } =
+    useSWR<ExampleItemsResponse>('/api/example-items');
+
+  return {
+    items: data?.exampleItems,
+    isLoading,
+    // SWR types error as `any` — narrow to Error so callers get a stable shape.
+    error: error instanceof Error ? error : undefined,
+    mutate,
+  };
+}
+```
+
+<Callout>
+The `mutate` function is exposed so components can apply optimistic updates within the UI,
+pass `{ optimisticData, rollbackOnError: true }`and SWR reverts automatically on failure.
+</Callout>
 
 The alternative to using SWR (`useEffect` + `useState`) means
 writing a dedicated version of it yourself, which is much more convoluted:
@@ -101,32 +126,9 @@ Every hook then repeats this boilerplate. With SWR the
 same hook is a handful of lines.
 
 <Callout>
-  SWR types `error` as `any` — always narrow it to `Error` before returning.
+  [TanStack Query](https://tanstack.com/query/latest) is the other alternative
+  option and is worth looking at if you need more granular cache control.
 </Callout>
-
-```ts
-// hooks/use-example-items.ts
-export function useExampleItems(): UseExampleItemsReturn {
-  const { data, isLoading, error, mutate } =
-    useSWR<ExampleItemsResponse>('/api/example-items');
-
-  return {
-    items: data?.exampleItems,
-    isLoading,
-    // SWR types error as `any` — narrow to Error so callers get a stable shape.
-    error: error instanceof Error ? error : undefined,
-    mutate,
-  };
-}
-```
-
-<Callout>
-The `mutate` function is exposed so components can apply optimistic updates,
-pass `{ optimisticData, rollbackOnError: true }`and SWR reverts automatically on failure.
-</Callout>
-
-[TanStack Query](https://tanstack.com/query/latest) is the other
-alternative option and is worth reaching for if you need more granular cache control.
 
 ## State management with Zustand
 
@@ -162,40 +164,6 @@ export const useCounterStore = create<CounterStore>()((set) => ({
 }));
 ```
 
-Let's also briefly explore the more simplistic type layout and why this can be sub-optimal:
-
-```ts
-// Simpler, but loses two guarantees
-export type CounterStore = {
-  count: number;
-  increment: () => void;
-  decrement: () => void;
-  reset: () => void;
-};
-```
-
-The problem here is you can no longer derive a correctly-typed default state. With a
-merged type, `defaultCounterState` has to be typed as `Partial<CounterStore>`
-(actions aren't state) or cast with `as` (slightly unsafe). Either way,
-adding a new state field won't produce a compiler error if you forget its
-default. The split fixes both issues.
-
-The `reset` implementation is the other concrete win. With the merged type
-you'd have to manually list the fields to reset:
-
-```ts
-// Brittle — easy to forget a field when state grows
-reset: () => set({ count: 0, someNewField: '' }),
-```
-
-With the split, reset is always correct by construction, add a field to
-`CounterState` and its default is automatically included:
-
-```ts
-// Always resets exactly the right fields, nothing more
-reset: () => set(defaultCounterState),
-```
-
 <Callout>
   Components subscribe to only the slices they need, this prevents unnecessary
   re-renders when unrelated state changes:
@@ -210,9 +178,32 @@ const increment = useCounterStore((state) => state.increment);
 const store = useCounterStore();
 ```
 
-## The boundary
+Let's also just briefly touch on the more simplistic type layout alternative and why this can be sub-optimal:
 
-The client layer calls up — hooks hit `app/api/` route handlers, server actions
-handle mutations. Nothing in `components/`, `hooks/`, or `store/` imports from
-`classes/` or touches the database directly. The `server-only` package enforces
-this at build time.
+```ts
+// Simpler, but loses two guarantees
+export type CounterStore = {
+  count: number;
+  increment: () => void;
+  decrement: () => void;
+  reset: () => void;
+};
+```
+
+The problem here is you can no longer derive a correctly-typed default state. With a
+merged type, `defaultCounterState` has to be typed as `Partial<CounterStore>`
+(actions aren't state) or cast with `as` (slightly unsafe). The `reset` implementation is the other concrete win. With the merged type
+you'd have to manually list the fields to reset:
+
+```ts
+// Brittle — easy to forget a field when state grows
+reset: () => set({ count: 0, someNewField: '' }),
+```
+
+With the split, reset is always correct by construction, add a field to
+`CounterState` and its default is automatically included:
+
+```ts
+// Always resets exactly the right fields, nothing more
+reset: () => set(defaultCounterState),
+```
