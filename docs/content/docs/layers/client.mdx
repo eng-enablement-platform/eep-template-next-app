@@ -31,13 +31,49 @@ business logic.
 
 SWR handles loading state, error state, caching, deduplication, and revalidation
 on focus out of the box. The alternative — `useEffect` + `useState` — means
-writing a dedicated version of it yourself and this also means having to maintain more complex code.
+writing a worse version of it yourself. Here's what that looks like in practice:
 
-This is one of the few packages that
-clearly earns its place: the justification is that the wheel already exists and
-is well-made. TanStack Query is the other serious option and is worth reaching
-for if you need more granular cache control, but SWR's smaller surface area is
-the right default for this stack.
+```ts
+// Without SWR — ~50 lines to fetch one resource
+export function useItem(id: string) {
+  const [isLoading, setIsLoading] = useState(true);
+  const [item, setItem] = useState<Item | null>(null);
+  const [error, setError] = useState<Error | null>(null);
+
+  const fetchItem = useCallback(async () => {
+    if (!id) {
+      setError(new Error('ID is required'));
+      setIsLoading(false);
+      return;
+    }
+    try {
+      setIsLoading(true);
+      setError(null);
+      const response = await fetch(`/api/items/${encodeURIComponent(id)}`);
+      if (!response.ok) throw new Error(`Request failed: ${response.status}`);
+      setItem(await response.json());
+    } catch (err) {
+      setError(err as Error);
+      setItem(null);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [id]);
+
+  useEffect(() => {
+    fetchItem();
+  }, [fetchItem]);
+
+  return { isLoading, item, error, refetch: fetchItem };
+}
+```
+
+Every hook repeats this boilerplate. No caching, no deduplication, no
+revalidation on focus — you'd need to add all of that yourself. With SWR the
+same hook is a handful of lines and you get all of it for free. This is one of
+the few packages that clearly earns its place. TanStack Query is the other
+serious option and is worth reaching for if you need more granular cache control,
+but SWR's smaller surface area is the right default for this stack.
 
 Never use `useEffect` for data fetching. All client-side fetching goes through
 SWR hooks in `hooks/`, one hook per data domain.
