@@ -2,3 +2,117 @@
 title: Client Layer
 description: Components, SWR hooks, and Zustand — how the client side is structured.
 ---
+
+The client layer is split across three folders: `components/`, `hooks/`, and
+`store/`. Each has a single job and a hard boundary — they don't bleed into each
+other's concerns.
+
+| Folder        | Job                                  |
+| ------------- | ------------------------------------ |
+| `components/` | Render UI, nothing else              |
+| `hooks/`      | Fetch data via SWR                   |
+| `store/`      | Manage client-side state via Zustand |
+
+## Components
+
+Components are purely presentational. They receive data via props or read from a
+hook, and they render. They don't fetch, they don't mutate, and they don't own
+business logic.
+
+**Structure rules:**
+
+- Single-file components are flat `kebab-name.tsx` — no folder wrapping a lone file
+- Promote to a folder only when the component grows real parts: sub-components, split types, helpers
+- `components/ui/` — shadcn primitives, edit freely
+- `components/common/` — shared across features (layout, error states, auth)
+- `components/features/` — feature-specific components
+
+## Data fetching with SWR
+
+SWR handles loading state, error state, caching, deduplication, and revalidation
+on focus out of the box. The alternative — `useEffect` + `useState` — means
+writing a dedicated version of it yourself and this also means having to maintain more complex code.
+
+This is one of the few packages that
+clearly earns its place: the justification is that the wheel already exists and
+is well-made. TanStack Query is the other serious option and is worth reaching
+for if you need more granular cache control, but SWR's smaller surface area is
+the right default for this stack.
+
+Never use `useEffect` for data fetching. All client-side fetching goes through
+SWR hooks in `hooks/`, one hook per data domain.
+
+The hook owns loading and error state so components stay clean. SWR types `error`
+as `any` — always narrow it to `Error` before returning.
+
+```ts
+// hooks/use-example-items.ts
+export function useExampleItems(): UseExampleItemsReturn {
+  const { data, isLoading, error, mutate } =
+    useSWR<ExampleItemsResponse>('/api/example-items');
+
+  return {
+    items: data?.exampleItems,
+    isLoading,
+    // SWR types error as `any` — narrow to Error so callers get a stable shape.
+    error: error instanceof Error ? error : undefined,
+    mutate,
+  };
+}
+```
+
+The `mutate` function is exposed so components can apply optimistic updates
+before the server confirms a mutation — pass `{ optimisticData, rollbackOnError: true }`
+and SWR reverts automatically on failure.
+
+## State management with Zustand
+
+Zustand stores live in `store/`, one file per domain. The pattern splits the
+data shape from the actions, intersects them into the public store type, and
+derives the default state from the state shape alone so defaults can never drift
+from the fields they back.
+
+```ts
+// store/counter-store.ts
+type CounterState = {
+  count: number;
+};
+
+type CounterActions = {
+  increment: () => void;
+  decrement: () => void;
+  reset: () => void;
+};
+
+export type CounterStore = CounterState & CounterActions;
+
+export const defaultCounterState: CounterState = {
+  count: 0,
+};
+
+export const useCounterStore = create<CounterStore>()((set) => ({
+  ...defaultCounterState,
+  increment: () => set((state) => ({ count: state.count + 1 })),
+  decrement: () => set((state) => ({ count: state.count - 1 })),
+  reset: () => set(defaultCounterState),
+}));
+```
+
+Components subscribe to only the slices they need — this prevents unnecessary
+re-renders when unrelated state changes:
+
+```tsx
+// Correct — subscribe to individual slices
+const count = useCounterStore((state) => state.count);
+const increment = useCounterStore((state) => state.increment);
+
+// Wrong — subscribes to the whole store, re-renders on any change
+const store = useCounterStore();
+```
+
+## The boundary
+
+The client layer calls up — hooks hit `app/api/` route handlers, server actions
+handle mutations. Nothing in `components/`, `hooks/`, or `store/` imports from
+`classes/` or touches the database directly. The `server-only` package enforces
+this at build time.
