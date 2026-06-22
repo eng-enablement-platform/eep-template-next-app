@@ -104,10 +104,8 @@ alternative option and is worth reaching for if you need more granular cache con
 
 ## State management with Zustand
 
-Zustand stores live in `store/`, one file per domain. The pattern splits the
-data shape from the actions, intersects them into the public store type, and
-derives the default state from the state shape alone so defaults can never drift
-from the fields they back.
+[Zustand](https://zustand.docs.pmnd.rs/learn/getting-started/introduction) stores live in `store/`, one file per domain. The state shape and
+actions are always defined as separate types and intersected.
 
 ```ts
 // store/counter-store.ts
@@ -123,6 +121,8 @@ type CounterActions = {
 
 export type CounterStore = CounterState & CounterActions;
 
+// TypeScript enforces that every state field has a default here.
+// Add a field to CounterState and the compiler errors until you add it here too.
 export const defaultCounterState: CounterState = {
   count: 0,
 };
@@ -131,12 +131,37 @@ export const useCounterStore = create<CounterStore>()((set) => ({
   ...defaultCounterState,
   increment: () => set((state) => ({ count: state.count + 1 })),
   decrement: () => set((state) => ({ count: state.count - 1 })),
+  // Safe reset — only resets state fields, never touches actions.
   reset: () => set(defaultCounterState),
 }));
 ```
 
-Components subscribe to only the slices they need — this prevents unnecessary
-re-renders when unrelated state changes:
+Let's also briefly explore the more simplistic type layout and why this can be sub-optimal:
+
+```ts
+// Simpler, but loses two guarantees
+export type CounterStore = {
+  count: number;
+  increment: () => void;
+  decrement: () => void;
+  reset: () => void;
+};
+```
+
+The problem here is you can no longer derive a correctly-typed default state. With a
+merged type, `defaultCounterState` has to be typed as `Partial<CounterStore>`
+(actions aren't state) or cast with `as` (slightly unsafe). Either way,
+adding a new state field won't produce a compiler error if you forget its
+default. The split fixes both issues.
+
+The `reset` implementation is the other concrete win. With the merged type
+you'd have to manually list the fields to reset, which can be brittle, and it drifts when
+you add state. `set(defaultCounterState)` is always correct by construction.
+
+<Callout>
+  Components subscribe to only the slices they need, this prevents unnecessary
+  re-renders when unrelated state changes:
+</Callout>
 
 ```tsx
 // Correct — subscribe to individual slices
