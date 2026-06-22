@@ -4,8 +4,7 @@ description: Components, SWR hooks, and Zustand — how the client side is struc
 ---
 
 The client layer is split across three folders: `components/`, `hooks/`, and
-`store/`. Each has a single job and a hard boundary — they don't bleed into each
-other's concerns.
+`store/`.
 
 | Folder        | Job                                  |
 | ------------- | ------------------------------------ |
@@ -21,11 +20,38 @@ business logic.
 
 **Structure rules:**
 
-- Single-file components are flat `kebab-name.tsx` — no folder wrapping a lone file
-- Promote to a folder only when the component grows real parts: sub-components, split types, helpers
-- `components/ui/` — shadcn primitives, edit freely
-- `components/common/` — shared across features (layout, error states, auth)
-- `components/features/` — feature-specific components
+- Single-file components are flat `kebab-name.tsx` — no folder wrapping a lone file.
+  Promote to a folder only when the component grows real parts: sub-components, split types, helpers.
+  A simple component stays flat; once it earns a folder, `index.tsx` becomes the entry barrel:
+
+  ```
+  components/common/theme-toggle.tsx        ← flat, nothing to split
+
+  components/common/sidebar/                ← promoted, has real parts
+    index.tsx                               ← entry barrel, the only public import
+    components/
+      nav-main.tsx
+      nav-user.tsx
+      settings-items.tsx
+    config/
+    utils/
+  ```
+
+- `components/ui/` — [shadcn](https://ui.shadcn.com/docs) primitives
+- `components/common/` — shared across features (layout, error states, auth):
+
+  ```
+  components/common/theme-toggle.tsx    ← used anywhere in the app
+  components/common/auth.tsx            ← shared auth UI
+  components/common/error-display.tsx   ← shared error state
+  ```
+
+- `components/features/` — domain-coupled components that only make sense within a specific feature:
+
+  ```
+  components/features/counter.tsx       ← belongs to the counter feature
+  components/features/posts.tsx         ← belongs to the posts feature
+  ```
 
 ## Data fetching with SWR
 
@@ -155,8 +181,20 @@ adding a new state field won't produce a compiler error if you forget its
 default. The split fixes both issues.
 
 The `reset` implementation is the other concrete win. With the merged type
-you'd have to manually list the fields to reset, which can be brittle, and it drifts when
-you add state. `set(defaultCounterState)` is always correct by construction.
+you'd have to manually list the fields to reset:
+
+```ts
+// Brittle — easy to forget a field when state grows
+reset: () => set({ count: 0, someNewField: '' }),
+```
+
+With the split, reset is always correct by construction, add a field to
+`CounterState` and its default is automatically included:
+
+```ts
+// Always resets exactly the right fields, nothing more
+reset: () => set(defaultCounterState),
+```
 
 <Callout>
   Components subscribe to only the slices they need, this prevents unnecessary
