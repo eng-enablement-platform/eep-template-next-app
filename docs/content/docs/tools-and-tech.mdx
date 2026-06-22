@@ -223,6 +223,14 @@ staged files via lint-staged.
 hook. On `.ts/.tsx` changes the full `tsc --noEmit`, test suite, and build run.
 Use `SKIP_CHECKS=1 git commit` only for intentional WIP.
 
+### Trivy
+
+[Trivy](https://aquasecurity.github.io/trivy/) is a security scanner that runs
+on pre-commit whenever `package.json` or `pnpm-lock.yaml` changes. It scans for
+known vulnerabilities in dependencies and commits are blocked if issues are flagged.
+
+Install with `brew install trivy` on macOS.
+
 ---
 
 ## Tooling
