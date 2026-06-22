@@ -2,3 +2,308 @@
 title: Server Layer
 description: The classes/ directory — services, errors, loggers, and the server-only boundary.
 ---
+
+`classes/` is split into three folders, each with a different server-only scope:
+
+| Folder              | What lives here               | Server-only?                               |
+| ------------------- | ----------------------------- | ------------------------------------------ |
+| `classes/services/` | Business logic + integrations | ✅ Yes — Drizzle, third-party API clients  |
+| `classes/errors/`   | Shared error types            | ❌ No — thrown from both server and client |
+| `classes/loggers/`  | Logger classes                | ✅ Yes — Winston writes to the filesystem  |
+
+<Callout>
+  `server-only` is not a project-wide label for `classes/`, it's scoped per
+  bucket. `ApplicationError` for example is deliberately not `server-only`
+  because a client component may need to utilize it.
+</Callout>
+
+## Design Patterns
+
+The server layer applies design patterns deliberately — repeatable, well-known
+shapes for structuring code that any engineer will immediately recognise. They're
+not rules followed for their own sake; they make the codebase predictable. A
+developer or agent picking this up cold can look at a service class and know
+exactly what it does, how it's instantiated, and where its boundaries are. The
+patterns used here — service layer, module-scoped instance, and factory — are
+covered in the sections below.
+
+## Why classes?
+
+Using a class for each domain service gives you a clean instantiation boundary
+and a natural home for the singleton vs factory decision. The class defines the
+surface; how you export it determines the lifetime.
+
+This is different from the plain module/function approach (e.g. Bulletproof
+React). A module export is always a singleton by nature — you can't control
+instantiation. A class lets you make that choice explicitly, which matters when
+some services need per-request instances (see [Singletons vs factory](#singletons-vs-factory) below).
+
+**Import ergonomics** are the other concrete win. A module of named function
+exports grows noisy fast — every method you need is a separate import:
+
+```ts
+// Named exports — import noise grows with every method
+import {
+  getItems,
+  createItem,
+  updateItem,
+  deleteItem,
+} from '@/services/example-item';
+```
+
+With a class you import one instance and everything is on it:
+
+```ts
+// Class — one import, full surface available
+import { exampleItemService } from '@/classes/services/example-item';
+
+const items = await exampleItemService.getAll();
+const item = await exampleItemService.create(input);
+```
+
+The grouping is also semantic, not just syntactic. The class definition is the
+explicit public API — `getAll`, `getById`, `create`, `update`, `delete`. With
+named exports the public API is "everything that's exported", which is a weaker
+contract that drifts as files grow.
+
+## Service shape
+
+Every service class follows the same shape: lives in
+`classes/services/<domain>/`, imports `server-only`, takes config through the
+constructor, and exposes only domain methods — never the raw Drizzle client or
+HTTP client.
+
+```ts
+// classes/services/example-item/index.ts
+import 'server-only';
+
+class ExampleItemService {
+  async getAll(): Promise<ExampleItem[]> {
+    return getDb().select().from(exampleItemsTable);
+  }
+
+  async create(input: ExampleItemInput): Promise<ExampleItem> {
+    const [row] = await getDb()
+      .insert(exampleItemsTable)
+      .values(input)
+      .returning();
+    return row;
+  }
+}
+
+export const exampleItemService = new ExampleItemService();
+```
+
+The caller never sees Drizzle. A route handler or server action just calls
+`exampleItemService.create(input)` — if the data access layer changes, nothing
+outside `classes/services/` needs to change.
+
+## Module-scoped instances vs factory
+
+The default is exporting a **module-scoped instance** — `export const x = new X()`:
+
+```ts
+export const exampleItemService = new ExampleItemService();
+export const hubspotService = new HubspotService(process.env.HUBSPOT_API_KEY);
+```
+
+It's worth being precise about what "module-scoped" means here. Next.js compiles
+API routes and server actions into separate bundles — so `exampleItemService` in
+a route handler and `exampleItemService` in a server action are actually two
+different objects at runtime, not one shared instance. You get one instance per
+bundle, not one instance per app.
+
+For stateless services this doesn't matter at all — both instances behave
+identically because there's no state to share. But it has a critical implication:
+
+**Never put mutable state on a service instance.** An in-memory cache, a
+counter, or any mutable field on the class would be silently doubled — mutations
+via server action wouldn't be visible to the route handler and vice versa. If
+you need shared state across bundles it belongs in the database or an external
+store like Redis, never on the instance itself.
+
+Use a **lazy module-scoped instance** (`private constructor` + `static getInstance()`)
+only when construction has side effects that must be deferred past import time.
+`ApplicationLogger` uses this because its constructor creates Winston file transports:
+
+```ts
+// Construction creates .logs/ file transports — defer until first use
+class ApplicationLogger {
+  private static instance: ApplicationLogger;
+  private constructor() {
+    /* creates file transports */
+  }
+
+  public static getInstance(): ApplicationLogger {
+    if (!ApplicationLogger.instance) {
+      ApplicationLogger.instance = new ApplicationLogger();
+    }
+    return ApplicationLogger.instance;
+  }
+}
+```
+
+Use a **factory** when the object carries state that belongs to a single request.
+The clearest real-world case is a multi-tenant app where every data access needs
+to be scoped to the signed-in user's company.
+
+With a module-scoped instance there's nowhere to put the company context — you'd
+end up passing `companyId` into every single method call, which is noisy and
+easy to forget:
+
+```ts
+// Module-scoped instance — companyId has to be threaded through every call
+export const reportService = new ReportService();
+
+// At the call site — easy to forget, no compiler enforcement
+const reports = await reportService.getReports(companyId);
+const report = await reportService.create(companyId, input);
+const deleted = await reportService.delete(companyId, id);
+```
+
+With a factory, the context is baked in at construction. Every method
+automatically scopes to the right company — you can't accidentally forget it:
+
+```ts
+class ReportService {
+  constructor(private readonly companyId: string) {}
+
+  async getReports() {
+    // companyId is always correct — baked in at construction
+    return db
+      .select()
+      .from(reportsTable)
+      .where(eq(reportsTable.companyId, this.companyId));
+  }
+}
+
+export function createReportService(companyId: string) {
+  return new ReportService(companyId);
+}
+```
+
+Then in a server action or route handler:
+
+```ts
+const { companyId } = await auth();
+const reportService = createReportService(companyId);
+const reports = await reportService.getReports();
+```
+
+The simple rule: does every caller use the service the same way with the same
+config? → module-scoped instance. Does each caller need the service configured
+differently based on who they are or what request they're handling? → factory.
+
+## Inheritance and composition
+
+When integrating with a third-party API, you often start with a base client that
+handles the cross-cutting concerns — authentication, rate limiting, request
+queuing, retry logic. Individual domain clients then build on top of it.
+
+There are two ways to do this: **inheritance** (extend the base class) or
+**composition** (hold the base class as a private member). The choice depends on
+what the domain client is doing.
+
+**Inheritance** — use when the domain client needs to add new operations that
+build directly on the base class's internals. The domain client `extends` the
+base and gets direct access to its protected methods:
+
+<Files>
+  <Folder name='classes/services' defaultOpen>
+    <Folder name='http-client' defaultOpen>
+      <File name='index.ts' />
+    </Folder>
+    <Folder name='payments' defaultOpen>
+      <File name='index.ts' />
+    </Folder>
+  </Folder>
+</Files>
+
+```ts
+// classes/services/http-client/index.ts
+export class HttpClient {
+  protected baseUrl: string;
+  protected constructor(baseUrl: string) {
+    this.baseUrl = baseUrl;
+  }
+  protected async get<T>(path: string): Promise<T> {
+    /* auth, retry, queue */
+  }
+  protected async post<T>(path: string, body: unknown): Promise<T> {
+    /* ... */
+  }
+}
+```
+
+```ts
+// classes/services/payments/index.ts
+export class PaymentsClient extends HttpClient {
+  constructor() {
+    super(process.env.PAYMENTS_BASE_URL!);
+  }
+
+  // this.post() is available directly via extends — no re-implementation needed
+  async createCharge(input: ChargeInput) {
+    return this.post('/charges', input);
+  }
+}
+```
+
+**Composition** — use when the domain client is primarily transforming or
+querying data, not adding new transport-level operations. The base client is a
+private dependency, injected or constructed internally:
+
+<Files>
+  <Folder name='classes/services' defaultOpen>
+    <Folder name='http-client' defaultOpen>
+      <File name='index.ts' />
+    </Folder>
+    <Folder name='reporting' defaultOpen>
+      <File name='index.ts' />
+    </Folder>
+  </Folder>
+</Files>
+
+```ts
+// classes/services/reporting/index.ts
+export class ReportingClient {
+  private client: HttpClient;
+
+  constructor() {
+    this.client = new HttpClient(process.env.REPORTING_BASE_URL!);
+  }
+
+  // Delegates to the HTTP client, focuses on data transformation
+  async getSummary(from: Date, to: Date): Promise<ReportSummary> {
+    const raw = await this.client.get(`/summary?from=${from}&to=${to}`);
+    return transformSummary(raw);
+  }
+}
+```
+
+**The key benefits of both approaches:**
+
+- Auth, rate limiting, and retry logic live in one place — the base client. Domain clients never re-implement them
+- Each domain client has a single responsibility — it exposes domain methods, not HTTP primitives
+- Adding a new integration means extending or composing the base client, not copying auth boilerplate
+
+**When to pick which:** favour composition by default — it's looser coupling,
+and if the base class changes, only the composition wrapper is affected rather
+than every subclass. Reach for inheritance only when you genuinely need to call
+the base class's protected methods (`this.get()`, `this.post()`) directly inside
+your own implementation. If all you need is for the base class to handle auth
+and make the request, compose.
+
+## The server-only boundary
+
+`import 'server-only'` at the top of a service file causes a build error if
+anything in the client bundle tries to import it. This is a hard build-time
+guarantee, not a convention that relies on developers remembering the rule.
+
+```ts
+import 'server-only'; // client import = build error, not a runtime surprise
+```
+
+The practical effect: if a component accidentally imports a service, the build
+fails immediately with a clear message. No silent data leaks, no accidentally
+shipping DB credentials to the browser.
