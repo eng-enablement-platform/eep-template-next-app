@@ -5,54 +5,61 @@ description: The classes/ directory. Services, errors, loggers, and the server-o
 
 `classes/` is split into three folders, each with a different server-only scope:
 
-| Folder              | What lives here               | Server-only?                              |
-| ------------------- | ----------------------------- | ----------------------------------------- |
-| `classes/services/` | Business logic + integrations | ✅ Yes: Drizzle, third-party API clients  |
-| `classes/errors/`   | Shared error types            | ❌ No: Thrown from both server and client |
-| `classes/loggers/`  | Logger classes                | ✅ Yes: Winston writes to the filesystem  |
-
 <Callout>
   When `import 'server-only'` is used at the top of a file, this causes a build
   error if anything in the client bundle tries to import it. This is intentional
   to stop anything sensitive on the server side leaking to the browser
 </Callout>
 
+| Folder              | What lives here               | Server-only?                              |
+| ------------------- | ----------------------------- | ----------------------------------------- |
+| `classes/services/` | Business logic + integrations | ✅ Yes: Drizzle, third-party API clients  |
+| `classes/errors/`   | Shared error types            | ❌ No: Thrown from both server and client |
+| `classes/loggers/`  | Logger classes                | ✅ Yes: Winston writes to the filesystem  |
+
 ## Design Patterns
-
-Design patterns in software engineering are essentially blueprints you can follow
-to make your code more maintainable, extensible, and
-predictable.
-
-In the server layer design patterns are applied deliberately, creating repeatable, well-known
-shapes for structuring code. They're not rules for the sake of it; they make the codebase predictable. A
-developer or agent picking this up cold can look at a service class and know
-exactly what it does, how it's instantiated, and where its boundaries are.
-
-The patterns referenced here are:
-
-- service layer
-- singleton
-- module-scoped instance
-- factory
 
 <Callout>
   If you are not familiar with Design Patterns, check out
   [this](https://refactoring.guru/design-patterns) superb resource!
 </Callout>
 
+Design patterns in software engineering are essentially blueprints you can follow
+to make your code more maintainable, extensible, and predictable. If we think about
+the "agentic engineering" abstraction issue (where are abstractions keep getting higher)
+things like design patterns become fundamental to maintaining a clear and consistent
+mental model of your codebase
+
+In the server layer design patterns are applied deliberately, creating repeatable,
+well-known shapes for structuring code.
+
+The patterns used / referenced are:
+
+- **Singleton (module-scoped instance)** — The intent is a singleton but Next.js compiles API routes and server actions into separate bundles, so in practice you get one instance per bundle rather than one truly global instance
+- **Factory** — Per-request instantiation when the service needs context baked in
+- **Inheritance vs Composition** — Base clients handle cross-cutting concerns; domain clients extend or compose depending on what they need
+
 ## Why classes?
 
+You don't see many classes in React these days. Hooks replaced class components,
+and the general vibe became "functions good, classes bad."
+For the UI, that vibe is generally right. Functions and hooks are just a better fit for components.
+
+However, Next.js changed things somewhat. As a "full-stack" framework developers are often writing both frontend and backend code
+in one project and the "just use functions" philosophy doesn't really cut it here.
+Once you're past simple handlers, encapsulation and structured state do earn their place.
+
 Using a class for each domain service gives you a clean instantiation boundary
-and a natural home for the singleton vs factory decision. The class defines the
+and a natural home for utilizing design patterns. The class defines the
 surface; how you export it determines the lifetime.
 
-This is different from the plain module/function approach (e.g. Bulletproof
-React). A module export is always a singleton by nature — you can't control
-instantiation. A class lets you make that choice explicitly, which matters when
-some services need per-request instances (see [Singletons vs factory](#singletons-vs-factory) below).
+A module export is always a
+singleton by nature, you can't control instantiation. A class lets you make
+that choice explicitly, which matters when some services need per-request
+instances (see [Module-scoped instances vs factory](#module-scoped-instances-vs-factory) below).
 
-**Import ergonomics** are the other concrete win. A module of named function
-exports grows noisy fast — every method you need is a separate import:
+Other factors that play a part in this classes choice are **Import ergonomics**. A module of named function
+exports grows noisy, with every method requiring a separate import:
 
 ```ts
 // Named exports — import noise grows with every method
@@ -306,17 +313,3 @@ than every subclass. Reach for inheritance only when you genuinely need to call
 the base class's protected methods (`this.get()`, `this.post()`) directly inside
 your own implementation. If all you need is for the base class to handle auth
 and make the request, compose.
-
-## The server-only boundary
-
-`import 'server-only'` at the top of a service file causes a build error if
-anything in the client bundle tries to import it. This is a hard build-time
-guarantee, not a convention that relies on developers remembering the rule.
-
-```ts
-import 'server-only'; // client import = build error, not a runtime surprise
-```
-
-The practical effect: if a component accidentally imports a service, the build
-fails immediately with a clear message. No silent data leaks, no accidentally
-shipping DB credentials to the browser.
