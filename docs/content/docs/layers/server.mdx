@@ -88,10 +88,6 @@ const items = await exampleItemService.getAll();
 const item = await exampleItemService.create(input);
 ```
 
-The class definition is also the explicit public API — `getAll`, `getById`,
-`create`, `update`, `delete`. With named exports the public API is "everything
-that's exported", a weaker contract that drifts as files grow.
-
 ## Service shape
 
 Every service class follows the same shape: lives in
