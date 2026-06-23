@@ -19,17 +19,21 @@ description: The classes/ directory. Services, errors, loggers, and the server-o
 
 ## Design Patterns
 
-Design patterns in Software Engineering are essentially blueprints that you
-can follow to make your applications and code more maintanable, (whats a word for easy to cahnge?)
-and soemthing else...
+Design patterns in software engineering are essentially blueprints you can follow
+to make your code more maintainable, extensible, and
+predictable.
 
-The server layer applies design patterns deliberately — repeatable, well-known
-shapes for structuring code that any engineer will immediately recognise. They're
-not rules followed for their own sake; they make the codebase predictable. A
+In the server layer design patterns are applied deliberately, creating repeatable, well-known
+shapes for structuring code. They're not rules for the sake of it; they make the codebase predictable. A
 developer or agent picking this up cold can look at a service class and know
-exactly what it does, how it's instantiated, and where its boundaries are. The
-patterns used here — service layer, module-scoped instance, and factory — are
-covered in the sections below.
+exactly what it does, how it's instantiated, and where its boundaries are.
+
+The patterns referenced here are:
+
+- service layer
+- singleton
+- module-scoped instance
+- factory
 
 <Callout>
   If you are not familiar with Design Patterns, check out
