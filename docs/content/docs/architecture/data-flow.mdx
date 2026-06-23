@@ -76,7 +76,7 @@ import { exampleItemSchema } from '@/validation/example-item';
 ## Why the same service for both paths
 
 Neither route handlers nor server actions query the database directly. Both
-delegate to `classes/services/`. This is a hard rule, not a suggestion!
+delegate to `classes/services/`.
 
 Keeping all data access inside services means business logic lives in one place.
 The API layer stays thin: validate input, call the service, shape the response.
