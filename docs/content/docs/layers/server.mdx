@@ -63,6 +63,25 @@ Using a class for each domain service gives three key benefits:
   says "here's the domain", the class says "here's everything that domain can
   do."
 
+  <Files>
+    <Folder name='classes/services' defaultOpen>
+      <Folder name='example-item' defaultOpen>
+        <File name='index.ts' />
+      </Folder>
+    </Folder>
+  </Files>
+
+  ```ts
+  // Everything related to example items — in one place, nothing else
+  class ExampleItemService {
+    async getAll(): Promise<ExampleItem[]> { ... }
+    async getById(id: number): Promise<ExampleItem | null> { ... }
+    async create(input: ExampleItemInput): Promise<ExampleItem> { ... }
+    async update(id: number, input: ExampleItemUpdateInput): Promise<ExampleItem | null> { ... }
+    async delete(id: number): Promise<boolean> { ... }
+  }
+  ```
+
 - **Import ergonomics** — a module of named function exports grows noisy fast,
   every method requires a separate import:
 
