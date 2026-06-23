@@ -49,7 +49,6 @@ For the UI, that vibe is generally right. Functions and hooks are just a better 
 
 However, Next.js changed things somewhat. As a "full-stack" framework developers are often writing both frontend and backend code
 in one project and the "just use functions" philosophy doesn't really cut it here.
-Once you're past simple handlers, encapsulation and structured state really earn their place.
 
 Using a class for each domain service gives a number of benefits:
 
@@ -80,7 +79,7 @@ Using a class for each domain service gives a number of benefits:
   }
   ```
 
-- **Import ergonomics** — With plain function exports you either import every method individually, which gets noisy fast
+- **Import ergonomics** — With plain function exports you either import every method individually, which is noisy
   or use `import *` to avoid the noise, which then breaks [tree-shaking](https://webpack.js.org/guides/tree-shaking/) and prevents
   `import type` from working cleanly:
 
@@ -108,10 +107,12 @@ Using a class for each domain service gives a number of benefits:
 
 ## Service shape
 
-Every service class follows the same shape: lives in
-`classes/services/<domain>/`, imports `server-only`, takes config through the
-constructor, and exposes only domain methods — never the raw Drizzle client or
-HTTP client.
+Every service class follows the same shape:
+
+- Lives in `classes/services/<domain>/`
+- imports `server-only`
+- Takes config through the constructor, and exposes only domain methods (never the raw Drizzle client or
+  HTTP client)
 
 ```ts
 // classes/services/example-item/index.ts
@@ -134,10 +135,6 @@ class ExampleItemService {
 export const exampleItemService = new ExampleItemService();
 ```
 
-The caller never sees Drizzle. A route handler or server action just calls
-`exampleItemService.create(input)` — if the data access layer changes, nothing
-outside `classes/services/` needs to change.
-
 ## Module-scoped instances vs factory
 
 The default is exporting a **module-scoped instance** — `export const x = new X()`:
@@ -148,17 +145,16 @@ export const hubspotService = new HubspotService(process.env.HUBSPOT_API_KEY);
 ```
 
 It's worth being precise about what "module-scoped" means here. Next.js compiles
-API routes and server actions into separate bundles — so `exampleItemService` in
+API routes and server actions into separate bundles, so `exampleItemService` in
 a route handler and `exampleItemService` in a server action are actually two
 different objects at runtime, not one shared instance. You get one instance per
 bundle, not one instance per app.
 
-For stateless services this doesn't matter at all — both instances behave
+For stateless services this doesn't matter at all, both instances behave
 identically because there's no state to share. But it has a critical implication:
 
 **Never put mutable state on a service instance.** An in-memory cache, a
-counter, or any mutable field on the class would be silently doubled — mutations
-via server action wouldn't be visible to the route handler and vice versa. If
+counter, or any mutable field on the class would be silently doubled. If
 you need shared state across bundles it belongs in the database or an external
 store like Redis, never on the instance itself.
 
