@@ -137,52 +137,57 @@ export const exampleItemService = new ExampleItemService();
 
 ## Module-scoped instances vs factory
 
-It's worth being precise about what "module-scoped" means here.
+It's worth being precise about what "module-scoped instance" means in this
+context. The term is used here to provide a more technically accurate label for
+what is essentially the **singleton pattern.**
 
-Next.js compiles API routes and server actions into separate bundles, so `exampleItemService` in
-a route handler and `exampleItemService` in a server action are actually two
-different objects at runtime, not one shared instance. You get one instance per
-bundle, not one instance per app.
-
-For stateless services this doesn't matter at all, both instances behave
-identically because there's no state to share.
+Next.js compiles API routes and server actions into separate bundles, so `exampleItemService` in a route handler
+and `exampleItemService` in a server action are actually two different objects at
+runtime. So what you end up with is not a true singleton in the classical sense. You actually get one instance per bundle, not one instance per app.
+From a purely syntactical perspective though the pattern of the code is a singleton.
 
 <Callout>
-  **Never put mutable state on a service instance.** An in-memory cache, a
-  counter, or any mutable field on the class would be silently doubled. If you
-  need shared state across bundles it belongs in the database or an external
-  store like Redis, never on the instance itself.
+  For stateless services this doesn't matter at all, both instances behave
+  identically because there's no state to share. However you should **never put
+  mutable state on a service instance.** An in-memory cache, a counter, or any
+  mutable field on the class would be silently doubled. If you need shared state
+  across bundles it belongs in the database or an external store like Redis.
 </Callout>
 
-The default is exporting a **module-scoped instance** — `export const x = new X()`:
+The **singleton pattern** (_module-scoped instances_) is the default for service instantiation. One instance
+reused across the bundle. There are two forms depending on whether construction
+has side effects:
 
-```ts
-export const exampleItemService = new ExampleItemService();
-export const hubspotService = new HubspotService(process.env.HUBSPOT_API_KEY);
-```
+- **Eager singleton** — the default. `export const x = new X()`. Right for any
+  stateless service where every caller needs the same thing:
 
-Use a **lazy module-scoped instance** (`private constructor` + `static getInstance()`)
-only when construction has side effects that must be deferred past import time.
-`ApplicationLogger` uses this because its constructor creates Winston file transports:
+  ```ts
+  export const exampleItemService = new ExampleItemService();
+  export const hubspotService = new HubspotService(process.env.HUBSPOT_API_KEY);
+  ```
 
-```ts
-// Construction creates .logs/ file transports — defer until first use
-class ApplicationLogger {
-  private static instance: ApplicationLogger;
-  private constructor() {
-    /* creates file transports */
-  }
+- **Lazy singleton** — use only when construction has side effects that must be
+  deferred past import time (creating directories, opening file handles).
+  `ApplicationLogger` uses this because its constructor creates Winston file
+  transports:
 
-  public static getInstance(): ApplicationLogger {
-    if (!ApplicationLogger.instance) {
-      ApplicationLogger.instance = new ApplicationLogger();
+  ```ts
+  class ApplicationLogger {
+    private static instance: ApplicationLogger;
+    private constructor() {
+      /* creates file transports */
     }
-    return ApplicationLogger.instance;
-  }
-}
-```
 
-Use a **factory** when the object carries state that belongs to a single request.
+    public static getInstance(): ApplicationLogger {
+      if (!ApplicationLogger.instance) {
+        ApplicationLogger.instance = new ApplicationLogger();
+      }
+      return ApplicationLogger.instance;
+    }
+  }
+  ```
+
+Use the **factory pattern** instead when the object carries state that belongs to a single request.
 The clearest real-world case is a multi-tenant app where every data access needs
 to be scoped to the signed-in user's company.
 
