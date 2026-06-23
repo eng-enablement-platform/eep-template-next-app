@@ -1,23 +1,27 @@
 ---
 title: Server Layer
-description: The classes/ directory — services, errors, loggers, and the server-only boundary.
+description: The classes/ directory. Services, errors, loggers, and the server-only boundary.
 ---
 
 `classes/` is split into three folders, each with a different server-only scope:
 
-| Folder              | What lives here               | Server-only?                               |
-| ------------------- | ----------------------------- | ------------------------------------------ |
-| `classes/services/` | Business logic + integrations | ✅ Yes — Drizzle, third-party API clients  |
-| `classes/errors/`   | Shared error types            | ❌ No — thrown from both server and client |
-| `classes/loggers/`  | Logger classes                | ✅ Yes — Winston writes to the filesystem  |
+| Folder              | What lives here               | Server-only?                              |
+| ------------------- | ----------------------------- | ----------------------------------------- |
+| `classes/services/` | Business logic + integrations | ✅ Yes: Drizzle, third-party API clients  |
+| `classes/errors/`   | Shared error types            | ❌ No: Thrown from both server and client |
+| `classes/loggers/`  | Logger classes                | ✅ Yes: Winston writes to the filesystem  |
 
 <Callout>
-  `server-only` is not a project-wide label for `classes/`, it's scoped per
-  bucket. `ApplicationError` for example is deliberately not `server-only`
-  because a client component may need to utilize it.
+  When `import 'server-only'` is used at the top of a file, this causes a build
+  error if anything in the client bundle tries to import it. This is intentional
+  to stop anything sensitive on the server side leaking to the browser
 </Callout>
 
 ## Design Patterns
+
+Design patterns in Software Engineering are essentially blueprints that you
+can follow to make your applications and code more maintanable, (whats a word for easy to cahnge?)
+and soemthing else...
 
 The server layer applies design patterns deliberately — repeatable, well-known
 shapes for structuring code that any engineer will immediately recognise. They're
@@ -26,6 +30,11 @@ developer or agent picking this up cold can look at a service class and know
 exactly what it does, how it's instantiated, and where its boundaries are. The
 patterns used here — service layer, module-scoped instance, and factory — are
 covered in the sections below.
+
+<Callout>
+  If you are not familiar with Design Patterns, check out
+  [this](https://refactoring.guru/design-patterns) superb resource!
+</Callout>
 
 ## Why classes?
 
