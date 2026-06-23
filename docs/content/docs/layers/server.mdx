@@ -55,13 +55,18 @@ Using a class for each domain service gives you a clean instantiation boundary
 and a natural home for utilizing design patterns. The class defines the
 surface; how you export it determines the lifetime.
 
-A module export is always a
-singleton by nature, you can't control instantiation. A class lets you make
-that choice explicitly, which matters when some services need per-request
-instances (see [Module-scoped instances vs factory](#module-scoped-instances-vs-factory) below).
+A module export is always a singleton by nature — you can't control
+instantiation. A class lets you make that choice explicitly, which matters when
+some services need per-request instances (see [Module-scoped instances vs factory](#module-scoped-instances-vs-factory) below).
 
-Other factors that play a part in this classes choice are **Import ergonomics**. A module of named function
-exports grows noisy, with every method requiring a separate import:
+**Code organisation** is another concrete benefit. A class groups all related
+methods for a domain in one tidy place — you get two levels of clarity working
+together. The folder says "here's the domain", the class says "here's everything
+that domain can do." Compare that to a file full of loosely related exported
+functions with no structural signal of what belongs together.
+
+**Import ergonomics** follow naturally from that grouping. A module of named
+function exports grows noisy fast — every method requires a separate import:
 
 ```ts
 // Named exports — import noise grows with every method
@@ -83,10 +88,9 @@ const items = await exampleItemService.getAll();
 const item = await exampleItemService.create(input);
 ```
 
-The grouping is also semantic, not just syntactic. The class definition is the
-explicit public API — `getAll`, `getById`, `create`, `update`, `delete`. With
-named exports the public API is "everything that's exported", which is a weaker
-contract that drifts as files grow.
+The class definition is also the explicit public API — `getAll`, `getById`,
+`create`, `update`, `delete`. With named exports the public API is "everything
+that's exported", a weaker contract that drifts as files grow.
 
 ## Service shape
 
