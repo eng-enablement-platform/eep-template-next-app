@@ -49,19 +49,17 @@ For the UI, that vibe is generally right. Functions and hooks are just a better 
 
 However, Next.js changed things somewhat. As a "full-stack" framework developers are often writing both frontend and backend code
 in one project and the "just use functions" philosophy doesn't really cut it here.
-Once you're past simple handlers, encapsulation and structured state do earn their place.
+Once you're past simple handlers, encapsulation and structured state really earn their place.
 
-Using a class for each domain service gives three key benefits:
+Using a class for each domain service gives a number of benefits:
 
-- **Instantiation control** — a module export is always a singleton by nature,
+- **Instantiation control** — A module export is always a singleton by nature,
   you can't control it. A class lets you make that choice explicitly, which
   matters when some services need per-request instances (see
   [Module-scoped instances vs factory](#module-scoped-instances-vs-factory) below).
 
-- **Code organisation** — a class groups all related methods for a domain in
-  one tidy place. You get two levels of clarity working together: the folder
-  says "here's the domain", the class says "here's everything that domain can
-  do."
+- **Code organisation** — A class groups all related methods for a domain in
+  one tidy place.
 
   <Files>
     <Folder name='classes/services' defaultOpen>
@@ -82,11 +80,11 @@ Using a class for each domain service gives three key benefits:
   }
   ```
 
-- **Import ergonomics** — a module of named function exports grows noisy fast,
-  every method requires a separate import:
+- **Import ergonomics** — With plain function exports you either import every method individually, which gets noisy fast
+  or use `import *` to avoid the noise, which then breaks [tree-shaking](https://webpack.js.org/guides/tree-shaking/) and prevents
+  `import type` from working cleanly:
 
   ```ts
-  // Named exports — import noise grows with every method
   import {
     getItems,
     createItem,
@@ -95,10 +93,13 @@ Using a class for each domain service gives three key benefits:
   } from '@/services/example-item';
   ```
 
-  With a class you import one instance and everything is on it:
+  ```ts
+  import * as exampleItemService from '@/services/example-item';
+  ```
+
+  Whereas with a class instance you have one clean import, everything on it:
 
   ```ts
-  // Class — one import, full surface available
   import { exampleItemService } from '@/classes/services/example-item';
 
   const items = await exampleItemService.getAll();
