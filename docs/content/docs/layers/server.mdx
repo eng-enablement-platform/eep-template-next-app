@@ -175,9 +175,12 @@ has side effects:
   class ApplicationLogger {
     private static instance: ApplicationLogger;
     private constructor() {
-      /* creates file transports */
+      // creates file transports
     }
 
+    /* Lazy instantiation. The instance is only created on first call,
+     * not at import time. Subsequent calls return the existing instance.
+     */
     public static getInstance(): ApplicationLogger {
       if (!ApplicationLogger.instance) {
         ApplicationLogger.instance = new ApplicationLogger();
@@ -185,6 +188,16 @@ has side effects:
       return ApplicationLogger.instance;
     }
   }
+  ```
+
+  ```ts
+  /*
+   * Rather than exporting the instance directly,
+   * a wrapper function calls `getInstance()` internally
+   */
+  export const rootLogger = (logSource: LogSource): Logger => {
+    return ApplicationLogger.getInstance().getLogger(logSource);
+  };
   ```
 
 Use the **factory pattern** instead when the object carries state that belongs to a single request.
