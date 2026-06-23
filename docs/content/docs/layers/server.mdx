@@ -51,42 +51,40 @@ However, Next.js changed things somewhat. As a "full-stack" framework developers
 in one project and the "just use functions" philosophy doesn't really cut it here.
 Once you're past simple handlers, encapsulation and structured state do earn their place.
 
-Using a class for each domain service gives you a clean instantiation boundary
-and a natural home for utilizing design patterns. The class defines the
-surface; how you export it determines the lifetime.
+Using a class for each domain service gives three key benefits:
 
-A module export is always a singleton by nature — you can't control
-instantiation. A class lets you make that choice explicitly, which matters when
-some services need per-request instances (see [Module-scoped instances vs factory](#module-scoped-instances-vs-factory) below).
+- **Instantiation control** — a module export is always a singleton by nature,
+  you can't control it. A class lets you make that choice explicitly, which
+  matters when some services need per-request instances (see
+  [Module-scoped instances vs factory](#module-scoped-instances-vs-factory) below).
 
-**Code organisation** is another concrete benefit. A class groups all related
-methods for a domain in one tidy place — you get two levels of clarity working
-together. The folder says "here's the domain", the class says "here's everything
-that domain can do." Compare that to a file full of loosely related exported
-functions with no structural signal of what belongs together.
+- **Code organisation** — a class groups all related methods for a domain in
+  one tidy place. You get two levels of clarity working together: the folder
+  says "here's the domain", the class says "here's everything that domain can
+  do."
 
-**Import ergonomics** follow naturally from that grouping. A module of named
-function exports grows noisy fast — every method requires a separate import:
+- **Import ergonomics** — a module of named function exports grows noisy fast,
+  every method requires a separate import:
 
-```ts
-// Named exports — import noise grows with every method
-import {
-  getItems,
-  createItem,
-  updateItem,
-  deleteItem,
-} from '@/services/example-item';
-```
+  ```ts
+  // Named exports — import noise grows with every method
+  import {
+    getItems,
+    createItem,
+    updateItem,
+    deleteItem,
+  } from '@/services/example-item';
+  ```
 
-With a class you import one instance and everything is on it:
+  With a class you import one instance and everything is on it:
 
-```ts
-// Class — one import, full surface available
-import { exampleItemService } from '@/classes/services/example-item';
+  ```ts
+  // Class — one import, full surface available
+  import { exampleItemService } from '@/classes/services/example-item';
 
-const items = await exampleItemService.getAll();
-const item = await exampleItemService.create(input);
-```
+  const items = await exampleItemService.getAll();
+  const item = await exampleItemService.create(input);
+  ```
 
 ## Service shape
 
