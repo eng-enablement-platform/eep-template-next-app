@@ -137,26 +137,29 @@ export const exampleItemService = new ExampleItemService();
 
 ## Module-scoped instances vs factory
 
+It's worth being precise about what "module-scoped" means here.
+
+Next.js compiles API routes and server actions into separate bundles, so `exampleItemService` in
+a route handler and `exampleItemService` in a server action are actually two
+different objects at runtime, not one shared instance. You get one instance per
+bundle, not one instance per app.
+
+For stateless services this doesn't matter at all, both instances behave
+identically because there's no state to share.
+
+<Callout>
+  **Never put mutable state on a service instance.** An in-memory cache, a
+  counter, or any mutable field on the class would be silently doubled. If you
+  need shared state across bundles it belongs in the database or an external
+  store like Redis, never on the instance itself.
+</Callout>
+
 The default is exporting a **module-scoped instance** — `export const x = new X()`:
 
 ```ts
 export const exampleItemService = new ExampleItemService();
 export const hubspotService = new HubspotService(process.env.HUBSPOT_API_KEY);
 ```
-
-It's worth being precise about what "module-scoped" means here. Next.js compiles
-API routes and server actions into separate bundles, so `exampleItemService` in
-a route handler and `exampleItemService` in a server action are actually two
-different objects at runtime, not one shared instance. You get one instance per
-bundle, not one instance per app.
-
-For stateless services this doesn't matter at all, both instances behave
-identically because there's no state to share. But it has a critical implication:
-
-**Never put mutable state on a service instance.** An in-memory cache, a
-counter, or any mutable field on the class would be silently doubled. If
-you need shared state across bundles it belongs in the database or an external
-store like Redis, never on the instance itself.
 
 Use a **lazy module-scoped instance** (`private constructor` + `static getInstance()`)
 only when construction has side effects that must be deferred past import time.
@@ -183,7 +186,7 @@ Use a **factory** when the object carries state that belongs to a single request
 The clearest real-world case is a multi-tenant app where every data access needs
 to be scoped to the signed-in user's company.
 
-With a module-scoped instance there's nowhere to put the company context — you'd
+With a module-scoped instance there's nowhere to put the company context, you'd
 end up passing `companyId` into every single method call, which is noisy and
 easy to forget:
 
@@ -197,8 +200,7 @@ const report = await reportService.create(companyId, input);
 const deleted = await reportService.delete(companyId, id);
 ```
 
-With a factory, the context is baked in at construction. Every method
-automatically scopes to the right company — you can't accidentally forget it:
+With a factory, the context is baked in at construction:
 
 ```ts
 class ReportService {
@@ -226,9 +228,12 @@ const reportService = createReportService(companyId);
 const reports = await reportService.getReports();
 ```
 
-The simple rule: does every caller use the service the same way with the same
-config? → module-scoped instance. Does each caller need the service configured
-differently based on who they are or what request they're handling? → factory.
+<Callout>
+  **The simple rule to remember:** Does every caller use the service the same
+  way with the same config? → module-scoped instance. Does each caller need the
+  service configured differently based on who they are or what request they're
+  handling? → factory.
+</Callout>
 
 ## Inheritance and composition
 
