@@ -80,9 +80,19 @@ HTTP methods for that URL as named exports.
 
 Every handler follows the same shape:
 
-1. Validate at the boundary
-2. Call the service
-3. Shape the response
+<Steps>
+<Step>
+Validate at the boundary
+</Step>
+
+<Step>
+Call the service
+</Step>
+  
+<Step>
+Shape the response
+</Step>
+</Steps>
 
 ```ts
 // app/api/example-items/route.ts
