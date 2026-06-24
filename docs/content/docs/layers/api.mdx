@@ -182,19 +182,18 @@ is only needed when Next.js can't infer it.
 
 ## OpenAPI and Swagger UI
 
-<Callout type='idea'>
-  Like everything in this template, this is pick-and-choose. Keep the docs up to
-  date as you go, or ignore them entirely — the routes work either way.
-</Callout>
+The interactive docs at `/api-docs` and the spec at `/api/openapi` are unfortunately not
+auto-discovered from the filesystem. Using Swagger in a Next project is not
+particularly common and so there isn't an easy path to auto generating for ,x,y,z.
 
-Swagger isn't a common pattern in Next.js projects and there's no straightforward
-path to auto-generating an OpenAPI spec from the filesystem. The approach here is
-a pragmatic workaround: the spec is hand-assembled in `src/lib/openapi/index.ts`
-from the same Zod schemas the routes already validate with. It's a small amount
-of config per route, but it's manual.
+They are implemented here as more of a reference point and as with all of the things
+in this template its a pick and choose kind of vibe, want to keep these up to date as
+you go follow the below, if not simply ignore.
 
-The upside is that the request bodies, response shapes, and validators all come
-from one place — the docs cannot drift from what the API actually accepts.
+The spec is hand-assembled in
+`src/lib/openapi/index.ts` from the same Zod schemas the routes validate with.
+Because the request bodies, the response shape, and the validator all come from
+one place, the published docs cannot drift from what the API accepts.
 
 ### Adding a new route to the docs
 
