@@ -31,43 +31,50 @@ Compared to a route handler, actions give you:
   mobile client), use a route handler instead.
 </Callout>
 
-## Folder structure
+## Structure
 
-Dynamic segments are bracketed folders. Each `route.ts` groups all HTTP methods
-for that URL:
+The API routes are organised in the `app/api` directory. Each subdirectory
+represents a logical grouping of related endpoints:
 
 <Files>
   <Folder name='app' defaultOpen>
     <Folder name='api' defaultOpen>
       <Folder name='example-items' defaultOpen>
         <Folder name='[id]' defaultOpen>
-          <File name='route.ts' annotation='GET, PATCH, DELETE one item' />
+          <File
+            name='route.ts'
+            description='// GET, PATCH, DELETE a specific example item'
+          />
         </Folder>
-        <File name='route.ts' annotation='GET list, POST new item' />
+        <File
+          name='route.ts'
+          description='// GET all example items, POST new example item'
+        />
       </Folder>
       <Folder name='openapi' defaultOpen>
         <File
           name='route.ts'
-          annotation='serves the spec JSON at /api/openapi'
+          description='// serves the OpenAPI spec JSON at /api/openapi'
         />
       </Folder>
       <Folder name='utils' defaultOpen>
-        <File name='index.ts' annotation='shared handler utilities' />
+        <File name='index.ts' description='// shared handler utilities' />
       </Folder>
     </Folder>
     <Folder name='api-docs' defaultOpen>
-      <File name='route.ts' annotation='Swagger UI at /api-docs' />
+      <File name='route.ts' description='// Swagger UI at /api-docs' />
     </Folder>
   </Folder>
 </Files>
 
-The `example-items/` vertical is the template's full-CRUD REST reference (GET /
-POST / PATCH / DELETE). It exists to demonstrate the pattern and give Swagger
-something to document — not as the default shape for every feature. In a real
-feature, use a read route and a server action unless an external caller forces
-the REST write path.
+Dynamic segments are bracketed folders (`[id]`). Each `route.ts` groups all
+HTTP methods for that URL as named exports.
 
-## Route handler structure
+<Callout>
+  The `example-items/` vertical is the template's full-CRUD REST reference (GET
+  / POST / PATCH / DELETE). It exists to demonstrate the pattern and give
+  Swagger something to document ## Route handler structure
+</Callout>
 
 Every handler follows the same shape:
 

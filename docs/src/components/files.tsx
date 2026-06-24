@@ -31,6 +31,8 @@ export function Files({
 export interface FileProps extends HTMLAttributes<HTMLDivElement> {
   name: string;
   icon?: ReactNode;
+  /** Short description rendered as muted text after the filename. */
+  description?: string;
 }
 
 export interface FolderProps extends HTMLAttributes<HTMLDivElement> {
@@ -49,6 +51,7 @@ export interface FolderProps extends HTMLAttributes<HTMLDivElement> {
 export function File({
   name,
   icon = <FileIcon />,
+  description,
   className,
   ...rest
 }: FileProps): React.ReactElement {
@@ -56,6 +59,9 @@ export function File({
     <div className={cn(itemVariants({ className }))} {...rest}>
       {icon}
       {name}
+      {description && (
+        <span className='text-fd-muted-foreground ml-2'>{description}</span>
+      )}
     </div>
   );
 }
