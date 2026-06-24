@@ -1,6 +1,6 @@
 ---
 title: Server Layer
-description: The classes/ directory. Services, errors, loggers, and the server-only boundary.
+description: The classes/ directory. Services, errors, loggers
 ---
 
 `classes/` is split into three folders, each with a different server-only scope:
@@ -154,11 +154,10 @@ From a purely syntactical perspective though the pattern of the code is a single
   across bundles it belongs in the database or an external store like Redis.
 </Callout>
 
-The **singleton pattern** (_module-scoped instances_) is the default for service instantiation. One instance
-reused across the bundle. There are two forms depending on whether construction
+The **singleton pattern** (_module-scoped instances_) is the default for service instantiation. There are two forms depending on whether construction
 has side effects:
 
-- **Eager singleton** — the default. `export const x = new X()`. Right for any
+- **Eager singleton** — The default. `export const x = new X()`. Right for any
   stateless service where every caller needs the same thing:
 
   ```ts
@@ -166,7 +165,7 @@ has side effects:
   export const hubspotService = new HubspotService(process.env.HUBSPOT_API_KEY);
   ```
 
-- **Lazy singleton** — use only when construction has side effects that must be
+- **Lazy singleton** — Use only when construction has side effects that must be
   deferred past import time (creating directories, opening file handles).
   `ApplicationLogger` uses this because its constructor creates Winston file
   transports:
@@ -200,7 +199,8 @@ has side effects:
   };
   ```
 
-Use the **factory pattern** instead when the object carries state that belongs to a single request.
+Reach for the **factory pattern** instead when the object carries state that belongs to a single request.
+
 The clearest real-world case is a multi-tenant app where every data access needs
 to be scoped to the signed-in user's company.
 
@@ -248,24 +248,22 @@ const reports = await reportService.getReports();
 
 <Callout>
   **The simple rule to remember:** Does every caller use the service the same
-  way with the same config? → module-scoped instance. Does each caller need the
-  service configured differently based on who they are or what request they're
-  handling? → factory.
+  way with the same config? → **module-scoped instance.** Does each caller need
+  the service configured differently based on who they are or what request
+  they're handling? → **factory.**
 </Callout>
 
 ## Inheritance and composition
 
 When integrating with a third-party API, you often start with a base client that
-handles the cross-cutting concerns — authentication, rate limiting, request
+handles the cross-cutting concerns. like authentication, rate limiting, request
 queuing, retry logic. Individual domain clients then build on top of it.
 
-There are two ways to do this: **inheritance** (extend the base class) or
-**composition** (hold the base class as a private member). The choice depends on
-what the domain client is doing.
+There are two ways to do this and the choice depends on what the domain client is doing:
 
-**Inheritance** — use when the domain client needs to add new operations that
-build directly on the base class's internals. The domain client `extends` the
-base and gets direct access to its protected methods:
+- **Inheritance** (_extend the base class_) — Use when the domain client needs to add new operations that
+  build directly on the base class's internals. The domain client `extends` the
+  base and gets direct access to its protected methods:
 
 <Files>
   <Folder name='classes/services' defaultOpen>
@@ -308,9 +306,9 @@ export class PaymentsClient extends HttpClient {
 }
 ```
 
-**Composition** — use when the domain client is primarily transforming or
-querying data, not adding new transport-level operations. The base client is a
-private dependency, injected or constructed internally:
+- **Composition** (_hold the base class as a private member_) — Use when the domain client is primarily transforming or
+  querying data, not adding new transport-level operations. The base client is a
+  private dependency, injected or constructed internally:
 
 <Files>
   <Folder name='classes/services' defaultOpen>
@@ -340,15 +338,11 @@ export class ReportingClient {
 }
 ```
 
-**The key benefits of both approaches:**
-
-- Auth, rate limiting, and retry logic live in one place — the base client. Domain clients never re-implement them
-- Each domain client has a single responsibility — it exposes domain methods, not HTTP primitives
-- Adding a new integration means extending or composing the base client, not copying auth boilerplate
-
-**When to pick which:** favour composition by default — it's looser coupling,
-and if the base class changes, only the composition wrapper is affected rather
-than every subclass. Reach for inheritance only when you genuinely need to call
-the base class's protected methods (`this.get()`, `this.post()`) directly inside
-your own implementation. If all you need is for the base class to handle auth
-and make the request, compose.
+<Callout>
+  **When to pick which:** Favour composition by default, it's looser coupling,
+  and if the base class changes, only the composition wrapper is affected rather
+  than every subclass. Reach for inheritance only when you genuinely need to
+  call the base class's protected methods (`this.get()`, `this.post()`) directly
+  inside your own implementation. If all you need is for the base class to
+  handle auth and make the request, compose.
+</Callout>
