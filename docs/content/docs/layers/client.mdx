@@ -15,9 +15,7 @@ The client layer is split across three folders: `components/`, `hooks/`, and
 ## Components
 
 Components are purely presentational. They don't fetch, they don't mutate, and they don't own
-business logic.
-
-An example of this distinction:
+business logic:
 
 ```tsx
 // ✅ UI logic — deciding what to render based on state. Fine.
@@ -53,19 +51,6 @@ function InvoiceRow({ invoice }: InvoiceRowProps) {
   based on business decisions alone (not UI decisions)? If yes, it's business
   logic and belongs in the server layer or a hook.
 </Callout>
-
-### Where utilities live
-
-Pure helper functions that aren't React concepts follow a scope rule:
-
-| Scope                                        | Where                                  | Example                                          |
-| -------------------------------------------- | -------------------------------------- | ------------------------------------------------ |
-| Shared across the whole app, domain-agnostic | `src/utils/`                           | `formatCurrency`, `cn()`, `formatErrorMessage`   |
-| Specific to one feature                      | `components/features/<feature>/utils/` | Invoice row formatting helpers                   |
-| Stateful / reusable across components        | `hooks/` — extract to a hook           | Anything using `useState`, `useEffect`, `useRef` |
-
-`src/utils/` carries an implicit contract: **safe to use anywhere**. Don't put feature-specific
-helpers there — if it only makes sense in the context of one feature, it's not a shared utility.
 
 **Structure rules:**
 

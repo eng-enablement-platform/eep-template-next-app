@@ -2,3 +2,52 @@
 title: Code Style
 description: Naming, types, exports, comments, TSDoc — the rules and why they exist.
 ---
+
+## Utilities
+
+Utility functions live in `src/utils/`. The folder carries an implicit contract:
+**safe to use anywhere** — server, client, tests, scripts. That constraint has a
+direct consequence: don't put feature-specific helpers here. If a function only
+makes sense in the context of one feature, it doesn't belong in `src/utils/`.
+
+### Where a utility lives
+
+| Scope                                        | Where                                                     | Example                                          |
+| -------------------------------------------- | --------------------------------------------------------- | ------------------------------------------------ |
+| Shared across the whole app, domain-agnostic | `src/utils/`                                              | `formatCurrency`, `cn()`, `formatErrorMessage`   |
+| Specific to one feature                      | `utils/` subfolder inside that feature's component folder | Invoice row formatting helpers                   |
+| Stateful / reusable across components        | Extract to a hook in `hooks/`                             | Anything using `useState`, `useEffect`, `useRef` |
+
+### When to split a utility file
+
+Start with a single `index.ts`. Split when the file crosses **any** of:
+
+- ~200 lines, or
+- ~3 distinct concerns, or
+- individual functions have grown their own dedicated test files
+
+Count **concerns, not functions**. Three functions serving one cohesive concern
+(e.g. HTTP response shaping) stay together. Three unrelated functions (math,
+error formatting, class merging) are three concerns — split along those seams.
+
+When you split, use kebab-named per-concern files, not one file per export.
+`index.ts` becomes the folder's barrel after splitting — consumers import from
+the folder, internal siblings import directly from each other.
+
+```
+// Before split — single file, one concern
+utils/
+  format-error-message.ts
+
+// After split — multiple concerns, folder + barrel
+utils/
+  index.ts              ← barrel (re-exports the public surface)
+  format-error.ts
+  format-currency.ts
+  cn.ts
+```
+
+<Callout>
+  Never create a folder + `index.ts` just to wrap a single file. Promote to a
+  folder only once there are real files to organise inside it.
+</Callout>
