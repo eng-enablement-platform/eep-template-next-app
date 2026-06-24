@@ -59,13 +59,28 @@ function InvoiceRow({ invoice }: InvoiceRowProps) {
   A simple component stays flat; once it earns a folder, `index.tsx` becomes the entry barrel:
 
   <Files>
-    <File name='theme-toggle.tsx' />
+    <File
+      name='theme-toggle.tsx'
+      description='// flat — single file, no sub-parts'
+    />
     <Folder name='sidebar' defaultOpen>
-      <File name='index.tsx' />
+      <File
+        name='index.tsx'
+        description='// entry point — composes all sub-components'
+      />
       <Folder name='components' defaultOpen>
-        <File name='nav-main.tsx' />
-        <File name='nav-user.tsx' />
-        <File name='settings-items.tsx' />
+        <File
+          name='nav-main.tsx'
+          description='// sub-component — main nav links'
+        />
+        <File
+          name='nav-user.tsx'
+          description='// sub-component — user avatar + menu'
+        />
+        <File
+          name='settings-items.tsx'
+          description='// sub-component — settings links'
+        />
       </Folder>
       <Folder name='config' />
       <Folder name='utils' />
