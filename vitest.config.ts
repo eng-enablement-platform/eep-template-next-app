@@ -12,6 +12,16 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   resolve: {
     tsconfigPaths: true,
+    /*
+     * Stub `server-only` so vitest can import server-layer modules without
+     * throwing. The package's only job is to cause a Next.js build error when
+     * server code leaks into the client bundle — that is a build-time concern,
+     * not something vitest needs to enforce.
+     */
+    alias: {
+      'server-only': new URL('./vitest.server-only-stub.ts', import.meta.url)
+        .pathname,
+    },
   },
   test: {
     globals: true,
