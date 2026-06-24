@@ -1,4 +1,202 @@
 ---
 title: API Layer
-description: Route handlers, OpenAPI spec assembly, and the Swagger UI console.
+description: Route handlers, server actions, OpenAPI spec assembly, and the Swagger UI console.
 ---
+
+`app/api/` contains only Next.js [route handlers](https://nextjs.org/docs/app/getting-started/route-handlers). Handlers simply validate input, call a service, and shape the response.
+
+## Reads vs writes
+
+| Operation           | Lives in                           | Why                                                                   |
+| ------------------- | ---------------------------------- | --------------------------------------------------------------------- |
+| Reads               | `GET` route handlers in `app/api/` | Cacheable, addressable, reachable from SWR, curl, and Swagger         |
+| Writes from our UI  | Server Actions in `actions/`       | Type-safe args, no hand-written fetch glue, progressive enhancement   |
+| Writes from outside | Route handlers in `app/api/`       | Webhooks, cron jobs, and third-party callers need a real HTTP surface |
+
+### Why server actions for UI writes?
+
+Server Actions are an internal [RPC](https://aws.amazon.com/compare/the-difference-between-rpc-and-rest/) bound to our own frontend. A form or
+button calls a typed function directly, no `fetch`, no endpoint URL, no JSON serialisation by hand.
+
+Compared to a route handler, actions give you:
+
+- **No fetch glue** — Call the function directly from a component or form. No API client to maintain.
+- **Type-safe arguments** — TypeScript enforces the call signature end-to-end. A route handler's `request.json()` is `unknown` until you parse it.
+- **`revalidatePath` / `revalidateTag`** — Actions can purge the Next.js cache inline, so the UI updates immediately after a mutation without a manual refetch.
+- **Progressive enhancement** — Forms with an `action=` attribute work without JavaScript. Route handlers don't give you this.
+- **Simpler error handling** — Return a discriminated result (`{ ok: true, data }` / `{ ok: false, error }`); the component branches on it. No HTTP status codes to map back into UI state.
+
+The moment an external caller needs to write (a Slack webhook, a cron job, a mobile
+client), use a route handler instead.
+
+## Folder structure
+
+Dynamic segments are bracketed folders. Each `route.ts` groups all HTTP methods
+for that URL:
+
+<Files>
+  <Folder name='app' defaultOpen>
+    <Folder name='api' defaultOpen>
+      <Folder name='example-items' defaultOpen>
+        <Folder name='[id]' defaultOpen>
+          <File name='route.ts' annotation='GET, PATCH, DELETE one item' />
+        </Folder>
+        <File name='route.ts' annotation='GET list, POST new item' />
+      </Folder>
+      <Folder name='openapi' defaultOpen>
+        <File
+          name='route.ts'
+          annotation='serves the spec JSON at /api/openapi'
+        />
+      </Folder>
+      <Folder name='utils' defaultOpen>
+        <File name='index.ts' annotation='shared handler utilities' />
+      </Folder>
+    </Folder>
+    <Folder name='api-docs' defaultOpen>
+      <File name='route.ts' annotation='Swagger UI at /api-docs' />
+    </Folder>
+  </Folder>
+</Files>
+
+The `example-items/` vertical is the template's full-CRUD REST reference (GET /
+POST / PATCH / DELETE). It exists to demonstrate the pattern and give Swagger
+something to document — not as the default shape for every feature. In a real
+feature, use a read route and a server action unless an external caller forces
+the REST write path.
+
+## Route handler structure
+
+Every handler follows the same shape:
+
+- validate at the boundary
+- call the service
+- shape the response
+
+```ts
+// app/api/example-items/route.ts
+export async function POST(request: NextRequest): Promise<NextResponse> {
+  try {
+    const parsed = exampleItemSchema.safeParse(await request.json());
+
+    if (!parsed.success) {
+      return validationErrorResponse(parsed.error); // 400
+    }
+
+    const exampleItem = await exampleItemService.create(parsed.data);
+    logger.info({ message: 'Example item created', id: exampleItem.id });
+
+    return NextResponse.json({ exampleItem }, { status: 201 });
+  } catch (error) {
+    return routeErrorHandler(error, 'POST /api/example-items'); // 500
+  }
+}
+```
+
+**The rules:**
+
+- Named exports for each HTTP method (`GET`, `POST`, `PATCH`, `DELETE`)
+- Every handler is typed: `(request: NextRequest): Promise<NextResponse>`.
+- Zod `safeParse` at the boundary before anything reaches the service.
+- `validationErrorResponse` for 400, `routeErrorHandler` for 500 — both from `app/api/utils/`.
+  Consistent error shapes across every route.
+- Log at the handler. The service layer rethrows rather than logging, so the same failure is never recorded twice under two sources.
+
+### Dynamic route params in Next.js 15+
+
+In Next.js 15, dynamic route `params` are async and must be awaited before
+their values can be read. The route context is typed accordingly:
+
+```ts
+// app/api/example-items/[id]/route.ts
+type RouteContext = { params: Promise<{ id: string }> };
+
+export async function GET(
+  _request: NextRequest,
+  context: RouteContext,
+): Promise<NextResponse> {
+  const id = parseId((await context.params).id);
+  // ...
+}
+```
+
+`parseId` from `app/api/utils/` validates the raw string into a positive
+integer — route params always arrive as strings, so guard before they reach the
+service.
+
+## Shared handler utilities
+
+`app/api/utils/index.ts` holds three small functions used by every handler:
+
+| Function                            | What it does                                                   |
+| ----------------------------------- | -------------------------------------------------------------- |
+| `validationErrorResponse(error)`    | Returns a 400 with flattened Zod field errors                  |
+| `routeErrorHandler(error, context)` | Logs the failure and returns a 500 with a consistent envelope  |
+| `parseId(raw)`                      | Parses a route param string into a positive integer, or `null` |
+
+Keep shared handler logic here. Do not copy these patterns inline — they exist so every route surfaces errors the same way.
+
+## `force-dynamic` — when and why
+
+Next.js statically analyses route handlers at build time and may cache GET
+responses that have no dynamic inputs (no headers, cookies, or search params).
+If your handler reads from a DB or calls an external API, you need to opt out of
+that caching:
+
+```ts
+// Opt out of static caching — this route must run on every request.
+export const dynamic = 'force-dynamic';
+
+export async function GET(): Promise<NextResponse> {
+  const items = await exampleItemService.getAll();
+  return NextResponse.json({ items });
+}
+```
+
+**When to add it:** any GET route whose response can change between requests
+(DB reads, external API calls, authenticated data). Routes that already read
+cookies or headers are implicitly dynamic — Next.js detects this. `force-dynamic`
+is only needed when Next.js can't infer it.
+
+<Callout>
+  The example-items routes in this template don't declare `force-dynamic`
+  because they read request input (body, params) that Next.js already treats as
+  dynamic. Add it explicitly if you write a GET handler with no inputs that
+  still reads live data.
+</Callout>
+
+## OpenAPI and Swagger UI
+
+The interactive docs at `/api-docs` and the spec at `/api/openapi` are not
+auto-discovered from the filesystem. The spec is hand-assembled in
+`src/lib/openapi/index.ts` from the same Zod schemas the routes validate with.
+Because the request bodies, the response shape, and the validator all come from
+one place, the published docs cannot drift from what the API accepts.
+
+### Adding a new route to the docs
+
+Say you add `GET /api/widgets`:
+
+1. **Build the route normally** — `app/api/widgets/route.ts`, Zod schema in
+   `src/validation/widget.ts`. The route works without the next two steps — they only affect the docs.
+
+2. **Annotate the Zod schema with `.meta()`** so it carries its own docs:
+
+   ```ts
+   export const widgetSchema = z
+     .object({
+       label: z.string().meta({ description: 'Widget label.', example: 'A' }),
+     })
+     .meta({ id: 'WidgetInput', description: 'Body for creating a widget.' });
+   ```
+
+   Also export an entity schema (the full row the API returns) with its own
+   `.meta({ id: 'Widget' })` — that is the response contract.
+
+3. **Register the operation** in `src/lib/openapi/index.ts` — add a `paths` entry
+   with method, `summary`, `tags`, `requestBody`, and `responses`. Reuse the
+   shared `validationErrorResponse` / `notFoundResponse` for 400 / 404.
+
+4. **Done** — no build step. The spec rebuilds on the next request to `/api/openapi`.
+
+See `src/app/README.md` for the full walkthrough with a worked example.
