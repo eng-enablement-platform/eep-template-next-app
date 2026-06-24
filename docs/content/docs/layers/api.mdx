@@ -210,9 +210,15 @@ The `/api/openapi` route serves the document as JSON. The `/api-docs` route serv
 
 Say you add `POST /api/widgets`. The route itself works without any of the steps below — they only affect the docs.
 
-**Step 1 — Annotate the Zod schema with `.meta()`**
+<Steps>
+<Step>
 
-Add `import 'zod-openapi'` at the top of your validation file for the type augmentation, then annotate each field and the object itself:
+### Annotate the Zod schema with `.meta()`
+
+Add `import 'zod-openapi'` at the top of your validation file for the type
+augmentation, then annotate each field and the object itself. You need two
+schemas: an input schema (what the route accepts) and an entity schema (the full
+row the API returns).
 
 ```ts
 // src/validation/widget.ts
@@ -244,7 +250,10 @@ export const widgetEntitySchema = z
   .meta({ id: 'Widget', description: 'A fully materialised widget row.' });
 ```
 
-**Step 2 — Register the operation in `src/lib/openapi/index.ts`**
+</Step>
+<Step>
+
+### Register the operation in `src/lib/openapi/index.ts`
 
 Add an envelope schema for the response wrapper, then a `paths` entry:
 
@@ -275,11 +284,17 @@ paths: {
 }
 ```
 
-**Step 3 — Done**
-
-No build step needed. The spec rebuilds on the next request to `/api/openapi` and
-Swagger UI at `/api-docs` reflects it on refresh.
-
 The shared `validationErrorResponse` and `notFoundResponse` constants are already
-defined at the top of `src/lib/openapi/index.ts` — reuse them for consistent
-400/404 shapes across every route.
+defined at the top of the file — reuse them for consistent 400/404 shapes across
+every route.
+
+</Step>
+<Step>
+
+### Done
+
+No build step needed. The spec rebuilds on the next request to `/api/openapi`
+and Swagger UI at `/api-docs` reflects it on refresh.
+
+</Step>
+</Steps>
