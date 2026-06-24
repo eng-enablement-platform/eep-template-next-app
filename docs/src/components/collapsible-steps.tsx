@@ -31,11 +31,11 @@ export function CollapsibleStep({
 
   return (
     /*
-     * pb-6 gives each step breathing room below the trigger so the
+     * pb-4 gives each step breathing room below the trigger so the
      * connecting line on .fd-steps is visible between collapsed steps.
      * pt-1 nudges the trigger text down to sit centred against the 2rem circle.
      */
-    <div className='fd-step pt-1 pb-6'>
+    <div className='fd-step pt-1 pb-4'>
       <Collapsible open={open} onOpenChange={setOpen}>
         <CollapsibleTrigger className='group flex w-full items-center gap-2 text-left'>
           <span className='flex-1 font-medium'>{title}</span>
