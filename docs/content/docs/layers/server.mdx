@@ -5,7 +5,7 @@ description: The classes/ directory. Services, errors, loggers
 
 `classes/` is split into three folders, each with a different server-only scope:
 
-<Callout>
+<Callout type='warn'>
   When `import 'server-only'` is used at the top of a file, this causes a build
   error if anything in the client bundle tries to import it. This is intentional
   to stop anything sensitive on the server side leaking to the browser
@@ -146,7 +146,7 @@ and `exampleItemService` in a server action are actually two different objects a
 runtime. So what you end up with is not a true singleton in the classical sense. You actually get one instance per bundle, not one instance per app.
 From a purely syntactical perspective though the pattern of the code is a singleton.
 
-<Callout>
+<Callout type='warn'>
   For stateless services this doesn't matter at all, both instances behave
   identically because there's no state to share. However you should **never put
   mutable state on a service instance.** An in-memory cache, a counter, or any

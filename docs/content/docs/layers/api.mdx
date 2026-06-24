@@ -149,7 +149,7 @@ service.
 | `routeErrorHandler(error, context)` | Logs the failure and returns a 500 with a consistent envelope  |
 | `parseId(raw)`                      | Parses a route param string into a positive integer, or `null` |
 
-Keep shared handler logic here. Do not copy these patterns inline — they exist so every route surfaces errors the same way.
+<Callout type='idea'>Keep any shared handler logic in here</Callout>
 
 ## `force-dynamic` — when and why
 

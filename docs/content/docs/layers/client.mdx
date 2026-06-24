@@ -47,7 +47,7 @@ function InvoiceRow({ invoice }: InvoiceRowProps) {
 ```
 
 <Callout>
-  The test for whether logic belongs in a component: could this rule change
+  **The test for whether logic belongs in a component:** Could this rule change
   based on business decisions alone (not UI decisions)? If yes, it's business
   logic and belongs in the server layer or a hook.
 </Callout>
@@ -94,7 +94,7 @@ function InvoiceRow({ invoice }: InvoiceRowProps) {
 out of the box. All client-side fetching goes through
 SWR hooks in `hooks/`, one hook per data domain.
 
-<Callout>
+<Callout type='warn'>
   SWR types `error` as `any` — always narrow it to `Error` before returning.
 </Callout>
 
