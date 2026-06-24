@@ -26,8 +26,10 @@ Compared to a route handler, actions give you:
 - **Progressive enhancement** — Forms with an `action=` attribute work without JavaScript. Route handlers don't give you this.
 - **Simpler error handling** — Return a discriminated result (`{ ok: true, data }` / `{ ok: false, error }`); the component branches on it. No HTTP status codes to map back into UI state.
 
-The moment an external caller needs to write (a Slack webhook, a cron job, a mobile
-client), use a route handler instead.
+<Callout>
+  The moment an external caller needs to write (a Slack webhook, a cron job, a
+  mobile client), use a route handler instead.
+</Callout>
 
 ## Folder structure
 
