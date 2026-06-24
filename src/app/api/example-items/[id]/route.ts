@@ -11,11 +11,12 @@ import { exampleItemUpdateSchema } from '@/validation/example-item';
 
 const logger = rootLogger(LOG_SOURCE.API);
 
+// EXAMPLE ROUTE HANDLERS
+
 /**
  * Single-resource route for `example_items` (read, update, delete by id).
  *
- * Part of the full-CRUD REST reference — see the collection route at
- * `../route.ts` for the read-route vs write-action guidance.
+ * Part of the full-CRUD REST reference
  *
  * In Next.js 15+, dynamic route `params` are async and must be awaited before
  * their values can be read.

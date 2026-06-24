@@ -73,28 +73,33 @@ HTTP methods for that URL as named exports.
 <Callout>
   The `example-items/` vertical is the template's full-CRUD REST reference (GET
   / POST / PATCH / DELETE). It exists to demonstrate the pattern and give
-  Swagger something to document ## Route handler structure
+  Swagger something to document
 </Callout>
+
+## Route handler structure
 
 Every handler follows the same shape:
 
-- validate at the boundary
-- call the service
-- shape the response
+1. Validate at the boundary
+2. Call the service
+3. Shape the response
 
 ```ts
 // app/api/example-items/route.ts
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
+    // 1. Validate at the boundary — parse untrusted input before it reaches the service
     const parsed = exampleItemSchema.safeParse(await request.json());
 
     if (!parsed.success) {
       return validationErrorResponse(parsed.error); // 400
     }
 
+    // 2. Call the service — business logic lives here, not in the handler
     const exampleItem = await exampleItemService.create(parsed.data);
     logger.info({ message: 'Example item created', id: exampleItem.id });
 
+    // 3. Shape the response
     return NextResponse.json({ exampleItem }, { status: 201 });
   } catch (error) {
     return routeErrorHandler(error, 'POST /api/example-items'); // 500
@@ -109,11 +114,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 - Zod `safeParse` at the boundary before anything reaches the service.
 - `validationErrorResponse` for 400, `routeErrorHandler` for 500 — both from `app/api/utils/`.
   Consistent error shapes across every route.
-- Log at the handler. The service layer rethrows rather than logging, so the same failure is never recorded twice under two sources.
+- Log mutations at the handler. Creates, updates, and deletes are worth a log line because they give you a quick audit trail ("item X was created", "item Y was deleted"). Don't log every read, that's just noise.
+- The service layer rethrows rather than logging, so a failure is never recorded twice under two sources.
 
 ### Dynamic route params in Next.js 15+
 
-In Next.js 15, dynamic route `params` are async and must be awaited before
+In Next.js 15 +, dynamic route `params` are async and must be awaited before
 their values can be read. The route context is typed accordingly:
 
 ```ts
@@ -130,7 +136,7 @@ export async function GET(
 ```
 
 `parseId` from `app/api/utils/` validates the raw string into a positive
-integer — route params always arrive as strings, so guard before they reach the
+integer. Route params always arrive as strings, so guard before they reach the
 service.
 
 ## Shared handler utilities

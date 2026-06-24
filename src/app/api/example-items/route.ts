@@ -7,6 +7,8 @@ import { exampleItemSchema } from '@/validation/example-item';
 
 const logger = rootLogger(LOG_SOURCE.API);
 
+// EXAMPLE ROUTE HANDLERS
+
 /**
  * Collection route for `example_items`.
  *
