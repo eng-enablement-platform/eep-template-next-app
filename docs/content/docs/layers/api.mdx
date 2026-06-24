@@ -182,43 +182,104 @@ is only needed when Next.js can't infer it.
 
 ## OpenAPI and Swagger UI
 
-The interactive docs at `/api-docs` and the spec at `/api/openapi` are unfortunately not
-auto-discovered from the filesystem. Using Swagger in a Next project is not
-particularly common and so there isn't an easy path to auto generating for ,x,y,z.
+<Callout type='idea'>
+  Like everything in this template, this is pick-and-choose. Keep the docs up to
+  date as you go, or ignore them entirely — the routes work either way.
+</Callout>
 
-They are implemented here as more of a reference point and as with all of the things
-in this template its a pick and choose kind of vibe, want to keep these up to date as
-you go follow the below, if not simply ignore.
+Swagger isn't a common pattern in Next.js projects and there's no straightforward
+path to auto-generating an OpenAPI spec from the filesystem. The approach here is
+a pragmatic workaround: the spec is hand-assembled in `src/lib/openapi/index.ts`
+from the same Zod schemas the routes already validate with. It's a small amount
+of config per route, but it's manual.
 
-The spec is hand-assembled in
-`src/lib/openapi/index.ts` from the same Zod schemas the routes validate with.
-Because the request bodies, the response shape, and the validator all come from
-one place, the published docs cannot drift from what the API accepts.
+The upside is that the request bodies, response shapes, and validators all come
+from one place — the docs cannot drift from what the API actually accepts.
+
+### How it works
+
+The spec lives in `src/lib/openapi/index.ts` and is assembled from three things:
+
+- **Zod schemas** annotated with `.meta()` — these become the request/response shapes in the docs
+- **`paths` entries** — one per route operation, wiring schemas to HTTP methods and status codes
+- **`createDocument`** from `zod-openapi` — combines everything into an OpenAPI 3.1 document
+
+The `/api/openapi` route serves the document as JSON. The `/api-docs` route serves a Swagger UI shell that points at it.
 
 ### Adding a new route to the docs
 
-Say you add `GET /api/widgets`:
+Say you add `POST /api/widgets`. The route itself works without any of the steps below — they only affect the docs.
 
-1. **Build the route normally** — `app/api/widgets/route.ts`, Zod schema in
-   `src/validation/widget.ts`. The route works without the next two steps — they only affect the docs.
+**Step 1 — Annotate the Zod schema with `.meta()`**
 
-2. **Annotate the Zod schema with `.meta()`** so it carries its own docs:
+Add `import 'zod-openapi'` at the top of your validation file for the type augmentation, then annotate each field and the object itself:
 
-   ```ts
-   export const widgetSchema = z
-     .object({
-       label: z.string().meta({ description: 'Widget label.', example: 'A' }),
-     })
-     .meta({ id: 'WidgetInput', description: 'Body for creating a widget.' });
-   ```
+```ts
+// src/validation/widget.ts
+import 'zod-openapi';
+import { z } from 'zod';
 
-   Also export an entity schema (the full row the API returns) with its own
-   `.meta({ id: 'Widget' })` — that is the response contract.
+export const widgetSchema = z
+  .object({
+    label: z
+      .string()
+      .meta({ description: 'Widget label.', example: 'Sprocket' }),
+    quantity: z.coerce
+      .number()
+      .int()
+      .min(0)
+      .meta({ description: 'Stock count.', example: 10 }),
+  })
+  .meta({ id: 'WidgetInput', description: 'Body for creating a widget.' });
 
-3. **Register the operation** in `src/lib/openapi/index.ts` — add a `paths` entry
-   with method, `summary`, `tags`, `requestBody`, and `responses`. Reuse the
-   shared `validationErrorResponse` / `notFoundResponse` for 400 / 404.
+/* The entity schema is the full row the API returns, including generated fields.
+   This is the response contract — keep it here alongside the input schemas. */
+export const widgetEntitySchema = z
+  .object({
+    id: z.number().int().meta({ example: 1 }),
+    label: z.string().meta({ example: 'Sprocket' }),
+    quantity: z.number().int().meta({ example: 10 }),
+    createdAt: z.string().meta({ example: '2026-01-01T00:00:00.000Z' }),
+  })
+  .meta({ id: 'Widget', description: 'A fully materialised widget row.' });
+```
 
-4. **Done** — no build step. The spec rebuilds on the next request to `/api/openapi`.
+**Step 2 — Register the operation in `src/lib/openapi/index.ts`**
 
-See `src/app/README.md` for the full walkthrough with a worked example.
+Add an envelope schema for the response wrapper, then a `paths` entry:
+
+```ts
+// Add near the other envelope schemas at the top of the file
+const widgetEnvelopeSchema = z
+  .object({ widget: widgetEntitySchema })
+  .meta({ id: 'WidgetEnvelope' });
+
+// Add inside the paths object passed to createDocument
+paths: {
+  // ...existing paths
+  '/api/widgets': {
+    post: {
+      operationId: 'createWidget',
+      summary: 'Create a new widget',
+      tags: ['Widgets'],
+      requestBody: { content: jsonContent(widgetSchema) },
+      responses: {
+        '201': {
+          description: 'The created widget.',
+          content: jsonContent(widgetEnvelopeSchema),
+        },
+        '400': validationErrorResponse,
+      },
+    },
+  },
+}
+```
+
+**Step 3 — Done**
+
+No build step needed. The spec rebuilds on the next request to `/api/openapi` and
+Swagger UI at `/api-docs` reflects it on refresh.
+
+The shared `validationErrorResponse` and `notFoundResponse` constants are already
+defined at the top of `src/lib/openapi/index.ts` — reuse them for consistent
+400/404 shapes across every route.
