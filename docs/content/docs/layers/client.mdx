@@ -17,6 +17,56 @@ The client layer is split across three folders: `components/`, `hooks/`, and
 Components are purely presentational. They don't fetch, they don't mutate, and they don't own
 business logic.
 
+An example of this distinction:
+
+```tsx
+// ✅ UI logic — deciding what to render based on state. Fine.
+function InvoiceRow({ invoice }: InvoiceRowProps) {
+  const isOverdue = invoice.dueDate < new Date();
+
+  return (
+    <tr className={isOverdue ? 'text-red-600' : ''}>
+      <td>{invoice.reference}</td>
+      <td>{formatCurrency(invoice.amount)}</td>
+    </tr>
+  );
+}
+```
+
+```tsx
+/**
+ * ❌ Business logic — calculating whether an invoice is overdue belongs in the service layer
+ * not the component. The component shouldn't know the business rule,
+ * only how to display the result of it.
+ */
+function InvoiceRow({ invoice }: InvoiceRowProps) {
+  const isOverdue =
+    invoice.status !== 'paid' &&
+    invoice.dueDate < new Date() &&
+    !invoice.gracePeriodActive;
+  // ...
+}
+```
+
+<Callout>
+  The test for whether logic belongs in a component: could this rule change
+  based on business decisions alone (not UI decisions)? If yes, it's business
+  logic and belongs in the server layer or a hook.
+</Callout>
+
+### Where utilities live
+
+Pure helper functions that aren't React concepts follow a scope rule:
+
+| Scope                                        | Where                                  | Example                                          |
+| -------------------------------------------- | -------------------------------------- | ------------------------------------------------ |
+| Shared across the whole app, domain-agnostic | `src/utils/`                           | `formatCurrency`, `cn()`, `formatErrorMessage`   |
+| Specific to one feature                      | `components/features/<feature>/utils/` | Invoice row formatting helpers                   |
+| Stateful / reusable across components        | `hooks/` — extract to a hook           | Anything using `useState`, `useEffect`, `useRef` |
+
+`src/utils/` carries an implicit contract: **safe to use anywhere**. Don't put feature-specific
+helpers there — if it only makes sense in the context of one feature, it's not a shared utility.
+
 **Structure rules:**
 
 - Single-file components are flat `kebab-name.tsx`.
