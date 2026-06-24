@@ -211,7 +211,7 @@ The `/api/openapi` route serves the document as JSON. The `/api-docs` route serv
 Say you add `POST /api/widgets`. The route itself works without any of the steps below — they only affect the docs.
 
 <CollapsibleSteps>
-<CollapsibleStep title="Annotate the Zod schema with .meta()">
+<CollapsibleStep title="Annotate the Zod schema with .meta()" defaultOpen={false}>
 
 Add `import 'zod-openapi'` at the top of your validation file for the type
 augmentation, then annotate each field and the object itself. You need two
@@ -249,7 +249,7 @@ export const widgetEntitySchema = z
 ```
 
 </CollapsibleStep>
-<CollapsibleStep title="Register the operation in src/lib/openapi/index.ts">
+<CollapsibleStep title="Register the operation in src/lib/openapi/index.ts" defaultOpen={false}>
 
 Add an envelope schema for the response wrapper, then a `paths` entry:
 
@@ -285,7 +285,7 @@ defined at the top of the file — reuse them for consistent 400/404 shapes acro
 every route.
 
 </CollapsibleStep>
-<CollapsibleStep title="Done">
+<CollapsibleStep title="Done" defaultOpen={false}>
 
 No build step needed. The spec rebuilds on the next request to `/api/openapi`
 and Swagger UI at `/api-docs` reflects it on refresh.

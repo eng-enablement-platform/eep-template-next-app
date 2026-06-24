@@ -27,7 +27,7 @@ export function CollapsibleStep({
   children,
   defaultOpen = true,
 }: CollapsibleStepProps) {
-  const [open, setOpen] = useState(defaultOpen);
+  const [open, setOpen] = useState<boolean>(defaultOpen);
 
   return (
     <div className='fd-step'>
