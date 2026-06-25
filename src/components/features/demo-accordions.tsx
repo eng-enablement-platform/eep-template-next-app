@@ -54,21 +54,21 @@ export function DemoAccordions() {
           <span className='flex flex-col gap-0.5'>
             <span>Recent posts</span>
             <span className='text-muted-foreground text-xs font-normal tracking-normal normal-case'>
-              SWR ·{' '}
-              <a
-                href='https://jsonplaceholder.typicode.com'
-                target='_blank'
-                rel='noopener noreferrer'
-                onClick={(e) => e.stopPropagation()}
-                className='text-muted-foreground hover:text-foreground inline-flex items-center gap-0.5 underline underline-offset-2 transition-colors'
-              >
-                jsonplaceholder.typicode.com
-                <ExternalLinkIcon className='size-3' />
-              </a>
+              SWR - External API
             </span>
           </span>
         </AccordionTrigger>
         <AccordionContent className='h-auto!'>
+          <a
+            href='https://jsonplaceholder.typicode.com'
+            target='_blank'
+            rel='noopener noreferrer'
+            onClick={(e) => e.stopPropagation()}
+            className='text-muted-foreground hover:text-foreground mb-3 inline-flex items-center gap-0.5 underline underline-offset-2 transition-colors'
+          >
+            jsonplaceholder.typicode.com
+            <ExternalLinkIcon className='size-3' />
+          </a>
           <Posts />
         </AccordionContent>
       </AccordionItem>
