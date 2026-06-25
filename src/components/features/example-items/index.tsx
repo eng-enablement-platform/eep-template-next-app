@@ -29,14 +29,24 @@ export function ExampleItems() {
   const { items, isLoading, error, mutate } = useExampleItems();
 
   return (
-    <div className='grid grid-cols-2 gap-6'>
-      <CreateForm mutate={mutate} />
-      <ItemList
-        items={items}
-        isLoading={isLoading}
-        error={error}
-        mutate={mutate}
-      />
+    <div className='grid grid-cols-2 gap-4'>
+      <div className='border-border bg-muted/20 rounded-lg border p-4'>
+        <p className='text-muted-foreground mb-4 text-xs font-medium tracking-wide uppercase'>
+          Add item
+        </p>
+        <CreateForm mutate={mutate} />
+      </div>
+      <div className='border-border bg-muted/20 rounded-lg border p-4'>
+        <p className='text-muted-foreground mb-4 text-xs font-medium tracking-wide uppercase'>
+          Items
+        </p>
+        <ItemList
+          items={items}
+          isLoading={isLoading}
+          error={error}
+          mutate={mutate}
+        />
+      </div>
     </div>
   );
 }
