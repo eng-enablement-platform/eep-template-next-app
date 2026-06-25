@@ -6,7 +6,6 @@ import { Inter } from 'next/font/google';
 import { ThemeProvider } from 'next-themes';
 import type { ReactNode } from 'react';
 
-import { RootLayoutClient } from '@/components/common/layout-client';
 import { AppToaster } from '@/components/common/toast';
 import { cn } from '@/utils/tailwind-merge';
 
@@ -64,7 +63,7 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <RootLayoutClient>{children}</RootLayoutClient>
+            {children}
             <AppToaster position='top-right' richColors />
           </ThemeProvider>
         </ClerkProvider>
