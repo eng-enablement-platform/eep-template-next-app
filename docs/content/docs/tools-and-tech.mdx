@@ -42,6 +42,7 @@ description: Every technology in this template, why it's here, and how it connec
 
 - **[React Hook Form](https://react-hook-form.com/)** — Handles form state, validation, and submission with minimal re-renders. Always paired with `zodResolver` so the same Zod schema used by the server action also drives client-side validation.
 - **[@hookform/resolvers](https://github.com/react-hook-form/resolvers)** — Bridges React Hook Form and Zod via `zodResolver`. Pass it to `useForm` and your Zod schema becomes the validation contract for both the client form and the server action.
+- **[date-fns](https://date-fns.org/)** — Date formatting and manipulation. Used for safe local-midnight parsing of ISO date strings — avoiding the JS `new Date('YYYY-MM-DD')` UTC-midnight gotcha that shifts calendar dates back a day for users in negative-offset timezones. Also backs the shadcn Calendar/date picker components.
 
 ---
 
