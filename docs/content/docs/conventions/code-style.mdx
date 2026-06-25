@@ -242,37 +242,41 @@ makes sense in the context of one feature, it doesn't belong in `src/utils/`.
 | Specific to one feature                      | `utils/` subfolder inside that feature's component folder |
 | Stateful / reusable across components        | Extract to a hook in `hooks/`                             |
 
-### When to split a utility file
+### File structure
 
-Start with a single `index.ts`. Split when the file crosses **any** of:
+The unit is the **concern**, not the function. A concern is a cohesive group of
+related helpers — all date formatting, all HTTP response shaping, all currency
+utilities. How you package a concern depends on its size:
 
-- ~200 lines, or
-- ~3 distinct concerns, or
-- individual functions have grown their own dedicated test files
-
-Count **concerns, not functions**. Three functions serving one cohesive concern
-(e.g. HTTP response shaping) stay together. Three unrelated functions (math,
-error formatting, class merging) are three concerns — split along those seams.
-
-When you split, use kebab-named per-concern files, not one file per export.
-`index.ts` becomes the folder's barrel after splitting.
+**Small concern** — a single kebab-case file:
 
 ```
-// Before — single file, one concern
 utils/
   format-error-message.ts
-
-// After — multiple concerns, folder + barrel
-utils/
-  index.ts              ← barrel
-  format-error.ts
-  format-currency.ts
-  cn.ts
+  tailwind-merge.ts
 ```
 
+**Large concern** — a subfolder with an `index.ts` barrel exporting the public
+surface, and per-topic files inside:
+
+```
+utils/
+  formatting/
+    index.ts          ← re-exports the public surface
+    dates.ts
+    currency.ts
+    numbers.ts
+  tailwind-merge.ts
+```
+
+The trigger for promoting a file to a folder is the same as everywhere else in
+the codebase: ~200 lines, or the file is serving multiple distinct sub-concerns
+that each have their own test files. Don't reach for the folder shape
+speculatively — a single `formatting.ts` is fine until it earns the split.
+
 <Callout>
-  Never create a folder + `index.ts` just to wrap a single file. Promote to a
-  folder only once there are real files to organise inside it.
+  Never create a folder + `index.ts` just to wrap a single file. The folder
+  shape is for when there are genuinely multiple files to organise inside it.
 </Callout>
 
 ---
