@@ -207,10 +207,6 @@ export function CreateForm({ mutate }: CreateFormProps) {
         onSubmit={form.handleSubmit(onSubmit)}
         className='flex flex-col gap-4'
       >
-        <p className='text-muted-foreground text-xs font-medium tracking-wide uppercase'>
-          Add item
-        </p>
-
         <ItemFormFields control={form.control} showLabels />
 
         {form.formState.errors.root && (
