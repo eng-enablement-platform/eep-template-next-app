@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2 } from 'lucide-react';
 import type { Control, Resolver } from 'react-hook-form';
 import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 
 import { createExampleItem } from '@/actions/example-item-actions';
 import { Button } from '@/components/ui/button';
@@ -268,8 +269,12 @@ export function CreateForm({ mutate }: CreateFormProps) {
         const result = await createExampleItem(values);
         if (!result.ok) {
           form.setError('root', { message: result.error });
+          toast.error('Failed to create item', { description: result.error });
           return current;
         }
+        toast.success('Item created', {
+          description: `"${result.data.name}" was added successfully.`,
+        });
         return {
           exampleItems: [...(current?.exampleItems ?? []), result.data],
         };
