@@ -1,0 +1,103 @@
+---
+title: Git
+description: Branching, commits, stacked MRs, and the pre-commit hook.
+---
+
+## Branches
+
+Branch names follow a consistent format so the history is scannable and CI can
+infer intent from the name.
+
+```
+<type>/<ticket-number>-<brief-description>
+
+feat/EEP-123-user-invitations
+fix/EEP-456-session-expiry
+```
+
+Types:
+
+- `feat/` — new features
+- `fix/` — bug fixes
+- Ad-hoc (no ticket): `fix/<brief-description>` is fine for small isolated fixes
+
+---
+
+## Commits
+
+Commit messages follow [Conventional Commits](https://www.conventionalcommits.org/).
+At minimum, every commit message starts with one of:
+
+```
+feat:      new feature
+fix:       bug fix
+refactor:  code change that neither fixes a bug nor adds a feature
+chore:     tooling, dependencies, config
+docs:      documentation only
+BREAKING CHANGE: incompatible API change
+```
+
+```bash
+feat: add user invitation flow
+fix: resolve session expiry on mobile
+chore: bump drizzle-kit to 0.21
+docs: add git conventions page
+```
+
+Scope is optional but useful for larger repos: `feat(auth): add OAuth provider`.
+
+---
+
+## Stacked MRs
+
+For large changes, stack branches rather than opening one giant MR. Each branch
+builds on the previous one — you get smaller, reviewable diffs and can merge
+incrementally.
+
+```
+main
+ └── feat/EEP-100-payments-foundation     ← merged first
+      └── feat/EEP-101-payments-ui        ← depends on foundation
+           └── feat/EEP-102-payments-webhooks
+```
+
+```bash
+# Start from the base branch, not main
+git checkout feat/EEP-100-payments-foundation
+git checkout -b feat/EEP-101-payments-ui
+```
+
+When the base branch merges, rebase the dependent branch onto main:
+
+```bash
+git checkout feat/EEP-101-payments-ui
+git rebase main
+```
+
+Stacked MRs work best when each branch is genuinely independent enough to merge
+on its own — if branch 2 can't ship without branch 3, they probably belong
+together.
+
+---
+
+## Pre-commit hook
+
+The pre-commit hook is the first line of defence — it runs a guardrail suite on
+every commit so issues never reach CI.
+
+| Trigger                                    | What runs                                       |
+| ------------------------------------------ | ----------------------------------------------- |
+| Any staged `.ts` / `.tsx` or config change | `tsc --noEmit` + full test suite + build        |
+| `package.json` or `pnpm-lock.yaml` changed | Trivy security scan                             |
+| `eslint.config.ts` changed                 | ESLint config probe                             |
+| All commits                                | lint-staged (ESLint + Prettier on staged files) |
+| No relevant changes                        | Heavy checks skipped automatically              |
+
+**Escape hatch** — for intentional WIP or a TDD red phase only:
+
+```bash
+SKIP_CHECKS=1 git commit -m "wip: rough sketch"
+```
+
+Lint, Trivy, and style still run even with `SKIP_CHECKS=1`. Never use it to
+bypass failing tests on shippable code.
