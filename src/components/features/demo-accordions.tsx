@@ -1,5 +1,7 @@
 'use client';
 
+import { ExternalLinkIcon } from 'lucide-react';
+
 import { Counter } from '@/components/features/counter';
 import { ExampleItems } from '@/components/features/example-items';
 import { Posts } from '@/components/features/posts';
@@ -52,7 +54,17 @@ export function DemoAccordions() {
           <span className='flex flex-col gap-0.5'>
             <span>Recent posts</span>
             <span className='text-muted-foreground text-xs font-normal tracking-normal normal-case'>
-              SWR · external API
+              SWR ·{' '}
+              <a
+                href='https://jsonplaceholder.typicode.com'
+                target='_blank'
+                rel='noopener noreferrer'
+                onClick={(e) => e.stopPropagation()}
+                className='text-muted-foreground hover:text-foreground inline-flex items-center gap-0.5 underline underline-offset-2 transition-colors'
+              >
+                jsonplaceholder.typicode.com
+                <ExternalLinkIcon className='size-3' />
+              </a>
             </span>
           </span>
         </AccordionTrigger>
