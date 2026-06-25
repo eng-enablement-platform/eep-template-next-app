@@ -15,6 +15,19 @@ export const DEMO_TIMEZONES = [
 
 export type DemoTimezone = (typeof DEMO_TIMEZONES)[number]['value'];
 
+/*
+ * Locales shown in the date format preview table. Chosen to cover the three
+ * most common conventions: DD Mon YYYY (en-GB), MM/DD/YYYY (en-US — the
+ * inversion that breaks HubSpot/Jira integrations), DD.MM.YYYY (de-DE), and
+ * DD/MM/YYYY (fr-FR).
+ */
+export const DEMO_LOCALES = [
+  { label: 'en-GB', value: 'en-GB', format: 'DD Mon YYYY' },
+  { label: 'en-US', value: 'en-US', format: 'MM/DD/YYYY' },
+  { label: 'de-DE', value: 'de-DE', format: 'DD.MM.YYYY' },
+  { label: 'fr-FR', value: 'fr-FR', format: 'DD/MM/YYYY' },
+] as const;
+
 type TimezoneState = {
   selectedTimezone: string;
 };

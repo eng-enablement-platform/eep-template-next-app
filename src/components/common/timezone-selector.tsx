@@ -2,9 +2,7 @@
 
 import { GlobeIcon } from 'lucide-react';
 
-import { useTimezoneStore } from '@/store/timezone-store';
-import { DEMO_TIMEZONES } from '@/store/timezone-store';
-import { formatDate } from '@/utils/dates';
+import { DEMO_TIMEZONES, useTimezoneStore } from '@/store/timezone-store';
 
 /**
  * Dev-only timezone selector for the date timezone demo.
@@ -27,7 +25,12 @@ export function TimezoneSelector() {
     return null;
   }
 
-  const todayFormatted = formatDate(new Date(), 'display', selectedTimezone);
+  const todayFormatted = new Intl.DateTimeFormat('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    timeZone: selectedTimezone,
+  }).format(new Date());
 
   return (
     <div className='flex items-center gap-2'>

@@ -19,7 +19,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import type { useExampleItems } from '@/hooks/use-example-items';
-import { useTimezoneStore } from '@/store/timezone-store';
+import { DEMO_LOCALES, useTimezoneStore } from '@/store/timezone-store';
 import type { exampleItemUpdateSchema } from '@/validation/example-item';
 import {
   exampleItemSchema,
@@ -145,32 +145,24 @@ export function ItemFormFields({
         name='expiresAt'
         render={({ field }) => {
           /*
-           * Build a noon-UTC Date from the stored YYYY-MM-DD string so the
-           * hint shows locale/format differences rather than the midnight
-           * rollback (which is demonstrated separately in the item list).
-           * Midnight UTC would shift the day back in negative-offset timezones,
-           * muddying the format demo.
+           * Build a noon-UTC Date so the hint shows locale/format differences
+           * rather than the midnight rollback. The rollback demo lives in the
+           * item list — here we want to demonstrate formatting conventions only.
            */
           const noonUtc = field.value
             ? new Date(`${field.value}T12:00:00Z`)
             : null;
 
-          const displayEnGB = noonUtc
-            ? new Intl.DateTimeFormat('en-GB', {
-                day: '2-digit',
-                month: 'short',
-                year: 'numeric',
-                timeZone: selectedTimezone,
-              }).format(noonUtc)
-            : null;
-
-          const displayEnUS = noonUtc
-            ? new Intl.DateTimeFormat('en-US', {
-                month: '2-digit',
-                day: '2-digit',
-                year: 'numeric',
-                timeZone: selectedTimezone,
-              }).format(noonUtc)
+          const localeFormats = noonUtc
+            ? DEMO_LOCALES.map((loc) => ({
+                ...loc,
+                formatted: new Intl.DateTimeFormat(loc.value, {
+                  day: '2-digit',
+                  month: 'short',
+                  year: 'numeric',
+                  timeZone: selectedTimezone,
+                }).format(noonUtc),
+              }))
             : null;
 
           return (
@@ -188,15 +180,58 @@ export function ItemFormFields({
                 />
               </FormControl>
               <FormMessage />
-              {showLabels && field.value && displayEnGB && displayEnUS && (
-                <div className='text-muted-foreground/70 space-y-0.5 font-mono text-xs'>
-                  <p>stored: {field.value}</p>
-                  <p>
-                    en-GB ({selectedTimezone}): {displayEnGB}
-                  </p>
-                  <p>
-                    en-US ({selectedTimezone}): {displayEnUS}
-                  </p>
+              {showLabels && field.value && localeFormats && (
+                <div className='border-border bg-muted/30 rounded-md border p-3 text-xs'>
+                  <div className='mb-2.5 flex items-center justify-between'>
+                    <span className='text-muted-foreground font-medium tracking-wide uppercase'>
+                      Date format preview
+                    </span>
+                    <span className='text-muted-foreground/60 font-mono'>
+                      {selectedTimezone}
+                    </span>
+                  </div>
+                  <div className='mb-2.5 flex items-center justify-between'>
+                    <span className='text-muted-foreground'>Stored in DB</span>
+                    <span className='text-foreground font-mono font-medium'>
+                      {field.value}
+                    </span>
+                  </div>
+                  <div className='border-border border-t pt-2.5'>
+                    <p className='text-muted-foreground mb-1.5 font-medium'>
+                      Locale formats
+                    </p>
+                    <table className='w-full'>
+                      <thead>
+                        <tr className='text-muted-foreground/60'>
+                          <th className='pb-1 text-left font-normal'>Locale</th>
+                          <th className='pb-1 text-left font-normal'>
+                            Convention
+                          </th>
+                          <th className='pb-1 text-right font-normal'>
+                            Formatted
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className='divide-border divide-y'>
+                        {localeFormats.map((loc) => (
+                          <tr key={loc.value} className='text-muted-foreground'>
+                            <td className='py-1 font-mono'>{loc.label}</td>
+                            <td className='py-1 font-mono text-xs opacity-60'>
+                              {loc.format}
+                            </td>
+                            <td className='py-1 text-right font-mono'>
+                              {loc.formatted}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                    <p className='text-muted-foreground/60 mt-2 leading-relaxed'>
+                      ⚠ en-US swaps day and month — sending a date string to an
+                      external API without normalising to YYYY-MM-DD first is
+                      how invalid dates silently corrupt data.
+                    </p>
+                  </div>
                 </div>
               )}
             </FormItem>
