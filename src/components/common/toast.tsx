@@ -23,5 +23,7 @@ import { Toaster, type ToasterProps } from 'sonner';
 export function AppToaster(props: ToasterProps) {
   const { theme } = useTheme();
 
-  return <Toaster theme={theme as ToasterProps['theme']} {...props} />;
+  return (
+    <Toaster theme={theme as ToasterProps['theme']} closeButton {...props} />
+  );
 }
