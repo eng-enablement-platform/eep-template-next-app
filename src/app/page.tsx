@@ -76,7 +76,7 @@ export default function Home() {
           <Counter />
         </div>
 
-        <div className='grid w-full grid-cols-1 items-start gap-4 md:grid-cols-2'>
+        <div className='grid w-full grid-cols-1 items-start gap-4 md:grid-cols-1'>
           <div className='border-border bg-card/50 rounded-xl border p-8 shadow-md backdrop-blur-sm'>
             <p className='text-muted-foreground mb-4 text-left text-xs font-medium tracking-wide uppercase'>
               Example items (full CRUD)
