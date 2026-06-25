@@ -1,6 +1,6 @@
 ---
 title: Code Style
-description: Naming, types, exports, comments, TSDoc — the rules and why they exist.
+description: Naming, types, exports, functions, comments, TSDoc — the rules and why they exist.
 ---
 
 ## Utilities
@@ -51,3 +51,423 @@ utils/
   Never create a folder + `index.ts` just to wrap a single file. Promote to a
   folder only once there are real files to organise inside it.
 </Callout>
+
+---
+
+## Services (backend)
+
+All backend business logic and third-party integrations live as **classes** in
+`src/classes/services/<domain>/`. Route handlers and server actions call service
+methods — they never reach Drizzle, Clerk, or any external API directly.
+
+```ts
+// ✅ service encapsulates the data access
+const item = await exampleItemService.getById(id);
+
+// ❌ route handler reaching Drizzle directly
+const rows = await db.select().from(exampleItemsTable).where(eq(...));
+```
+
+### Why classes
+
+A class gives the service a clear **public surface** (the methods you expose)
+and a clean **private interior** (the HTTP client, Drizzle instance, or
+connection details that callers don't need to see). It also maps naturally to
+how third-party SDKs are built — you take their client, wrap it in your domain
+vocabulary, and never leak it.
+
+### Singleton vs per-request
+
+Default to a **singleton** — declare the class, then export one instance.
+Services that hold only config (API keys, base URLs, transports) cannot be
+corrupted by one request for the next, so one instance for the app's life is
+correct.
+
+```ts
+class ExampleItemService {
+  async getById(id: number): Promise<ExampleItem | null> { ... }
+  async create(input: ExampleItemInput): Promise<ExampleItem> { ... }
+}
+
+// Single export, no getInstance() ceremony
+export const exampleItemService = new ExampleItemService();
+```
+
+Reach for per-request instantiation only when the service carries
+**per-user state** — e.g. a Slack client built from a signed-in user's OAuth
+token rather than an app-wide token. The test for this is simple: would two
+concurrent users get different instances? If yes, it's per-request. If no, it's
+a singleton.
+
+<Callout>
+  Services in `classes/services/` are `server-only` by convention — they import
+  `server-only` at the top of the file. Never import them from client components
+  or hooks.
+</Callout>
+
+---
+
+## Named exports
+
+Named exports everywhere. Default exports only where Next.js requires it.
+
+```ts
+// ✅ named export
+export function ThemeToggle() { ... }
+export const exampleItemService = new ExampleItemService();
+export type ActionResult<T> = { ok: true; data: T } | { ok: false; error: string };
+
+// ❌ default export (unless Next.js file convention demands it)
+export default function ThemeToggle() { ... }
+```
+
+Next.js file conventions that require a default export: `page.tsx`, `layout.tsx`,
+`error.tsx`, `not-found.tsx`, `loading.tsx`, `route.ts`. The ESLint rule
+`import/no-default-export` enforces this — those files are explicitly exempted.
+
+Named exports make imports refactor-safe (renaming the export is a compiler
+error, not a silent runtime break), keep barrel re-exports predictable, and
+mean your editor can always find the definition.
+
+---
+
+## Functions — declarations vs arrow functions
+
+The rule is based on **what the function is**, not how long it is.
+
+| Kind                      | Form                 | Example                                    |
+| ------------------------- | -------------------- | ------------------------------------------ |
+| Component                 | Function declaration | `export function Counter() { ... }`        |
+| Exported utility / hook   | Arrow function       | `export const formatCurrency = (n) => ...` |
+| Callback / inline handler | Arrow function       | `onClick={() => setTheme('dark')}`         |
+| Class method              | Method shorthand     | `async getById(id: number) { ... }`        |
+
+### Components are always function declarations
+
+```tsx
+// ✅
+export function ThemeToggle({ displayName }: ToggleProps) {
+  ...
+}
+
+// ❌ — const arrow breaks the rule
+export const ThemeToggle = ({ displayName }: ToggleProps) => {
+  ...
+};
+```
+
+Function declarations hoist, which matters for readability in long component
+files (you can put helpers below the component and `return` at the top). They
+also produce cleaner stack traces with a real name.
+
+### Utilities and callbacks are arrow functions
+
+```ts
+// ✅ utility
+export const formatErrorMessage = (error: unknown): string => { ... };
+
+// ✅ inline handler
+<Button onClick={() => setTheme('dark')}>Dark</Button>
+
+// ✅ store action (arrow in Zustand's set callback is idiomatic)
+increment: () => set((state) => ({ count: state.count + 1 })),
+```
+
+---
+
+## Naming
+
+**Files and folders** — always `kebab-case`. No exceptions.
+
+**Variables and functions** — full descriptive names, never abbreviated.
+`isLoading` not `loading`. `formatErrorMessage` not `fmtErr`. Abbreviations
+make sense to the person who wrote them and nobody else.
+
+**Components** — PascalCase, matching the filename: `theme-toggle.tsx` exports
+`ThemeToggle`.
+
+**Types** — PascalCase. Use `type` by default; only reach for `interface` when
+you need declaration merging (augmenting a third-party module).
+
+```ts
+// ✅
+type ToggleProps = { displayName?: string };
+type CounterStore = CounterState & CounterActions;
+
+// ❌ — interface when type covers it fine
+interface ToggleProps {
+  displayName?: string;
+}
+```
+
+**Constants** — `SCREAMING_SNAKE_CASE` for module-level constants that are fixed
+at build time and semantically "never changes":
+
+```ts
+const ASYNC_INCREMENT_DELAY_MS = 300;
+const LOG_LEVEL_DEFAULT = 'info';
+```
+
+---
+
+## Types — where they live
+
+Two axes decide where a type lives: **scope** (who uses it) and **size** (how
+much space it takes).
+
+| Scope                                      | Default home                       |
+| ------------------------------------------ | ---------------------------------- |
+| One component/module only                  | Inline at the top of that file     |
+| 2+ siblings in the same feature folder     | `types.ts` at the feature boundary |
+| Shared across unrelated features or layers | `src/types/`                       |
+
+Size can override scope: extract to a sibling `types.ts` when a single-consumer
+file has **~3+ type declarations**, or a single type is **large** (>15 lines),
+or the type declarations are visually drowning the component logic.
+
+```ts
+// ✅ inline — one consumer, small
+type ToggleProps = {
+  displayName?: string;
+};
+
+// ✅ sibling types.ts — single consumer but file is getting crowded
+// components/features/invoice/types.ts
+export type InvoiceRow = { ... };
+export type InvoiceFormState = { ... };
+export type InvoiceFilterParams = { ... };
+```
+
+A single types file is always a flat `types.ts` sibling — never a `types/`
+folder wrapping one `index.ts`. Promote to a `types/` folder only when types
+split into multiple files.
+
+---
+
+## Imports
+
+Always use `import type` for type-only imports. Never mix types and values in
+the same import statement.
+
+```ts
+// ✅
+import { exampleItemService } from '@/classes/services/example-item';
+import type { ExampleItem } from '@/db/types';
+
+// ❌ — mixed type and value import
+import { exampleItemService, type ExampleItem } from '...';
+```
+
+Always use `@/` path aliases — never relative paths. `import type { Foo } from
+'../../types'` is a maintenance hazard; `import type { Foo } from '@/types/foo'`
+always resolves from the project root regardless of file depth.
+
+Imports are auto-sorted by `eslint-plugin-simple-import-sort` on commit:
+external packages first, then internal `@/` aliases, then relative imports.
+Don't manually reorder — let the linter own it.
+
+---
+
+## Barrel exports
+
+Use barrels only at meaningful domain or feature boundaries.
+
+```ts
+// ✅ feature barrel
+// components/features/dashboard/index.ts
+export { DashboardHeader } from './header';
+export { DashboardChart } from './chart';
+
+// ✅ split domain folder
+// utils/index.ts  (after a split)
+export { formatErrorMessage } from './format-error';
+export { cn } from './cn';
+
+// ❌ never — top-level catch-all barrel
+// components/index.ts
+// hooks/index.ts
+```
+
+Rules:
+
+- Never mix server and client exports in the same barrel — tree-shaking can't
+  separate them cleanly and you risk importing server code on the client.
+- Never import the barrel from a sibling file in the same folder — import the
+  sibling directly. Barrels are for external consumers.
+- Direct imports preferred for `src/components/ui/` (shadcn primitives).
+
+---
+
+## Comments
+
+The form you choose **signals intent**, so it must match what you're writing.
+There are two entirely different things:
+
+**Commentary** — notes for whoever reads this source file. Explains the _why_
+behind a decision, a gotcha, or something non-obvious. Never describes _what_
+the code does (the code itself does that).
+
+- One-line commentary: always `//`
+- Multi-line commentary: always a `/* */` starred block
+
+```ts
+// Single line note — always //
+
+/*
+ * Multi-line explanation uses a starred block.
+ * Never use consecutive // lines for multi-line notes.
+ */
+```
+
+**Documentation** — TSDoc (`/** */`) describing a symbol so consumers see it on
+hover in their editor. It's an API surface, not a comment.
+
+```ts
+/**
+ * TSDoc is attached directly above the symbol it documents.
+ * Never use /** */ just to write a note.
+ */
+export function doSomething() { ... }
+```
+
+<Callout type='warn'>
+  Never use a single-line `/* */` block comment — it's banned by the
+  `local/single-line-comment-style` ESLint rule. One-liners are always `//`.
+</Callout>
+
+The ESLint rules that enforce this:
+
+- `local/single-line-comment-style` — bans `/* single line */`
+- `@stylistic/multiline-comment-style` — forces multi-line commentary into starred blocks
+
+Tooling directives (`eslint-disable`, `@ts-expect-error`, `prettier-ignore`) are
+exempt — they are not commentary.
+
+---
+
+## TSDoc
+
+All exported symbols in `.ts` / `.tsx` files need TSDoc. The pre-commit hook
+enforces this via `eslint-plugin-jsdoc`.
+
+### Shape
+
+Lead with **what** in one line, then **why it exists / when to use it** if that's
+not obvious. Then `@param` for non-obvious parameters, `@returns`, and one
+`@example`. Don't re-describe what the type signature already makes clear —
+write what the signature can't tell you.
+
+````ts
+/**
+ * Normalise any thrown value into a display string.
+ *
+ * `catch` clauses type their argument as `unknown`, which means callers have to
+ * handle `Error`, plain strings, and arbitrary objects. This does that once so
+ * nothing else has to.
+ *
+ * @param error - The value from a `catch` clause.
+ * @returns A human-readable string, never throws.
+ * @example
+ * ```ts
+ * try { ... } catch (err) {
+ *   toast.error(formatErrorMessage(err));
+ * }
+ * ```
+ */
+export const formatErrorMessage = (error: unknown): string => { ... };
+````
+
+### Components
+
+One-line what. One or two sentences on why it exists / when to reach for it.
+`@param` only for non-obvious props. One `@example`.
+
+````tsx
+/**
+ * Dropdown for switching between light, dark, and system themes (next-themes).
+ *
+ * @param displayName - Optional label rendered beside the toggle icon.
+ * @example
+ * ```tsx
+ * <ThemeToggle displayName='Theme' />
+ * ```
+ */
+export function ThemeToggle({ displayName }: ToggleProps) { ... }
+````
+
+Never re-list props as a prose block — the type is the single source of truth.
+Use `@param` only for the few props that need a _why_, not a _what_.
+
+### Example and reference files
+
+Any file that exists to demonstrate a pattern opens its TSDoc with `EXAMPLE <TYPE>`:
+
+```ts
+/**
+ * EXAMPLE SERVICE CLASS
+ *
+ * The reference domain service for the template...
+ */
+```
+
+Accepted forms: `EXAMPLE COMPONENT`, `EXAMPLE HOOK`, `EXAMPLE STORE`,
+`EXAMPLE UTILITY`, `EXAMPLE SERVICE CLASS`. This makes example files greppable
+and immediately obvious to any reader or agent.
+
+### Verbosity
+
+Less is more. If you find yourself writing "This function does X" — stop and
+ask whether the signature already says that. TSDoc earns its space when it
+explains context the reader can't see in the code.
+
+````ts
+// ❌ pointless — the signature says this already
+/**
+ * Returns the sum of a and b.
+ * @param a - first number
+ * @param b - second number
+ * @returns the sum
+ */
+export const sum = (a: number, b: number): number => a + b;
+
+// ✅ only if the function has a non-obvious contract worth capturing
+/**
+ * EXAMPLE UTILITY
+ *
+ * Adds two numbers. Exists to demonstrate co-located tests and TSDoc shape —
+ * not a production utility.
+ *
+ * @param a - the first addend
+ * @param b - the second addend
+ * @returns the sum of `a` and `b`
+ * @example
+ * ```ts
+ * sum(2, 3); // 5
+ * ```
+ */
+export const sum = (a: number, b: number): number => a + b;
+````
+
+---
+
+## Linting and formatting
+
+ESLint and Prettier run automatically on every commit via `lint-staged`. You
+shouldn't need to think about formatting — save, commit, let the tools handle it.
+
+```bash
+pnpm lint          # run ESLint across the project
+pnpm typecheck     # tsc --noEmit, no emit
+pnpm test          # vitest run
+```
+
+If you need to disable a lint rule, always leave a comment explaining why:
+
+```ts
+// eslint-disable-next-line react-hooks/set-state-in-effect -- mount-only hydration guard, see comment above
+setMounted(true);
+```
+
+Never disable rules silently. If you're suppressing something regularly, the
+rule is probably wrong for this project — open a discussion and change the
+config rather than scattering suppressions.
