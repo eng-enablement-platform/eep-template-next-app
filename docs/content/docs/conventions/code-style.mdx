@@ -207,33 +207,40 @@ Next.js file conventions that require a default export:
 
 ### Barrel exports
 
-Use barrels only at meaningful domain or feature boundaries, never as a
-catch-all at the top level of `components/`, `hooks/`, or `store/`.
+A barrel is just the `index.ts` that appears when a folder grows multiple files
+— it's the same pattern as the component folder grouping. Once a `sidebar/`
+folder has `header.tsx`, `nav.tsx`, and `footer.tsx` inside it, an `index.ts`
+lets callers import from `@/components/features/sidebar` without knowing the
+internal file names. The barrel controls what the outside world sees.
 
 ```ts
-// ✅ feature barrel
-// components/features/dashboard/index.ts
-export { DashboardHeader } from './header';
-export { DashboardChart } from './chart';
+// components/features/sidebar/index.ts
+export { SidebarHeader } from './header';
+export { SidebarNav } from './nav';
+export { SidebarFooter } from './footer';
 
-// ✅ split utility folder barrel
-// utils/index.ts
-export { formatErrorMessage } from './format-error';
-export { cn } from './cn';
-
-// ❌ top-level catch-all — never do this
-// components/index.ts
-// hooks/index.ts
+// Callers import from the folder, not the internals
+import { SidebarNav } from '@/components/features/sidebar';
 ```
+
+The rules around when to use one:
+
+- ✅ A feature folder with multiple files (`components/features/sidebar/`)
+- ✅ A split utility or domain folder (`utils/formatting/`, `classes/services/hubspot/`)
+- ❌ A top-level catch-all — never `components/index.ts` or `hooks/index.ts`
+- ❌ A folder wrapping a single file — the barrel adds nothing until there are multiple files to organise
+
+<Callout type='warn'>
+  One important constraint: **never mix server and client exports in the same
+  barrel**. Tree-shaking can't separate them cleanly and you risk pulling
+  server-only code into the client bundle.
+</Callout>
 
 ---
 
 ## Utilities
 
-Utility functions live in `src/utils/`. The folder carries an implicit contract:
-**safe to use anywhere** — server, client, tests, scripts.
-
-### Where a utility lives
+Utility functions live in `src/utils/`.
 
 | Scope                                        | Where                                                     |
 | -------------------------------------------- | --------------------------------------------------------- |
@@ -245,7 +252,9 @@ Utility functions live in `src/utils/`. The folder carries an implicit contract:
 
 The unit is the **concern**, not the function. A concern is a cohesive group of
 related helpers — all date formatting, all HTTP response shaping, all currency
-utilities. How you package a concern depends on its size:
+utilities.
+
+How you package a concern depends on its size:
 
 - **Small concern** — A single kebab-case file:
 
@@ -323,7 +332,7 @@ separate concerns, each with their own folder.
 
 All backend business logic and third-party integrations live as **classes** in
 `src/classes/services/<domain>/`. Route handlers and server actions call service
-methods, not Drizzle, Clerk, or any external API directly.
+methods (not Drizzle, Clerk, or any external API directly).
 
 A class gives the service a clear **public surface** (the methods you expose)
 and a clean **private interior** (the HTTP client, DB connection, or config that
@@ -416,7 +425,7 @@ useEffect(() => {
 ## TSDoc
 
 <Callout type='idea'>
-  TSDoc on exported `.ts` symbols is enforced via `eslint-plugin-jsdoc` on
+  TSDoc on exported `.ts` files is enforced via `eslint-plugin-jsdoc` on
   pre-commit. For `.tsx` components it's advised but not linted.
 </Callout>
 
