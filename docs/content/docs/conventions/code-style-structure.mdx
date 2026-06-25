@@ -1,5 +1,5 @@
 ---
-title: Code Style
+title: Code Style & Structure
 description: All the rules and why they exist. Naming, types, exports, functions, comments, TSDoc.
 ---
 
@@ -346,7 +346,9 @@ const item = await exampleItemService.getById(id);
 const rows = await db.select().from(exampleItemsTable).where(eq(...));
 ```
 
-Default to a **singleton** — declare the class, then export one instance.
+A few rules of thumb to follow:
+
+- Default to a **singleton** — Declare the class, then export one instance.
 
 ```ts
 class ExampleItemService {
@@ -358,8 +360,8 @@ class ExampleItemService {
 export const exampleItemService = new ExampleItemService();
 ```
 
-Reach for the **factory pattern** when the service carries per-request state — See [module-scoped instances vs factory](/docs/layers/server#module-scoped-instances-vs-factory)
-for the full detail.
+- Prefer composition over inheritance. See [Inheritance and composition](/docs/layers/server#inheritance-and-composition) for examples and when inheritance is the right call.
+- Reach for the **factory pattern** when the service carries per-request state. See [module-scoped instances vs factory](/docs/layers/server#module-scoped-instances-vs-factory)
 
 <Callout type='warn'>
   Services in `classes/services/` are `server-only`. They import `server-only`
