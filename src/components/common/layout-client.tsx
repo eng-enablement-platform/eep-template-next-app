@@ -6,6 +6,7 @@ import type { ReactNode } from 'react';
 
 import { ErrorBoundary } from '@/components/common/error-boundary';
 import { Spinner } from '@/components/common/loading';
+import { Navbar } from '@/components/common/navbar';
 import { Providers } from '@/components/providers';
 
 type RootLayoutClientProps = {
@@ -48,6 +49,7 @@ export function RootLayoutClient({ children }: RootLayoutClientProps) {
 
   return (
     <Providers>
+      <Navbar />
       <ErrorBoundary>{children}</ErrorBoundary>
     </Providers>
   );

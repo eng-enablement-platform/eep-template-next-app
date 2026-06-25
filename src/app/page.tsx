@@ -1,11 +1,6 @@
-import { BookOpen, FileText } from 'lucide-react';
-
-import { ThemeToggle } from '@/components/common/theme-toggle';
 import { Counter } from '@/components/features/counter';
 import { ExampleItems } from '@/components/features/example-items';
-import { HomeProfile } from '@/components/features/home-profile';
 import { Posts } from '@/components/features/posts';
-import { Button } from '@/components/ui/button';
 
 /**
  * EXAMPLE ENTRY POINT
@@ -14,51 +9,13 @@ import { Button } from '@/components/ui/button';
  */
 export default function Home() {
   return (
-    <div className='bg-background relative flex flex-1 flex-col items-center justify-center overflow-hidden px-6'>
+    <div className='bg-background relative flex flex-1 flex-col items-center overflow-hidden px-6 py-12'>
       <div
         aria-hidden
         className='bg-foreground/3 pointer-events-none absolute top-1/2 left-1/2 -z-10 size-160 -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl'
       />
 
-      <header className='absolute inset-x-0 top-0 flex items-center justify-between p-4'>
-        {/* Left nav — external links that open in new tabs. Both /api-docs
-            (Swagger UI) and the docs site are separate documents, not App
-            Router pages; navigating the SPA to them and back unmounts Clerk's
-            client and leaves the auth gate stuck on a dead spinner. */}
-        <div className='flex items-center gap-1'>
-          {process.env.NEXT_PUBLIC_DOCS_URL && (
-            <Button asChild variant='link' className='text-muted-foreground'>
-              <a
-                href={process.env.NEXT_PUBLIC_DOCS_URL}
-                target='_blank'
-                rel='noopener noreferrer'
-              >
-                <FileText />
-                Repo Docs
-              </a>
-            </Button>
-          )}
-          <Button asChild variant='link' className='text-muted-foreground'>
-            <a
-              href='/api-docs'
-              target='_blank'
-              rel='noopener noreferrer'
-              title='Requires the Admin role — others get a 403'
-            >
-              <BookOpen />
-              API docs
-            </a>
-          </Button>
-          {/* DOCS LINK — rendered only when NEXT_PUBLIC_DOCS_URL is set.
-           */}
-        </div>
-        <div className='flex items-center gap-3'>
-          <HomeProfile />
-          <ThemeToggle />
-        </div>
-      </header>
-
-      <main className='flex w-full max-w-5xl flex-col gap-8'>
+      <main className='flex w-full max-w-6xl flex-col gap-8'>
         <div className='flex flex-col items-center gap-4 text-center'>
           <span className='border-border bg-muted/50 text-muted-foreground inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium tracking-wide'>
             Next.js Template

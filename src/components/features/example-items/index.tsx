@@ -32,7 +32,7 @@ export function ExampleItems() {
     <div className='grid grid-cols-2 gap-4'>
       <div className='border-border bg-muted/20 rounded-lg border p-4'>
         <p className='text-muted-foreground mb-4 text-xs font-medium tracking-wide uppercase'>
-          Add item
+          Item form
         </p>
         <CreateForm mutate={mutate} />
       </div>
