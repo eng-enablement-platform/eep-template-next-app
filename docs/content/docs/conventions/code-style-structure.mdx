@@ -149,6 +149,27 @@ export type InvoiceFilterParams = { ... };
   types themselves split into multiple files.
 </Callout>
 
+### Always type useState
+
+`useState` must always carry an explicit type annotation. TypeScript can infer
+`boolean` from `false`, but relying on inference here can be fragile.
+
+```tsx
+// ✅ explicit — intention is clear, correct type regardless of initial value
+const [editing, setEditing] = useState<boolean>(false);
+const [item, setItem] = useState<Item | null>(null);
+const [count, setCount] = useState<number>(0);
+
+// ❌ implicit — infers boolean from false, but null infers as just null
+const [editing, setEditing] = useState(false);
+const [item, setItem] = useState(null);
+```
+
+<Callout type='warn'>
+  This is enforced by a custom ESLint rule — omitting the type annotation is a
+  lint error that will block your commit.
+</Callout>
+
 ---
 
 ## Imports
