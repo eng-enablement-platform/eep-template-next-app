@@ -79,6 +79,104 @@ It doesn't pay off for larger integration work where the spec is still being
 discovered. Tests written against a moving API end up brittle and get thrown
 away — write them once the shape has stabilised.
 
+### Worked example — timezone-safe date parsing
+
+The `parseDateSafe` utility in `src/utils/dates.ts` was written test-first. The
+bug it solves is real: `new Date('2025-03-15')` parses as UTC midnight, which
+rolls back to March 14 for any user in a negative-offset timezone (UTC-7, UTC-8
+etc.). The fix is to parse date-only strings as local midnight using `date-fns`
+`parse()` instead.
+
+**Step 1 — write the failing tests first.**
+
+Before writing any implementation, write tests that express the contract
+you need. They will fail because the module doesn't exist yet.
+
+```ts
+// src/utils/__tests__/dates.test.ts
+import { describe, expect, it } from 'vitest';
+import { parseDateSafe } from '@/utils/dates';
+
+/*
+ * These tests run under three timezones via `pnpm test:tz`:
+ *   TZ=America/Denver   (UTC-7)
+ *   TZ=America/New_York (UTC-5)
+ *   TZ=Pacific/Auckland (UTC+12)
+ *
+ * Core invariant: a date-only ISO string must parse to the same calendar
+ * date regardless of the host timezone.
+ */
+describe('parseDateSafe', () => {
+  it('returns the correct calendar date regardless of host timezone', () => {
+    const result = parseDateSafe('2027-12-29');
+
+    expect(result).not.toBeNull();
+    expect(result!.getFullYear()).toBe(2027);
+    expect(result!.getMonth()).toBe(11); // 0-indexed
+    expect(result!.getDate()).toBe(29);
+  });
+
+  it('returns null for an empty string', () => {
+    expect(parseDateSafe('')).toBeNull();
+  });
+});
+```
+
+Run them — they fail (module not found). That's expected. This is the red phase.
+
+**Step 2 — implement to make the tests green.**
+
+```ts
+// src/utils/dates.ts
+import { parse, isValid } from 'date-fns';
+
+const ISO_DATE_ONLY_REGEX = /^\d{4}-\d{2}-\d{2}$/;
+
+export const parseDateSafe = (value: string): Date | null => {
+  if (!value) return null;
+
+  if (ISO_DATE_ONLY_REGEX.test(value)) {
+    /*
+     * parse() from date-fns interprets the string in local time — local
+     * midnight, not UTC midnight. This is the safe path for calendar dates.
+     */
+    const parsed = parse(value, 'yyyy-MM-dd', new Date());
+    return isValid(parsed) ? parsed : null;
+  }
+
+  const native = new Date(value);
+  return isValid(native) ? native : null;
+};
+```
+
+**Step 3 — run under multiple timezones to prove the fix holds.**
+
+The standard test suite runs under jsdom, which caches the system timezone at
+startup. To test timezone behaviour properly, use the dedicated config that
+runs under `node` environment and respects the `TZ` env var:
+
+```bash
+pnpm test:tz
+```
+
+This runs the `dates.test.ts` suite three times:
+
+```bash
+TZ=America/Denver   vitest run --config vitest.tz.config.ts
+TZ=America/New_York vitest run --config vitest.tz.config.ts
+TZ=Pacific/Auckland vitest run --config vitest.tz.config.ts
+```
+
+All three must pass. If the native `new Date('YYYY-MM-DD')` gotcha had slipped
+through, the Denver run would fail — Dec 28 instead of Dec 29.
+
+<Callout type='idea'>
+  This is where TDD earns its keep. The contract ("same calendar date in any
+  timezone") is clear upfront, the tests express it precisely, and the multi-TZ
+  run gives you confidence a regular test suite can't. You couldn't write this
+  test suite *after* the implementation without already knowing the bug exists.
+</Callout>
+
 ---
 
 ## Co-location

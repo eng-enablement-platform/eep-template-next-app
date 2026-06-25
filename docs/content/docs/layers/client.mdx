@@ -98,9 +98,29 @@ function InvoiceRow({ invoice }: InvoiceRowProps) {
 - `components/features/` — domain-coupled components that only make sense within a specific feature:
 
   <Files>
-    <File name='counter.tsx' />
-    <File name='posts.tsx' />
+    <File name='counter.tsx' description='// flat — small, no sub-parts' />
+    <File name='posts.tsx' description='// flat — small, no sub-parts' />
+    <Folder name='example-items' defaultOpen>
+      <File
+        name='index.tsx'
+        description='// public entry point — ExampleItems'
+      />
+      <File
+        name='form.tsx'
+        description='// ItemFormValues, ItemFormFields, CreateForm'
+      />
+      <File name='item-row.tsx' description='// ItemList, ViewRow, EditRow' />
+    </Folder>
   </Files>
+
+<Callout>
+  `example-items` earned a folder here because it grew three distinct concerns:
+  shared form fields and types, the create form mutation, and the list/row
+  display with inline edit mode. `counter.tsx` and `posts.tsx` remain flat files
+  — they have no sub-parts to organise. The rule is the same as for utilities:
+  promote to a folder only when there are real files to put inside it, not
+  speculatively.
+</Callout>
 
 ---
 
