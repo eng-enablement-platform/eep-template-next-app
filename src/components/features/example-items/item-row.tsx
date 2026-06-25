@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
 import type { ExampleItem } from '@/db/types';
 import type { useExampleItems } from '@/hooks/use-example-items';
+import { useTimezoneStore } from '@/store/timezone-store';
 import { formatDate, parseDateSafe } from '@/utils/dates';
 import { exampleItemUpdateSchema } from '@/validation/example-item';
 
@@ -99,6 +100,7 @@ type ViewRowProps = { item: ExampleItem; mutate: MutateFn; onEdit: () => void };
 
 function ViewRow({ item, mutate, onEdit }: ViewRowProps) {
   const [isPending, setIsPending] = useState<boolean>(false);
+  const selectedTimezone = useTimezoneStore((state) => state.selectedTimezone);
 
   async function handleDelete() {
     setIsPending(true);
@@ -138,7 +140,11 @@ function ViewRow({ item, mutate, onEdit }: ViewRowProps) {
           {item.expiresAt && (
             <>
               {' · expires '}
-              {formatDate(parseDateSafe(item.expiresAt)!, 'display')}
+              {formatDate(
+                parseDateSafe(item.expiresAt)!,
+                'display',
+                selectedTimezone,
+              )}
             </>
           )}
         </span>

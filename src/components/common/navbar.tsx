@@ -3,6 +3,7 @@
 import { BookOpen, FileText } from 'lucide-react';
 
 import { ThemeToggle } from '@/components/common/theme-toggle';
+import { TimezoneSelector } from '@/components/common/timezone-selector';
 import { HomeProfile } from '@/components/features/home-profile';
 import { Button } from '@/components/ui/button';
 
@@ -46,9 +47,10 @@ export function Navbar() {
           </a>
         </Button>
       </div>
-      <div className='flex items-center gap-3'>
+      <div className='flex items-center gap-4'>
         <HomeProfile />
         <ThemeToggle />
+        <TimezoneSelector />
       </div>
     </header>
   );

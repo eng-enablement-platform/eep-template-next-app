@@ -65,17 +65,46 @@ export const parseDateSafe = (value: string): Date | null => {
  * parsed via native `new Date('YYYY-MM-DD')` will still produce wrong results
  * in negative-offset timezones. The two functions are designed to work together.
  *
+ * When `timezone` is provided, the date is formatted as it would appear in
+ * that IANA timezone (e.g. `'America/Denver'`). This is used by the dev
+ * timezone demo to show how the same UTC moment displays differently across
+ * timezones. Omit for production use — it falls back to local time.
+ *
  * @param date - The date to format.
  * @param dateFormat - `'display'` for "29 Dec 2027", `'iso'` for "2027-12-29".
+ * @param timezone - Optional IANA timezone string. When provided, formats the
+ *   date as it appears in that timezone rather than local time.
  * @returns A formatted date string.
  * @example
  * ```ts
  * const date = parseDateSafe('2027-12-29')!;
- * formatDate(date, 'display'); // '29 Dec 2027'
- * formatDate(date, 'iso');     // '2027-12-29'
+ * formatDate(date, 'display');                      // '29 Dec 2027' (local)
+ * formatDate(date, 'display', 'America/Denver');    // timezone-aware display
+ * formatDate(date, 'iso');                          // '2027-12-29'
  * ```
  */
-export const formatDate = (date: Date, dateFormat: DateFormat): string => {
-  const formatString = dateFormat === 'display' ? 'dd MMM yyyy' : 'yyyy-MM-dd';
-  return format(date, formatString);
+export const formatDate = (
+  date: Date,
+  dateFormat: DateFormat,
+  timezone?: string,
+): string => {
+  if (dateFormat === 'iso') {
+    // ISO output is always calendar-date only — timezone doesn't apply
+    return format(date, 'yyyy-MM-dd');
+  }
+
+  if (timezone) {
+    /*
+     * Use Intl.DateTimeFormat to render the date as it appears in the given
+     * IANA timezone. Native, no extra dependency.
+     */
+    return new Intl.DateTimeFormat('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      timeZone: timezone,
+    }).format(date);
+  }
+
+  return format(date, 'dd MMM yyyy');
 };
