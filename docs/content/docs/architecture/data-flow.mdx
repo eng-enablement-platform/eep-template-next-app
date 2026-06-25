@@ -45,7 +45,7 @@ after a successful mutation.
 
 ---
 
-## Why reads and writes take different entry points
+## Why reads and writes take different entry points?
 
 Route handlers and server actions are not interchangeable. Each owns a specific
 surface and the split is intentional.
@@ -81,7 +81,7 @@ import { exampleItemSchema } from '@/validation/example-item';
 
 ---
 
-## Why the same service for both paths
+## Why the same service for both paths?
 
 Neither route handlers nor server actions query the database directly. Both
 delegate to `classes/services/`.
