@@ -1,4 +1,181 @@
 ---
 title: Testing
-description: What earns a test, co-location rules, and when to use TDD.
+description: What earns a test, how to write it, and where it lives.
 ---
+
+## Philosophy
+
+We work in a QA-oriented way — no regressions, no silly bugs, no shortcuts.
+Before writing a test ask: _would this prevent a future bug or make refactoring
+safer?_ If yes, write it. We don't chase coverage metrics — we test what matters.
+
+---
+
+## What earns a test
+
+The one-line filter: **if you can break it by changing a branch, a prop's
+effect, a timer, or state — test it. If the only thing to assert is that markup
+rendered, skip it.**
+
+Three tiers:
+
+**1. Pure logic — always test.**
+Functions, stores, validation, reducers. This is where bugs hide and tests are
+cheap and stable. Covers `utils/`, `store/`, `validation/`.
+
+```ts
+// ✅ formatErrorMessage has branching logic — worth testing
+it('returns the message from an Error instance', () => {
+  expect(formatErrorMessage(new Error('boom'))).toBe('boom');
+});
+
+it('falls back to a generic message for an unknown value', () => {
+  expect(formatErrorMessage(null)).toBe('An unknown error occurred');
+});
+```
+
+**2. Components with branches, state, or effects — test the decision.**
+Conditional rendering, event handlers, timers — anything that makes a decision.
+Test that the decision is correct, not that the markup rendered.
+
+```tsx
+// ✅ tests the branch (which icon shows) and the behaviour (setTheme called)
+it('shows the icon matching the active theme', () => {
+  activeTheme = 'dark';
+  render(<ThemeToggle />);
+
+  expect(screen.getByTestId('dark-theme-icon')).toBeInTheDocument();
+  expect(screen.queryByTestId('light-theme-icon')).not.toBeInTheDocument();
+});
+
+it('calls setTheme with the chosen option', async () => {
+  const user = userEvent.setup();
+  render(<ThemeToggle />);
+
+  await user.click(screen.getByRole('button'));
+  await user.click(screen.getByText('Dark'));
+
+  expect(setTheme).toHaveBeenCalledExactlyOnceWith('dark');
+});
+```
+
+See `src/components/common/__tests__/theme-toggle.test.tsx` for the full
+reference shape including the `useTheme` mock pattern.
+
+**3. Pure presentational components — do not test.**
+Takes props, renders markup, no branching. Asserting "the markup rendered" tests
+that React works — it catches no bugs and breaks on every cosmetic change.
+`error`, `page-not-found`, `toast`, `auth` get no unit test for this reason.
+
+---
+
+## TDD
+
+TDD pays off for small, isolated functions with a clear contract — pure
+utilities, validation schemas, well-defined logic. Write the test first, watch
+it fail, make it pass.
+
+It doesn't pay off for larger integration work where the spec is still being
+discovered. Tests written against a moving API end up brittle and get thrown
+away — write them once the shape has stabilised.
+
+---
+
+## Co-location
+
+Tests live next to the code they test in a `__tests__/` subfolder at the same
+directory level. See [Code Style](/docs/conventions/code-style#naming) for the
+full co-location rule.
+
+| Type      | Location                                        |
+| --------- | ----------------------------------------------- |
+| Utility   | `utils/__tests__/`                              |
+| Store     | `store/__tests__/`                              |
+| Hook      | `hooks/__tests__/`                              |
+| Component | `components/common/__tests__/` (or `features/`) |
+| Service   | `classes/services/<domain>/__tests__/`          |
+| e2e       | `e2e-tests/tests/` (project root)               |
+
+---
+
+## Test-only exports
+
+Expose internals for testing under a single `_forTests` named export at the
+bottom of the file. Never export internal classes or functions individually —
+keep the public API clean.
+
+```ts
+// public API
+export const exampleItemService = new ExampleItemService();
+
+// test-only — grouped under one export, never imported outside __tests__/
+export const _forTests = { ExampleItemService };
+```
+
+The `_` prefix signals to any reader or agent that this is not part of the
+public API.
+
+---
+
+## Zustand stores
+
+Stores are module singletons — reset to default state at the start of each test
+to stay independent of execution order. Use `getState` / `setState` to drive the
+store without rendering a React tree.
+
+```ts
+describe('useCounterStore', () => {
+  const resetStore = () => {
+    useCounterStore.setState(defaultCounterState);
+  };
+
+  it('increments and decrements by one', () => {
+    resetStore();
+
+    useCounterStore.getState().increment();
+    useCounterStore.getState().increment();
+    expect(useCounterStore.getState().count).toBe(2);
+
+    useCounterStore.getState().decrement();
+    expect(useCounterStore.getState().count).toBe(1);
+  });
+});
+```
+
+---
+
+## Mocking
+
+Mock at the boundary closest to the thing you're testing. For components that
+depend on a hook or context you don't control (e.g. `useTheme` from
+`next-themes`), mock the hook and drive the component with a known value — don't
+try to render the full provider tree.
+
+```ts
+const setTheme = vi.fn();
+let activeTheme = 'system';
+
+vi.mock('next-themes', () => ({
+  useTheme: () => ({ theme: activeTheme, setTheme }),
+}));
+
+afterEach(() => {
+  setTheme.mockClear();
+  activeTheme = 'system';
+});
+```
+
+---
+
+## Running tests
+
+```bash
+pnpm test          # vitest run (single pass)
+pnpm test:watch    # vitest watch mode
+pnpm e2e           # Playwright end-to-end
+pnpm e2e:ui        # Playwright UI mode
+```
+
+The full unit test suite runs automatically on pre-commit whenever `.ts` / `.tsx`
+files are staged. See [Git](/docs/conventions/git#pre-commit-hook) for the full
+hook breakdown.
