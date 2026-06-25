@@ -294,15 +294,27 @@ export function CreateForm({ mutate }: CreateFormProps) {
           </p>
         )}
 
-        <Button
-          type='submit'
-          size='sm'
-          disabled={form.formState.isSubmitting}
-          className='self-start'
-        >
-          {form.formState.isSubmitting && <Loader2 className='animate-spin' />}
-          Add item
-        </Button>
+        <div className='flex justify-between'>
+          <Button
+            type='button'
+            size='sm'
+            variant='destructive'
+            onClick={() => form.reset()}
+            disabled={form.formState.isSubmitting}
+          >
+            Reset
+          </Button>
+          <Button
+            type='submit'
+            size='sm'
+            disabled={form.formState.isSubmitting}
+          >
+            {form.formState.isSubmitting && (
+              <Loader2 className='animate-spin' />
+            )}
+            Add item
+          </Button>
+        </div>
       </form>
     </Form>
   );
