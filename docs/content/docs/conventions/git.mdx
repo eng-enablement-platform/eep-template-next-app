@@ -44,14 +44,12 @@ chore: bump drizzle-kit to 0.21
 docs: add git conventions page
 ```
 
-Scope is optional but useful for larger repos: `feat(auth): add OAuth provider`.
-
 ---
 
 ## Stacked MRs
 
 For large changes, stack branches rather than opening one giant MR. Each branch
-builds on the previous one — you get smaller, reviewable diffs and can merge
+builds on the previous one, so you get smaller, reviewable diffs and can merge
 incrementally.
 
 ```
@@ -74,16 +72,25 @@ git checkout feat/EEP-101-payments-ui
 git rebase main
 ```
 
-Stacked MRs work best when each branch is genuinely independent enough to merge
-on its own — if branch 2 can't ship without branch 3, they probably belong
-together.
-
 ---
 
 ## Pre-commit hook
 
-The pre-commit hook is the first line of defence — it runs a guardrail suite on
-every commit so issues never reach CI.
+<Callout type='warn'>
+  The pre-commit hook is intentionally aggressive. If you're not used to this
+  level of enforcement it will feel pretty heavy at first. A full typecheck, test run,
+  and build on every commit is not typical. That's by design.
+
+When you're working with an agent, unchecked commits are how a codebase
+quietly spirals. Types drift, tests go red, the build breaks and by the time
+anyone notices, the damage is spread across ten commits. The hook is the
+guardrail that keeps that from happening. It's the single most effective thing
+in this template for keeping agentic workflows from going off the rails.
+
+</Callout>
+
+The hook runs a different suite depending on what changed, heavy checks only
+fire when relevant, so a docs-only commit won't trigger a full build.
 
 | Trigger                                    | What runs                                       |
 | ------------------------------------------ | ----------------------------------------------- |
@@ -99,5 +106,7 @@ every commit so issues never reach CI.
 SKIP_CHECKS=1 git commit -m "wip: rough sketch"
 ```
 
-Lint, Trivy, and style still run even with `SKIP_CHECKS=1`. Never use it to
-bypass failing tests on shippable code.
+<Callout type='warn'>
+  Lint, Trivy, and style still run even with `SKIP_CHECKS=1`. Never use it to
+  bypass failing tests on shippable code.
+</Callout>
