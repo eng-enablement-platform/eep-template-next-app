@@ -31,25 +31,26 @@ Throwaway files for trying something out before committing to it. Common uses:
 
 - Calling a third-party API and inspecting the raw response shape
 - Testing a data transformation or mapping before wiring it into a service
+- Running a service class method directly against the live database
 - Verifying a Drizzle query returns what you expect
-- Sanity-checking an env var or credentials setup
 
 ```ts
 // scripts/explore-hubspot-contacts.ts
 import { config } from 'dotenv';
-
 config({ path: '.env.local' });
 
-const response = await fetch('https://api.hubapi.com/crm/v3/objects/contacts', {
-  headers: { Authorization: `Bearer ${process.env.HUBSPOT_API_KEY}` },
-});
+import { hubspotService } from '@/classes/services/hubspot';
 
-const data = await response.json();
-console.log(JSON.stringify(data.results[0], null, 2));
+async function main() {
+  const contacts = await hubspotService.getContacts({ limit: 5 });
+  console.log(JSON.stringify(contacts[0], null, 2));
+}
+
+main().catch(console.error);
 ```
 
 ```bash
-pnpm exec tsx scripts/explore-hubspot-contacts.ts
+NODE_OPTIONS='--conditions=react-server' pnpm exec tsx scripts/explore-hubspot-contacts.ts
 ```
 
 Exploration scripts are temporary — use them to validate your understanding,
@@ -63,14 +64,87 @@ should not accumulate in the repo.
 
 ---
 
+## Importing `server-only` modules
+
+Services in `src/classes/services/` import `server-only` at the top of the
+file. This is a compile-time guard that prevents them from being bundled into
+the client — but it also means plain `tsx` throws an error if you try to import
+them directly:
+
+```bash
+# ❌ fails — server-only guard throws
+pnpm exec tsx scripts/explore-example.ts
+
+# Error: This module cannot be imported from a Client Component module.
+```
+
+The fix is the `--conditions=react-server` Node flag. It tells the module
+resolver to use the `react-server` export condition, which is how Next.js
+signals "we are running in a server context" — `server-only` sees this condition
+and allows the import:
+
+```bash
+# ✅ works — server context satisfied
+NODE_OPTIONS='--conditions=react-server' pnpm exec tsx scripts/explore-example.ts
+```
+
+For scripts that import from `src/classes/services/`, wire this into
+`package.json` so you don't have to remember the flag:
+
+```json
+{
+  "scripts": {
+    "explore:example": "NODE_OPTIONS='--conditions=react-server' tsx scripts/explore-example.ts"
+  }
+}
+```
+
+### Canonical exploration script shape
+
+```ts
+import { config } from 'dotenv';
+
+/*
+ * Load .env.local before any src/ imports — env vars must be present
+ * before service constructors run (DB connection strings, API keys etc.).
+ */
+config({ path: '.env.local' });
+
+import { exampleItemService } from '@/classes/services/example-item';
+
+async function main() {
+  const items = await exampleItemService.getAll();
+  console.log('items:', JSON.stringify(items, null, 2));
+}
+
+main().catch(console.error);
+```
+
+Two rules:
+
+1. `config()` must be called **before** any `src/` import — service constructors read env vars at instantiation time.
+2. Wrap everything in an `async function main()` — top-level await is not supported in CJS output.
+
+---
+
 ## Running a script
 
 ```bash
-# Run any script directly
+# Standard script (no server-only imports)
 pnpm exec tsx scripts/my-script.ts
 
-# Scripts that need env vars load .env.local themselves
-# (see seed.ts for the pattern — call config({ path: '.env.local' }) at the top)
+# Script that imports from src/classes/services/
+NODE_OPTIONS='--conditions=react-server' pnpm exec tsx scripts/my-script.ts
 ```
 
 ---
+
+## What belongs here vs elsewhere
+
+| Scenario                           | Where it goes                                |
+| ---------------------------------- | -------------------------------------------- |
+| One-off API or service exploration | `scripts/` — delete when done                |
+| Reusable data-fetching logic       | `src/classes/services/<domain>/`             |
+| Shared utility function            | `src/utils/`                                 |
+| Database migration                 | `drizzle/` (via `pnpm db:generate`)          |
+| Test for a unit of logic           | `__tests__/` co-located with the source file |

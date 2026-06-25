@@ -32,6 +32,7 @@
     "db:seed": "tsx scripts/seed.ts",
     "db:check": "tsx scripts/db-smoke-check.ts",
     "db:studio": "drizzle-kit studio",
+    "explore:service": "NODE_OPTIONS='--conditions=react-server' tsx scripts/explore-service.ts",
     "prepare": "husky"
   },
   "dependencies": {
