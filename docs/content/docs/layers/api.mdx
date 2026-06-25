@@ -31,6 +31,8 @@ Compared to a route handler, actions give you:
   mobile client), use a route handler instead.
 </Callout>
 
+---
+
 ## Structure
 
 The API routes are organised in the `app/api` directory. Each subdirectory
@@ -75,6 +77,8 @@ HTTP methods for that URL as named exports.
   / POST / PATCH / DELETE). It exists to demonstrate the pattern and give
   Swagger something to document
 </Callout>
+
+---
 
 ## Route handler structure
 
@@ -149,6 +153,8 @@ export async function GET(
 integer. Route params always arrive as strings, so guard before they reach the
 service.
 
+---
+
 ## Shared handler utilities
 
 `app/api/utils/index.ts` holds three small functions used by every handler:
@@ -160,6 +166,8 @@ service.
 | `parseId(raw)`                      | Parses a route param string into a positive integer, or `null` |
 
 <Callout type='idea'>Keep any shared handler logic in here</Callout>
+
+---
 
 ## `force-dynamic` — when and why
 
@@ -189,6 +197,8 @@ is only needed when Next.js can't infer it.
   dynamic. Add it explicitly if you write a GET handler with no inputs that
   still reads live data.
 </Callout>
+
+---
 
 ## OpenAPI and Swagger UI
 

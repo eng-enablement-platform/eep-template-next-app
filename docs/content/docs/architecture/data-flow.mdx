@@ -25,6 +25,8 @@ to a route handler in `app/api/`.
 SWR handles loading and error states automatically. Components never call
 `fetch()` directly and never use `useEffect` for data fetching.
 
+---
+
 ## The write path
 
 A write starts when a user submits a form. The component calls a server action
@@ -41,6 +43,8 @@ The key detail is step 5 — `revalidatePath()` is what closes the loop between
 a server action and the client cache. Without it, the UI would show stale data
 after a successful mutation.
 
+---
+
 ## Why reads and writes take different entry points
 
 Route handlers and server actions are not interchangeable. Each owns a specific
@@ -55,6 +59,8 @@ to invalidate the SWR cache in the same request.
 
 The practical rule is simple: if the mutation comes from our own UI, it uses a
 server action. If it comes from anywhere else, it uses a route handler.
+
+---
 
 ## External writes use the same schema
 
@@ -72,6 +78,8 @@ import { exampleItemSchema } from '@/validation/example-item';
 // src/app/api/example-items/route.ts
 import { exampleItemSchema } from '@/validation/example-item';
 ```
+
+---
 
 ## Why the same service for both paths
 

@@ -43,6 +43,8 @@ The patterns used / referenced are:
 - **Factory** — Per-request instantiation when the service needs context baked in
 - **Inheritance vs Composition** — Base clients handle cross-cutting concerns; domain clients extend or compose depending on what they need
 
+---
+
 ## Why classes?
 
 You don't see many classes in React these days. Hooks replaced class components,
@@ -107,6 +109,8 @@ Using a class for each domain service provides a number of benefits:
   const item = await exampleItemService.create(input);
   ```
 
+---
+
 ## Service shape
 
 Every service class follows the same shape:
@@ -136,6 +140,8 @@ class ExampleItemService {
 
 export const exampleItemService = new ExampleItemService();
 ```
+
+---
 
 ## Module-scoped instances vs factory
 
@@ -254,6 +260,8 @@ const reports = await reportService.getReports();
   the service configured differently based on who they are or what request
   they're handling? → **factory.**
 </Callout>
+
+---
 
 ## Inheritance and composition
 
