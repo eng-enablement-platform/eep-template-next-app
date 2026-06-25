@@ -1,0 +1,76 @@
+---
+title: Scripts
+description: What the scripts/ folder is for and how to use it.
+---
+
+The `scripts/` folder sits at the project root and runs **outside the Next.js
+context** — no App Router, no server components, no edge runtime. Every file is
+executed directly with `tsx` (via `pnpm exec tsx scripts/my-script.ts`), which
+means you get full Node.js access and can import from `src/` freely.
+
+---
+
+## Two kinds of scripts
+
+### Helper scripts
+
+Permanent utilities that support the development workflow. They live in
+`scripts/` indefinitely and are typically wired to a `package.json` command:
+
+| Script               | Command                        | What it does                                                         |
+| -------------------- | ------------------------------ | -------------------------------------------------------------------- |
+| `seed.ts`            | `pnpm db:seed`                 | Clears and re-populates `example_items` with deterministic test data |
+| `db-smoke-check.ts`  | `pnpm db:check`                | Verifies the DB connection and migration state                       |
+| `copy-swagger-ui.ts` | `pnpm docs:assets` (pre-build) | Vendors Swagger UI assets into `public/`                             |
+
+These are committed, documented, and expected to stay working.
+
+### Exploration scripts
+
+Throwaway files for trying something out before committing to it. Common uses:
+
+- Calling a third-party API and inspecting the raw response shape
+- Testing a data transformation or mapping before wiring it into a service
+- Verifying a Drizzle query returns what you expect
+- Sanity-checking an env var or credentials setup
+
+```ts
+// scripts/explore-hubspot-contacts.ts
+import { config } from 'dotenv';
+
+config({ path: '.env.local' });
+
+const response = await fetch('https://api.hubapi.com/crm/v3/objects/contacts', {
+  headers: { Authorization: `Bearer ${process.env.HUBSPOT_API_KEY}` },
+});
+
+const data = await response.json();
+console.log(JSON.stringify(data.results[0], null, 2));
+```
+
+```bash
+pnpm exec tsx scripts/explore-hubspot-contacts.ts
+```
+
+Exploration scripts are temporary — use them to validate your understanding,
+then either promote the logic into a service class or delete the file. They
+should not accumulate in the repo.
+
+<Callout type='warn'>
+  Exploration scripts must not be wired to `package.json` commands or imported
+  from `src/`. They exist only to be run manually during development.
+</Callout>
+
+---
+
+## Running a script
+
+```bash
+# Run any script directly
+pnpm exec tsx scripts/my-script.ts
+
+# Scripts that need env vars load .env.local themselves
+# (see seed.ts for the pattern — call config({ path: '.env.local' }) at the top)
+```
+
+---

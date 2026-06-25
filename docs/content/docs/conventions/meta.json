@@ -1,4 +1,4 @@
 {
   "title": "Conventions",
-  "pages": ["code-style-structure", "git", "testing", "logging"]
+  "pages": ["code-style-structure", "git", "testing", "logging", "scripts"]
 }
