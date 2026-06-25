@@ -7,9 +7,6 @@
  * Registered globally via `SwrProvider` (see src/components/providers/
  * swr.tsx), so hooks don't need to pass it explicitly:
  *
- * ```ts
- * const { data } = useSWR<Foo>('/api/foo');
- * ```
  *
  * Only import this directly if you need to bypass `SWRConfig` — e.g. in a
  * one-off `useSWR(key, customFetcher)` call or outside the React tree.
@@ -19,6 +16,10 @@
  * @returns The parsed JSON body, typed as `TData`.
  * @throws  An `Error` whose message includes the HTTP status when the
  *          response is not OK.
+ * @example
+ * ```ts
+ * const { data } = useSWR<Foo>('/api/foo');
+ * ```
  */
 export async function fetcher<TData = unknown>(
   input: RequestInfo | URL,

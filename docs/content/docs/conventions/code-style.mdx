@@ -200,8 +200,10 @@ Next.js file conventions that require a default export:
 - `loading.tsx`
 - `route.ts`.
 
-The ESLint rule `import/no-default-export` enforces this, with those files are
-explicitly exempted.
+<Callout type='warn'>
+  The ESLint rule `import/no-default-export` enforces this, with those files
+  exempted.
+</Callout>
 
 ### Barrel exports
 
@@ -247,24 +249,28 @@ utilities. How you package a concern depends on its size:
 
 - **Small concern** — A single kebab-case file:
 
-```
-utils/
-  format-error-message.ts
-  tailwind-merge.ts
-```
+<Files>
+  <Folder name='utils' defaultOpen>
+    <File name='format-error-message.ts' />
+    <File name='tailwind-merge.ts' />
+    <File name='sum.ts' />
+  </Folder>
+</Files>
 
 - **Large concern** — A subfolder with an `index.ts` barrel exporting the public
   surface, and per-topic files inside:
 
-```
-utils/
-  formatting/
-    index.ts          ← re-exports the public surface
-    dates.ts
-    currency.ts
-    numbers.ts
-  tailwind-merge.ts
-```
+<Files>
+  <Folder name='utils' defaultOpen>
+    <Folder name='formatting' defaultOpen>
+      <File name='index.ts' description='// re-exports the public surface' />
+      <File name='dates.ts' />
+      <File name='currency.ts' />
+      <File name='numbers.ts' />
+    </Folder>
+    <File name='sum.ts' />
+  </Folder>
+</Files>
 
 <Callout>
   The trigger for promoting a file to a folder is the same as everywhere else in
@@ -276,9 +282,48 @@ utils/
 
 ## Services (backend)
 
+Each domain gets its own folder with an `index.ts` as the entry point. This
+isn't ceremony for the sake of it! A service domain naturally grows parts over time (the main
+class, split types, sub-services), and the folder gives it room to do that while
+`index.ts` controls what the outside world sees.
+
+**The same pattern applies to
+loggers:** `classes/loggers/application/` and `classes/loggers/query/` are two
+separate concerns, each with their own folder.
+
+<Files>
+  <Folder name='classes' defaultOpen>
+    <Folder name='services' defaultOpen>
+      <Folder name='example-item' defaultOpen>
+        <File
+          name='index.ts'
+          description='// ExampleItemService + singleton export'
+        />
+      </Folder>
+      <Folder name='hubspot' defaultOpen>
+        <File
+          name='index.ts'
+          description='// HubSpotService + singleton export'
+        />
+      </Folder>
+    </Folder>
+    <Folder name='loggers' defaultOpen>
+      <Folder name='application' defaultOpen>
+        <File name='index.ts' description='// rootLogger' />
+      </Folder>
+      <Folder name='query' defaultOpen>
+        <File name='index.ts' description='// query logger' />
+      </Folder>
+    </Folder>
+    <Folder name='errors' defaultOpen>
+      <File name='index.ts' description='// ApplicationError and friends' />
+    </Folder>
+  </Folder>
+</Files>
+
 All backend business logic and third-party integrations live as **classes** in
 `src/classes/services/<domain>/`. Route handlers and server actions call service
-methods.
+methods, not Drizzle, Clerk, or any external API directly.
 
 A class gives the service a clear **public surface** (the methods you expose)
 and a clean **private interior** (the HTTP client, DB connection, or config that
@@ -292,9 +337,7 @@ const item = await exampleItemService.getById(id);
 const rows = await db.select().from(exampleItemsTable).where(eq(...));
 ```
 
-### Singleton vs per-request
-
-Default to a **singleton** [_module scoped instance_](/docs/layers/server#module-scoped-instances-vs-factory) — declare the class, then export one instance.
+Default to a **singleton** — declare the class, then export one instance.
 
 ```ts
 class ExampleItemService {
@@ -306,10 +349,10 @@ class ExampleItemService {
 export const exampleItemService = new ExampleItemService();
 ```
 
-Reach for per-request instantiation only when the service carries **per-user
-state**
+Reach for the **factory pattern** when the service carries per-request state — See [module-scoped instances vs factory](/docs/layers/server#module-scoped-instances-vs-factory)
+for the full detail.
 
-<Callout>
+<Callout type='warn'>
   Services in `classes/services/` are `server-only`. They import `server-only`
   at the top of the file and must never be imported from client components or
   hooks.
@@ -377,16 +420,29 @@ useEffect(() => {
   pre-commit. For `.tsx` components it's advised but not linted.
 </Callout>
 
-TSDoc (`/** */`) describes a symbol so consumers see it on hover in their
-editor. It's an API surface, not just a comment. Use it only when attached directly
-above the symbol it documents. Don't reach for `/**` just to write a note.
+TSDoc (`/** */`) is documentation attached directly above an exported function,
+type, or component. When you hover over a call site in your editor, the TSDoc
+block is what surfaces. It's the difference between seeing a type signature and
+understanding what the function actually does and why it exists.
 
 ```ts
 /**
- * Attached directly above the symbol. This is documentation, not commentary.
+ * Normalise any thrown value into a display string.
+ *
+ * `catch` clauses type their argument as `unknown`, so callers have to handle
+ * `Error`, plain strings, and arbitrary objects. This does that once so nothing
+ * else has to.
+ *
+ * @param error - The value from a `catch` clause.
+ * @returns A human-readable string, never throws.
  */
-export function doSomething() { ... }
+export const formatErrorMessage = (error: unknown): string => { ... };
 ```
+
+Hovering `formatErrorMessage` anywhere it's called surfaces that explanation
+inline, no hunting for the definition.
+
+![TSDoc hover tooltip in VS Code](/tsdoc-hover.png)
 
 <Callout>
   Tooling directives (`eslint-disable`, `@ts-expect-error`, `prettier-ignore`)
@@ -463,7 +519,6 @@ shouldn't need to think about formatting — save, commit, let the tools handle 
 ```bash
 pnpm lint          # ESLint across the project
 pnpm typecheck     # tsc --noEmit
-pnpm test          # vitest run
 ```
 
 If you need to disable a lint rule, always leave a comment explaining why:
@@ -473,6 +528,7 @@ If you need to disable a lint rule, always leave a comment explaining why:
 setMounted(true);
 ```
 
-Never disable rules silently. If you're suppressing the same rule repeatedly,
-the rule is probably wrong for this project — change the config rather than
-scattering suppressions.
+<Callout type='warn'>
+  Never disable rules silently. If you're suppressing the same rule repeatedly,
+  the rule is probably wrong for the project.
+</Callout>
