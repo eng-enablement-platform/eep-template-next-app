@@ -1,0 +1,156 @@
+---
+title: Routing and Layouts
+description: How the app/ directory is structured, what route groups are, and how layouts nest.
+---
+
+## The app/ boundary
+
+`app/` holds **only Next.js file-convention files** — `page.tsx`, `layout.tsx`,
+`error.tsx`, `not-found.tsx`, `loading.tsx`, `route.ts`. These are reserved
+filenames the router discovers by location, so they must live here.
+
+Keep them **thin**. A page file resolves params and wires the framework; a
+layout mounts providers and shells. Real components live in `components/` and
+are imported via `@/`.
+
+---
+
+## Route groups
+
+Parentheses folders — `(name)/` — are Next.js **route groups**. The name is
+invisible to the URL: `app/(app)/dashboard/page.tsx` is still `/dashboard`.
+Their only purpose is **layout segmentation** — grouping pages that share a
+common layout without that grouping appearing in the URL.
+
+This template ships with two groups:
+
+<Files>
+  <Folder name='app' defaultOpen>
+    <File
+      name='layout.tsx'
+      description='// root: ClerkProvider, ThemeProvider (every route)'
+    />
+    <File name='error.tsx' description='// app-wide error boundary page' />
+    <File name='not-found.tsx' description='// 404 page' />
+    <Folder name='(app)' defaultOpen>
+      <File
+        name='layout.tsx'
+        description='// auth gate + Navbar (authenticated app pages)'
+      />
+      <File name='page.tsx' description='// /' />
+    </Folder>
+    <Folder name='(auth)' defaultOpen>
+      <File
+        name='layout.tsx'
+        description='// bare shell — no navbar, no auth gate'
+      />
+      <Folder name='sign-in' defaultOpen>
+        <File name='page.tsx' description='// /sign-in' />
+      </Folder>
+      <Folder name='sign-up' defaultOpen>
+        <File name='page.tsx' description='// /sign-up' />
+      </Folder>
+    </Folder>
+    <Folder name='api' defaultOpen>
+      <File name='...' description='// route handlers' />
+    </Folder>
+  </Folder>
+</Files>
+
+---
+
+## Layout nesting
+
+Layouts nest from the outside in. Every request passes through all layouts from
+the root down to the matched page:
+
+```
+Root layout.tsx         — ClerkProvider, ThemeProvider, AppToaster
+  └─ (app)/layout.tsx   — RootLayoutClient (auth gate), Navbar
+       └─ page.tsx      — the actual page content
+```
+
+For auth routes the path is different:
+
+```
+Root layout.tsx         — ClerkProvider, ThemeProvider, AppToaster
+  └─ (auth)/layout.tsx  — bare <>{children}</> — no gate, no navbar
+       └─ sign-in/      — Clerk's sign-in UI
+```
+
+This is why the auth gate lives in `(app)/layout.tsx` and **not** in the root
+`layout.tsx`. If the gate were in the root layout it would intercept every
+route — including sign-in — and redirect to `/sign-in` forever.
+
+<Callout type='warn'>
+  Never put auth gating in the root `layout.tsx`. It runs on every route
+  including the auth pages themselves, causing an infinite redirect loop. Gate
+  only in the `(app)/` layout.
+</Callout>
+
+---
+
+## Adding a new page
+
+New authenticated pages go inside `(app)/`:
+
+<Files>
+  <Folder name='app' defaultOpen>
+    <Folder name='(app)' defaultOpen>
+      <Folder name='dashboard' defaultOpen>
+        <File
+          name='page.tsx'
+          description='// /dashboard — automatically gets Navbar + auth gate'
+        />
+      </Folder>
+    </Folder>
+  </Folder>
+</Files>
+
+---
+
+## Adding a new route group
+
+Add a new route group when a set of pages needs a different layout from the
+rest of the app — a public marketing section, a full-screen onboarding flow, or
+an admin panel with a sidebar.
+
+<Files>
+  <Folder name='app' defaultOpen>
+    <Folder name='(app)' defaultOpen>
+      <File
+        name='layout.tsx'
+        description='// authenticated app — Navbar + auth gate'
+      />
+    </Folder>
+    <Folder name='(auth)' defaultOpen>
+      <File name='layout.tsx' description='// Clerk auth flows — bare layout' />
+    </Folder>
+    <Folder name='(marketing)' defaultOpen>
+      <File
+        name='layout.tsx'
+        description='// public pages — different header, no auth'
+      />
+      <Folder name='landing' defaultOpen>
+        <File name='page.tsx' description='// /landing' />
+      </Folder>
+    </Folder>
+  </Folder>
+</Files>
+
+Each group gets its own `layout.tsx`. The root `layout.tsx` only provides
+global providers — it never makes assumptions about which group is rendering.
+
+---
+
+## Navbar
+
+The `Navbar` component lives in `components/common/navbar.tsx` and is mounted
+once in `(app)/layout.tsx`. Because it's in the layout rather than on
+individual pages it renders automatically on every authenticated route without
+any per-page wiring.
+
+<Callout>
+  Shared layout elements — navbars, sidebars, footers — belong in the relevant
+  group layout, not on individual pages.
+</Callout>
