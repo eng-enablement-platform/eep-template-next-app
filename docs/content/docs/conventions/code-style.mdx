@@ -1,6 +1,6 @@
 ---
 title: Code Style
-description: Naming, types, exports, functions, comments, TSDoc — the rules and why they exist.
+description: All the rules and why they exist. Naming, types, exports, functions, comments, TSDoc.
 ---
 
 ## Naming
@@ -44,6 +44,9 @@ The rule is based on **what the function is**
 
 ### Components are always function declarations
 
+Function declarations hoist, which matters for readability in long component
+files. They also produce cleaner stack traces with a real function name.
+
 ```tsx
 // ✅
 export function ThemeToggle({ displayName }: ToggleProps) {
@@ -55,9 +58,6 @@ export const ThemeToggle = ({ displayName }: ToggleProps) => {
   ...
 };
 ```
-
-Function declarations hoist, which matters for readability in long component
-files. They also produce cleaner stack traces with a real function name.
 
 ### Utilities and callbacks are arrow functions
 
@@ -79,12 +79,14 @@ increment: () => set((state) => ({ count: state.count + 1 })),
 ### `type` vs `interface`
 
 Default to `type` for everything. Only reach for `interface` when you
-specifically need **declaration merging** — augmenting a third-party module or
+specifically need **declaration merging** e.g. augmenting a third-party module or
 a global (`declare global { ... }`).
 
-The practical reason: `type` is strictly more capable. It handles unions,
-intersections, mapped types, and conditional types. `interface` adds nothing over `type` for regular object shapes, and
-switching from one to the other mid-project creates unnecessary inconsistency.
+<Callout>
+  **The practical reason:** `type` is strictly more capable. It handles unions,
+  intersections, mapped types, and conditional types. `interface` adds nothing
+  over `type` for regular object shapes.
+</Callout>
 
 ```ts
 // ✅ type for object shapes
@@ -115,8 +117,8 @@ declare module 'next-auth' {
 
 Two axes decide where a type lives:
 
-- **Scope** (who uses it)
-- **Size** (how much space it takes).
+- **Scope** – Who uses it
+- **Size** – How much space it takes
 
 | Scope                                      | Default home                       |
 | ------------------------------------------ | ---------------------------------- |
@@ -141,9 +143,11 @@ export type InvoiceFormState = { ... };
 export type InvoiceFilterParams = { ... };
 ```
 
-A single types file is always a flat `types.ts` sibling — never a `types/`
-folder wrapping one `index.ts`. Promote to a `types/` folder only when the
-types themselves split into multiple files.
+<Callout type='warn'>
+  A single types file is always a flat `types.ts` sibling, never a `types/`
+  folder wrapping one `index.ts`. Promote to a `types/` folder only when the
+  types themselves split into multiple files.
+</Callout>
 
 ---
 
@@ -166,8 +170,7 @@ Always use `@/` path aliases — never relative paths. `import type { Foo } from
 `import type { Foo } from '@/types/foo'` always resolves from the project root.
 
 Imports are auto-sorted by `eslint-plugin-simple-import-sort` on every commit:
-external packages first, then internal `@/` aliases, then relative. Don't
-manually reorder — let the linter own it.
+external packages first, then internal `@/` aliases, then relative.
 
 ---
 
@@ -175,7 +178,8 @@ manually reorder — let the linter own it.
 
 ### Named exports everywhere
 
-Named exports everywhere. Default exports only where Next.js requires it.
+Named exports make imports refactor-safe (renaming is a compiler error, not a
+silent runtime break) and keep barrel re-exports predictable.
 
 ```ts
 // ✅ named exports
@@ -199,12 +203,9 @@ Next.js file conventions that require a default export:
 The ESLint rule `import/no-default-export` enforces this, with those files are
 explicitly exempted.
 
-Named exports make imports refactor-safe (renaming is a compiler error, not a
-silent runtime break) and keep barrel re-exports predictable.
-
 ### Barrel exports
 
-Use barrels only at meaningful domain or feature boundaries — never as a
+Use barrels only at meaningful domain or feature boundaries, never as a
 catch-all at the top level of `components/`, `hooks/`, or `store/`.
 
 ```ts
@@ -223,22 +224,12 @@ export { cn } from './cn';
 // hooks/index.ts
 ```
 
-Rules:
-
-- Never mix server and client exports in the same barrel — tree-shaking can't
-  separate them cleanly and you risk pulling server code into the client bundle.
-- Never import the barrel from a sibling file in the same folder — import
-  siblings directly. Barrels are for external consumers.
-- Direct imports preferred for `src/components/ui/` (shadcn primitives).
-
 ---
 
 ## Utilities
 
 Utility functions live in `src/utils/`. The folder carries an implicit contract:
-**safe to use anywhere** — server, client, tests, scripts. That constraint has a
-direct consequence: don't put feature-specific helpers here. If a function only
-makes sense in the context of one feature, it doesn't belong in `src/utils/`.
+**safe to use anywhere** — server, client, tests, scripts.
 
 ### Where a utility lives
 
@@ -254,7 +245,7 @@ The unit is the **concern**, not the function. A concern is a cohesive group of
 related helpers — all date formatting, all HTTP response shaping, all currency
 utilities. How you package a concern depends on its size:
 
-**Small concern** — a single kebab-case file:
+- **Small concern** — A single kebab-case file:
 
 ```
 utils/
@@ -262,8 +253,8 @@ utils/
   tailwind-merge.ts
 ```
 
-**Large concern** — a subfolder with an `index.ts` barrel exporting the public
-surface, and per-topic files inside:
+- **Large concern** — A subfolder with an `index.ts` barrel exporting the public
+  surface, and per-topic files inside:
 
 ```
 utils/
@@ -275,14 +266,10 @@ utils/
   tailwind-merge.ts
 ```
 
-The trigger for promoting a file to a folder is the same as everywhere else in
-the codebase: ~200 lines, or the file is serving multiple distinct sub-concerns
-that each have their own test files. Don't reach for the folder shape
-speculatively — a single `formatting.ts` is fine until it earns the split.
-
 <Callout>
-  Never create a folder + `index.ts` just to wrap a single file. The folder
-  shape is for when there are genuinely multiple files to organise inside it.
+  The trigger for promoting a file to a folder is the same as everywhere else in
+  the codebase: ~200 lines, or the file is serving multiple distinct
+  sub-concerns that each have their own test files.
 </Callout>
 
 ---
@@ -291,7 +278,11 @@ speculatively — a single `formatting.ts` is fine until it earns the split.
 
 All backend business logic and third-party integrations live as **classes** in
 `src/classes/services/<domain>/`. Route handlers and server actions call service
-methods — they never reach Drizzle, Clerk, or any external API directly.
+methods.
+
+A class gives the service a clear **public surface** (the methods you expose)
+and a clean **private interior** (the HTTP client, DB connection, or config that
+callers don't need to see).
 
 ```ts
 // ✅ service encapsulates the data access
@@ -301,16 +292,9 @@ const item = await exampleItemService.getById(id);
 const rows = await db.select().from(exampleItemsTable).where(eq(...));
 ```
 
-A class gives the service a clear **public surface** (the methods you expose)
-and a clean **private interior** (the HTTP client, DB connection, or config that
-callers don't need to see). It also maps naturally to how third-party SDKs are
-built — wrap their client in your domain vocabulary, never leak it.
-
 ### Singleton vs per-request
 
-Default to a **singleton** — declare the class, then export one instance.
-Services that hold only config (API keys, base URLs, transports) cannot be
-corrupted by one request bleeding into the next.
+Default to a **singleton** [_module scoped instance_](/docs/layers/server#module-scoped-instances-vs-factory) — declare the class, then export one instance.
 
 ```ts
 class ExampleItemService {
@@ -323,9 +307,7 @@ export const exampleItemService = new ExampleItemService();
 ```
 
 Reach for per-request instantiation only when the service carries **per-user
-state** — e.g. a Slack client built from a signed-in user's OAuth token rather
-than an app-wide bot token. The test: would two concurrent users need different
-instances? Yes → per-request. No → singleton.
+state**
 
 <Callout>
   Services in `classes/services/` are `server-only`. They import `server-only`
@@ -337,9 +319,18 @@ instances? Yes → per-request. No → singleton.
 
 ## Comments
 
-The form you choose **signals intent** — it must match what you're writing. Two
-different things share similar syntax; picking the wrong one either buries a
-note in fake doc syntax or silently fails to document a symbol.
+Comments are a massively underutilised resource.
+This template enforces documentation via ESLint, but it's not just pure ceremony.
+The intention is to get you (and any agent working alongside you) to write clear reasoning
+for why something is implemented the way it is. Not what a function produces,
+but why it exists and why it's shaped the way it is.
+
+Just as a little thought experiment, how many times have you written something that
+you then came back to a year later and no clue why it was implemented the way it was.
+There are many instances, where seemingly sub optimal on odd solutions are put in place
+that someone coming new to (or even returning authors) can not comprehnd why it was done
+this way but often there is a very good business or technical reason why soemthing was implemetned
+the way it was, so the idea is to capture all of that in the comments.
 
 ### Commentary
 

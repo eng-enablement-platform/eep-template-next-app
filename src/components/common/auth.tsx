@@ -10,8 +10,7 @@ type AuthProps = {
  * Renders Clerk's prebuilt sign-in or sign-up flow under a shared heading.
  *
  * Consumed by the catch-all `[[...sign-in]]` / `[[...sign-up]]` routes, which is
- * why Clerk's path-based routing resolves without extra config. The heading is
- * ours; the form below it is Clerk's.
+ * why Clerk's path-based routing resolves without extra config.
  *
  * @param subtitle - Defaults to a type-appropriate prompt when omitted.
  * @example

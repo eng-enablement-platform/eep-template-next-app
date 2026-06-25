@@ -41,4 +41,5 @@ export function usePosts(): UsePostsReturn {
   };
 }
 
+// test-only exports
 export const _forTests = { POSTS_KEY };
