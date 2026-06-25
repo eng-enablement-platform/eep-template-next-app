@@ -12,6 +12,7 @@ import {
   updateExampleItem,
 } from '@/actions/example-item-actions';
 import { Button } from '@/components/ui/button';
+import { DatePicker } from '@/components/ui/date-picker';
 import {
   Form,
   FormControl,
@@ -24,6 +25,7 @@ import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import type { ExampleItem } from '@/db/types';
 import { useExampleItems } from '@/hooks/use-example-items';
+import { formatDate, parseDateSafe } from '@/utils/dates';
 import type {
   ExampleItemInput,
   ExampleItemUpdateInput,
@@ -111,7 +113,13 @@ function CreateForm({ mutate }: CreateFormProps) {
      * This is a type-level fix only — behaviour is unchanged.
      */
     resolver: zodResolver(exampleItemSchema) as Resolver<CreateFormValues>,
-    defaultValues: { name: '', description: '', quantity: 0, status: 'draft' },
+    defaultValues: {
+      name: '',
+      description: '',
+      quantity: 0,
+      status: 'draft',
+      expiresAt: undefined,
+    },
   });
 
   async function onSubmit(values: CreateFormValues) {
@@ -210,6 +218,24 @@ function CreateForm({ mutate }: CreateFormProps) {
             )}
           />
         </div>
+
+        <FormField
+          control={form.control}
+          name='expiresAt'
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Expiry date</FormLabel>
+              <FormControl>
+                <DatePicker
+                  value={field.value}
+                  onChange={field.onChange}
+                  placeholder='Pick an expiry date (optional)'
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         {form.formState.errors.root && (
           <p className='text-destructive text-xs'>
@@ -347,6 +373,12 @@ function ViewRow({ item, mutate, onEdit }: ViewRowProps) {
         </span>
         <span className='text-muted-foreground text-xs'>
           qty {item.quantity} · {item.status}
+          {item.expiresAt && (
+            <>
+              {' · expires '}
+              {formatDate(parseDateSafe(item.expiresAt)!, 'display')}
+            </>
+          )}
         </span>
       </div>
       <div className='flex shrink-0 gap-1'>
@@ -392,6 +424,7 @@ function EditRow({ item, mutate, onCancel }: EditRowProps) {
       description: item.description ?? '',
       quantity: item.quantity,
       status: item.status,
+      expiresAt: item.expiresAt ?? undefined,
     },
   });
 
@@ -401,6 +434,7 @@ function EditRow({ item, mutate, onCancel }: EditRowProps) {
       ...values,
       // The form uses '' for an empty description; the DB type is string | null.
       description: values.description || null,
+      expiresAt: values.expiresAt ?? null,
     };
 
     await mutate(
@@ -501,6 +535,23 @@ function EditRow({ item, mutate, onCancel }: EditRowProps) {
               )}
             />
           </div>
+
+          <FormField
+            control={form.control}
+            name='expiresAt'
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <DatePicker
+                    value={field.value}
+                    onChange={field.onChange}
+                    placeholder='Expiry date (optional)'
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
           {form.formState.errors.root && (
             <p className='text-destructive text-xs'>

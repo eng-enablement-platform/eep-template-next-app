@@ -1,4 +1,5 @@
 import {
+  date,
   integer,
   pgEnum,
   pgTable,
@@ -49,6 +50,9 @@ export const exampleItemStatus = pgEnum('example_item_status', [
  * - quantity: number — integer, defaults to 0
  * - status: 'draft' | 'active' | 'archived' — defaults to 'draft'
  * - createdAt: Date — timestamp, defaults to now()
+ * - expiresAt: string | null — optional calendar date (YYYY-MM-DD). Stored as
+ *   a SQL `date` column (no time, no timezone) so the value is always a plain
+ *   date string on the way out, never shifted by the DB server's timezone.
  */
 export const exampleItemsTable = pgTable('example_items', {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
@@ -57,4 +61,5 @@ export const exampleItemsTable = pgTable('example_items', {
   quantity: integer().notNull().default(0),
   status: exampleItemStatus().notNull().default('draft'),
   createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+  expiresAt: date(),
 });

@@ -1,0 +1,1 @@
+ALTER TABLE "example_items" ADD COLUMN "expiresAt" date;

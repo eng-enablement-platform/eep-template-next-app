@@ -56,6 +56,18 @@ const exampleItemFields = z.object({
   status: z
     .enum(exampleItemStatusValues)
     .meta({ description: 'Lifecycle status.', example: 'active' }),
+  expiresAt: z
+    .string()
+    .regex(
+      /^\d{4}-\d{2}-\d{2}$/,
+      'expiresAt must be a date in YYYY-MM-DD format',
+    )
+    .optional()
+    .meta({
+      description:
+        'Optional expiry date in YYYY-MM-DD format. Stored as a plain calendar date — no timezone conversion applied.',
+      example: '2027-12-29',
+    }),
 });
 
 /**
@@ -100,21 +112,20 @@ export const exampleItemEntitySchema = z
       .int()
       .meta({ description: 'Generated primary key.', example: 1 }),
     name: z.string().meta({ example: 'First item' }),
-    description: z
-      .string()
-      .nullable()
-      .meta({
-        description: 'Null when no description was set.',
-        example: 'A draft example',
-      }),
+    description: z.string().nullable().meta({
+      description: 'Null when no description was set.',
+      example: 'A draft example',
+    }),
     quantity: z.number().int().meta({ example: 5 }),
     status: z.enum(exampleItemStatusValues).meta({ example: 'active' }),
-    createdAt: z
-      .string()
-      .meta({
-        description: 'ISO 8601 creation timestamp.',
-        example: '2026-06-08T20:18:41.952Z',
-      }),
+    createdAt: z.string().meta({
+      description: 'ISO 8601 creation timestamp.',
+      example: '2026-06-08T20:18:41.952Z',
+    }),
+    expiresAt: z.string().nullable().meta({
+      description: 'Expiry date as YYYY-MM-DD, or null if not set.',
+      example: '2027-12-29',
+    }),
   })
   .meta({
     id: 'ExampleItem',
