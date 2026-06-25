@@ -372,9 +372,9 @@ useEffect(() => {
 
 ## TSDoc
 
-<Callout type='warn'>
-  All exported symbols in `.ts` / `.tsx` files need TSDoc. The pre-commit hook
-  enforces this via `eslint-plugin-jsdoc`.
+<Callout type='idea'>
+  TSDoc on exported `.ts` symbols is enforced via `eslint-plugin-jsdoc` on
+  pre-commit. For `.tsx` components it's advised but not linted.
 </Callout>
 
 TSDoc (`/** */`) describes a symbol so consumers see it on hover in their
@@ -390,7 +390,7 @@ export function doSomething() { ... }
 
 <Callout>
   Tooling directives (`eslint-disable`, `@ts-expect-error`, `prettier-ignore`)
-  are exempt from both rules as they're not commentary.
+  are exempt from both rules
 </Callout>
 
 ### Shape
