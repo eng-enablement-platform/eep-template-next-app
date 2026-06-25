@@ -23,6 +23,12 @@ const ASYNC_INCREMENT_DELAY_MS = 300;
 const LOG_LEVEL_DEFAULT = 'info';
 ```
 
+**Tests** — co-located in a `__tests__/` subfolder at the same directory level
+as the file under test. `components/common/theme-toggle.tsx` →
+`components/common/__tests__/theme-toggle.test.tsx`. e2e tests are the exception
+— they live in `e2e-tests/tests/` at the project root. See
+[Testing](/docs/conventions/testing) for the full picture.
+
 ---
 
 ## Functions
