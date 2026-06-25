@@ -21,9 +21,9 @@ export default function Home() {
           <h1 className='text-foreground text-5xl font-bold tracking-tight text-balance sm:text-6xl'>
             Ready to build
           </h1>
-          <p className='text-muted-foreground max-w-md text-lg leading-relaxed text-pretty'>
-            A working scaffold with auth and state wired in. Replace this page
-            to make it yours.
+          <p className='text-muted-foreground max-w-xl text-lg leading-relaxed text-pretty'>
+            A working scaffold with auth, state, database, API layer, logging
+            and docs all wired in. Replace this page to make it yours!
           </p>
         </div>
 

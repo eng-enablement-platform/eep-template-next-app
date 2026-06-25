@@ -40,7 +40,7 @@ export function DemoAccordions() {
           <span className='flex flex-col gap-0.5'>
             <span>Counter</span>
             <span className='text-muted-foreground text-xs font-normal tracking-normal normal-case'>
-              Zustand · client state
+              Zustand · Client State
             </span>
           </span>
         </AccordionTrigger>
@@ -52,7 +52,7 @@ export function DemoAccordions() {
       <AccordionItem value='posts' className='px-8 not-last:border-b'>
         <AccordionTrigger className='text-sm font-medium'>
           <span className='flex flex-col gap-0.5'>
-            <span>Recent posts</span>
+            <span>Recent Posts</span>
             <span className='text-muted-foreground text-xs font-normal tracking-normal normal-case'>
               SWR - External API
             </span>
@@ -76,7 +76,7 @@ export function DemoAccordions() {
       <AccordionItem value='example-items' className='px-8'>
         <AccordionTrigger className='text-sm font-medium'>
           <span className='flex flex-col gap-0.5'>
-            <span>Example items</span>
+            <span>Example Items</span>
             <span className='text-muted-foreground text-xs font-normal tracking-normal normal-case'>
               Full CRUD · Drizzle + Postgres
             </span>
