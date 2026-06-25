@@ -319,46 +319,67 @@ state**
 
 ## Comments
 
-Comments are a massively underutilised resource.
-This template enforces documentation via ESLint, but it's not just pure ceremony.
-The intention is to get you (and any agent working alongside you) to write clear reasoning
+Code comments are a massively underutilised resource. How many times have you returned to something a year later with no idea why it was
+done that way? Seemingly odd or suboptimal solutions often have a perfectly good
+business or technical reason behind them, it just never got written down. The
+person who inherits that code (often future you) is left guessing. Comments are
+where that context lives!
+
+This template enforces documentation via ESLint. The intention is to get you (and any agent working alongside you) to write clear reasoning
 for why something is implemented the way it is. Not what a function produces,
 but why it exists and why it's shaped the way it is.
 
-Just as a little thought experiment, how many times have you written something that
-you then came back to a year later and no clue why it was implemented the way it was.
-There are many instances, where seemingly sub optimal on odd solutions are put in place
-that someone coming new to (or even returning authors) can not comprehnd why it was done
-this way but often there is a very good business or technical reason why soemthing was implemetned
-the way it was, so the idea is to capture all of that in the comments.
+<Callout type='idea'>
+  The goal is clear and concise code commentary and notation – not verbosity!
+</Callout>
 
 ### Commentary
 
-Notes for whoever reads this source file — the _why_ behind a decision, a
-gotcha, a non-obvious constraint. Never describes _what_ the code does.
+Notes for whoever reads this source file, the _why_ behind a decision, a
+gotcha, a non-obvious constraint. Don't just simply describe _what_ the code does.
 
 - One-liner: always `//`
 - Multi-line: always a `/* */` starred block
 
 ```ts
-// Why we do this — single line is always //
+// ❌ documents the what — the code already says this
+// Map over items and multiply price by 1.2
+const prices = items.map((item) => item.price * 1.2);
 
+// ✅ documents the why — this is what a reader actually needs
 /*
- * Multi-line commentary uses a starred block.
- * Never use consecutive // lines for a multi-line note.
+ * Prices are stored ex-VAT in the DB; multiply by 1.2 to display
+ * the customer-facing figure. VAT rate is fixed by contract until 2026.
  */
+const prices = items.map((item) => item.price * 1.2);
 ```
 
+```ts
+// ✅ single-liner — always //
+// Delay matches the animation duration in the design spec (300ms)
+const TRANSITION_MS = 300;
+
+/*
+ * next-themes can only resolve the active theme on the client, so the
+ * first server render must not commit theme-dependent markup. Flipping
+ * `mounted` after mount is the documented guard against the resulting
+ * hydration mismatch.
+ */
+useEffect(() => {
+  setMounted(true);
+}, []);
+```
+
+## TSDoc
+
 <Callout type='warn'>
-  Never use a single-line `/* */` block — it's banned by the
-  `local/single-line-comment-style` ESLint rule. One-liners are always `//`.
+  All exported symbols in `.ts` / `.tsx` files need TSDoc. The pre-commit hook
+  enforces this via `eslint-plugin-jsdoc`.
 </Callout>
 
-### Documentation (TSDoc)
-
 TSDoc (`/** */`) describes a symbol so consumers see it on hover in their
-editor. It's an API surface, not a comment. Use it only when attached directly
-above the symbol it documents — never reach for `/**` just to write a note.
+editor. It's an API surface, not just a comment. Use it only when attached directly
+above the symbol it documents. Don't reach for `/**` just to write a note.
 
 ```ts
 /**
@@ -367,22 +388,16 @@ above the symbol it documents — never reach for `/**` just to write a note.
 export function doSomething() { ... }
 ```
 
-Tooling directives (`eslint-disable`, `@ts-expect-error`, `prettier-ignore`) are
-exempt from both rules — they're not commentary.
-
----
-
-## TSDoc
-
-All exported symbols in `.ts` / `.tsx` files need TSDoc. The pre-commit hook
-enforces this via `eslint-plugin-jsdoc`.
+<Callout>
+  Tooling directives (`eslint-disable`, `@ts-expect-error`, `prettier-ignore`)
+  are exempt from both rules as they're not commentary.
+</Callout>
 
 ### Shape
 
-Lead with **what** in one line, then **why it exists / when to use it** if
-that's not obvious from the name alone. Then `@param` for non-obvious
-parameters, `@returns`, and one `@example`. Don't re-describe what the type
-signature already makes clear — write what the signature can't tell you.
+Lead with **what** in one line, then **why it exists / when to use it** (if
+that's not obvious from the name alone). Then `@param` for parameters,
+`@returns`, and one `@example`
 
 ````ts
 /**
@@ -406,9 +421,6 @@ export const formatErrorMessage = (error: unknown): string => { ... };
 
 ### Components
 
-One-line what. A sentence or two on why it exists / when to reach for it.
-`@param` only for non-obvious props. One `@example`.
-
 ````tsx
 /**
  * Dropdown for switching between light, dark, and system themes (next-themes).
@@ -422,13 +434,16 @@ One-line what. A sentence or two on why it exists / when to reach for it.
 export function ThemeToggle({ displayName }: ToggleProps) { ... }
 ````
 
-Never re-list props as a prose block — the type is the single source of truth.
-`@param` covers the few props that need a _why_, not a _what_.
-
 ### Example and reference files
 
 Any file that exists to demonstrate a pattern opens with `EXAMPLE <TYPE>` as
 the first line of its TSDoc:
+
+<Callout>
+  Accepted forms: `EXAMPLE COMPONENT`, `EXAMPLE HOOK`, `EXAMPLE STORE`, `EXAMPLE
+  UTILITY`, `EXAMPLE SERVICE CLASS`. This makes example files greppable and
+  immediately obvious to any reader or agent.
+</Callout>
 
 ```ts
 /**
@@ -437,44 +452,6 @@ the first line of its TSDoc:
  * The reference domain service for the template...
  */
 ```
-
-Accepted forms: `EXAMPLE COMPONENT`, `EXAMPLE HOOK`, `EXAMPLE STORE`,
-`EXAMPLE UTILITY`, `EXAMPLE SERVICE CLASS`. This makes example files greppable
-and immediately obvious to any reader or agent.
-
-### Verbosity
-
-Less is more. If you're writing "This function does X" — stop and ask whether
-the signature already says that. TSDoc earns its space when it explains context
-the reader can't derive from the code alone.
-
-````ts
-// ❌ pointless — the signature says all of this already
-/**
- * Returns the sum of a and b.
- * @param a - first number
- * @param b - second number
- * @returns the sum
- */
-export const sum = (a: number, b: number): number => a + b;
-
-// ✅ TSDoc that adds something — the why, not the what
-/**
- * EXAMPLE UTILITY
- *
- * Adds two numbers. Exists to demonstrate co-located tests and TSDoc shape —
- * not a production utility.
- *
- * @param a - the first addend
- * @param b - the second addend
- * @returns the sum of `a` and `b`
- * @example
- * ```ts
- * sum(2, 3); // 5
- * ```
- */
-export const sum = (a: number, b: number): number => a + b;
-````
 
 ---
 

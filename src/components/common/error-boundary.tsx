@@ -16,23 +16,6 @@ type State = {
   error: Error | null;
 };
 
-/**
- * Client-side error boundary for runtime exceptions thrown after hydration.
- *
- * Exists because `app/error.tsx` only catches errors during render/hydration of
- * routed segments — it misses errors thrown later inside client layout
- * components (interactions, effects). Wrap those islands in this to show a
- * fallback instead of a blank crash. Next.js control-flow signals
- * (redirect/notFound) are re-thrown, not treated as errors.
- *
- * @param fallback - Custom fallback node; defaults to {@link ErrorDisplay}.
- * @example
- * ```tsx
- * <ErrorBoundary>
- *   <DashboardWidgets />
- * </ErrorBoundary>
- * ```
- */
 export class ErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
