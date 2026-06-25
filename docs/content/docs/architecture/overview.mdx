@@ -1,44 +1,9 @@
 ---
 title: Overview
-description: The three-layer system, how they interact, and where things live.
+description: Where things live, how they interact and the "three-layer system"
 ---
 
 ![Architecture diagram](/architecture.png)
-
-## The three layers
-
-The template is built on three strict layers, which foster clear separation of concerns and code reusability!
-Each layer has one job and one place to house the code. Business logic never bleeds into route handlers, data access never appears in components.
-
-### Client — `components/`, `hooks/`, `store/`
-
-Everything the browser runs.
-
-- All data fetching goes through SWR hooks in `hooks/`
-- All client state goes through Zustand stores in `store/`
-- Components are purely presentational, they receive
-  data and call handlers
-
-### Server — `classes/`
-
-All business logic lives here, and only here.
-
-- Services in
-  `classes/services/<domain>/` are `server-only`, they can never be imported by
-  client code
-- Services own all data-access logic (Drizzle queries, third-party API calls)
-- Services expose a small typed surface to the API layer
-
-### API — `app/api/`, `actions/`
-
-The boundary between the browser and the server.
-
-- Route handlers own reads and external writes
-- Route handlers and actions call service methods, they never query the database directly
-- Server actions own UI writes (POST/mutations from our own UI). See [Read vs Write](/docs/architecture/data-flow#why-reads-and-writes-take-different-entry-points) for the full breakdown of why.
-- Both surfaces validate all input with Zod schemas before anything reaches the service layer
-
----
 
 ## Where things live
 
@@ -84,3 +49,38 @@ The boundary between the browser and the server.
 | `diagrams/`     | Architecture diagram source (`main.py`). Regenerate with `cd diagrams && uv run python main.py`. |
 | `eslint-rules/` | Custom ESLint rules specific to this project.                                                    |
 | `public/`       | Static assets served at `/`. Includes vendored Swagger UI bundle.                                |
+
+## The three layers
+
+The template is built on three strict layers, which foster clear separation of concerns and code reusability!
+Each layer has one job and one place to house the code. Business logic never bleeds into route handlers, data access never appears in components.
+
+### Client — `components/`, `hooks/`, `store/`
+
+Everything the browser runs.
+
+- All data fetching goes through SWR hooks in `hooks/`
+- All client state goes through Zustand stores in `store/`
+- Components are purely presentational, they receive
+  data and call handlers
+
+### Server — `classes/`
+
+All business logic lives here, and only here.
+
+- Services in
+  `classes/services/<domain>/` are `server-only`, they can never be imported by
+  client code
+- Services own all data-access logic (Drizzle queries, third-party API calls)
+- Services expose a small typed surface to the API layer
+
+### API — `app/api/`, `actions/`
+
+The boundary between the browser and the server.
+
+- Route handlers own reads and external writes
+- Route handlers and actions call service methods, they never query the database directly
+- Server actions own UI writes (POST/mutations from our own UI). See [Read vs Write](/docs/architecture/data-flow#why-reads-and-writes-take-different-entry-points) for the full breakdown of why.
+- Both surfaces validate all input with Zod schemas before anything reaches the service layer
+
+---

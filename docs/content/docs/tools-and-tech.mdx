@@ -5,328 +5,114 @@ description: Every technology in this template, why it's here, and how it connec
 
 ## Framework
 
-### Next.js
-
-[Next.js](https://nextjs.org/docs) is the application framework. We use the App
-Router with React Server Components and a strict three-layer architecture
-(`components/`, `app/api/`, `classes/`).
-
-### React
-
-[React](https://react.dev/) handles UI rendering. We use named exports, function
-declarations for components, and arrow functions for callbacks. No default
-exports except where Next.js requires them.
-
-### TypeScript
-
-[TypeScript](https://www.typescriptlang.org/) is strict throughout. We default
-to `type` for all declarations and reach for `interface` only when declaration
-merging is genuinely needed. `import type` is enforced for type-only imports.
+- **[Next.js](https://nextjs.org/docs)** — The application framework. We use the App Router with React Server Components and a strict three-layer architecture (`components/`, `app/api/`, `classes/`).
+- **[React](https://react.dev/)** — Handles UI rendering. Named exports, function declarations for components, arrow functions for callbacks. No default exports except where Next.js requires them.
+- **[TypeScript](https://www.typescriptlang.org/)** — Strict throughout. We default to `type` for all declarations and reach for `interface` only when declaration merging is genuinely needed. `import type` is enforced for type-only imports.
 
 ---
 
 ## Styling
 
-### Tailwind CSS
-
-[Tailwind CSS](https://tailwindcss.com/docs) is the only styling mechanism — no
-CSS modules, no styled-components.
-
-### shadcn/ui
-
-[shadcn/ui](https://ui.shadcn.com/) provides unstyled, accessible component
-primitives copied directly into `src/components/ui/` and owned by the project.
-
-### Radix UI
-
-[Radix UI](https://www.radix-ui.com/) is the headless primitive layer that backs
-shadcn/ui. Provides focus management, keyboard navigation, and ARIA roles
-without styling opinions.
-
-### Lucide React
-
-[Lucide React](https://lucide.dev/) is the SVG icon library used throughout the
-UI for consistent iconography.
-
-### tw-animate-css
-
-[tw-animate-css](https://github.com/joe-bell/tw-animate-css) is a thin Tailwind
-plugin that maps `animate-*` utilities to CSS `@keyframes`, keeping animation
-tokens in the same layer as everything else.
-
-### tailwind-merge & clsx
-
-[clsx](https://github.com/lukeed/clsx) composes conditional class strings;
-[tailwind-merge](https://github.com/dcastil/tailwind-merge) resolves Tailwind
-class conflicts so the last value wins. Both are wrapped in the `cn()` utility
-at `src/utils/tailwind-merge.ts`.
-
-### class-variance-authority
-
-[class-variance-authority](https://cva.style/) provides a type-safe variant API
-used by shadcn/ui components to define button, badge, and other variant sets as
-typed config objects rather than ad-hoc class strings.
-
-### next-themes
-
-[next-themes](https://github.com/pacocoursey/next-themes) handles light/dark
-mode by injecting a `class` on `<html>` to drive Tailwind's `dark:` utilities,
-persisted to `localStorage` across reloads.
+- **[Tailwind CSS](https://tailwindcss.com/docs)** — The only styling mechanism. No CSS modules, no styled-components.
+- **[shadcn/ui](https://ui.shadcn.com/)** — Unstyled, accessible component primitives copied directly into `src/components/ui/` and owned by the project.
+- **[Radix UI](https://www.radix-ui.com/)** — The headless primitive layer backing shadcn/ui. Provides focus management, keyboard navigation, and ARIA roles without styling opinions.
+- **[Lucide React](https://lucide.dev/)** — SVG icon library used throughout the UI for consistent iconography.
+- **[tw-animate-css](https://github.com/joe-bell/tw-animate-css)** — A thin Tailwind plugin that maps `animate-*` utilities to CSS `@keyframes`, keeping animation tokens in the same layer as everything else.
+- **[clsx](https://github.com/lukeed/clsx) & [tailwind-merge](https://github.com/dcastil/tailwind-merge)** — `clsx` composes conditional class strings; `tailwind-merge` resolves Tailwind class conflicts so the last value wins. Both are wrapped in the `cn()` utility at `src/utils/tailwind-merge.ts`.
+- **[class-variance-authority](https://cva.style/)** — Type-safe variant API used by shadcn/ui components to define button, badge, and other variant sets as typed config objects rather than ad-hoc class strings.
+- **[next-themes](https://github.com/pacocoursey/next-themes)** — Handles light/dark mode by injecting a `class` on `<html>` to drive Tailwind's `dark:` utilities, persisted to `localStorage` across reloads.
 
 ---
 
 ## Authentication
 
-### Clerk
-
-[Clerk](https://clerk.com/docs) is the external auth provider handling sign-up,
-sign-in, session management, and user profiles.
+- **[Clerk](https://clerk.com/docs)** — External auth provider handling sign-up, sign-in, session management, and user profiles.
 
 ---
 
 ## Database
 
-### Drizzle ORM
-
-[Drizzle ORM](https://orm.drizzle.team/docs) is the type-safe query builder and
-migration runner.
-
-### PostgreSQL
-
-[PostgreSQL](https://www.postgresql.org/) (via the [`pg`](https://node-postgres.com/)
-driver) is the backing database. Locally it runs in Docker; production uses the
-same driver pointed at a hosted provider via `DATABASE_URL`.
-[Neon](https://neon.tech/) is the recommended production option.
-
-### Drizzle Kit
-
-[Drizzle Kit](https://orm.drizzle.team/kit-docs) is the CLI companion for
-generating SQL migration files (`pnpm db:generate`) and running Drizzle Studio
-(`pnpm db:studio`).
+- **[Drizzle ORM](https://orm.drizzle.team/docs)** — Type-safe query builder and migration runner.
+- **[PostgreSQL](https://www.postgresql.org/)** — The backing database via the [`pg`](https://node-postgres.com/) driver. Runs in Docker locally; production uses the same driver pointed at a hosted provider via `DATABASE_URL`. [Neon](https://neon.tech/) is the recommended production option.
+- **[Drizzle Kit](https://orm.drizzle.team/kit-docs)** — CLI companion for generating SQL migration files (`pnpm db:generate`) and running Drizzle Studio (`pnpm db:studio`).
 
 ---
 
 ## Forms
 
-### React Hook Form
-
-[React Hook Form](https://react-hook-form.com/) is the standard form library
-used throughout this template. It handles form state, validation, and submission
-with minimal re-renders. Always paired with `zodResolver` from
-`@hookform/resolvers` so the same Zod schema used by the server action also
-drives client-side validation.
-
-### @hookform/resolvers
-
-[`@hookform/resolvers`](https://github.com/react-hook-form/resolvers) bridges
-react-hook-form and Zod via `zodResolver`. Pass it to `useForm` and your Zod
-schema becomes the validation contract for both the client form and the server
-action.
+- **[React Hook Form](https://react-hook-form.com/)** — Handles form state, validation, and submission with minimal re-renders. Always paired with `zodResolver` so the same Zod schema used by the server action also drives client-side validation.
+- **[@hookform/resolvers](https://github.com/react-hook-form/resolvers)** — Bridges React Hook Form and Zod via `zodResolver`. Pass it to `useForm` and your Zod schema becomes the validation contract for both the client form and the server action.
 
 ---
 
 ## API & Validation
 
-### Zod
-
-[Zod](https://zod.dev/) handles runtime validation at every boundary: route
-handlers, server actions, and environment variables. Schemas live in
-`src/validation/`, one file per domain, and are shared between the read route
-and the write action so they can never drift.
-
-### zod-openapi
-
-[zod-openapi](https://github.com/samchungy/zod-openapi) generates an OpenAPI
-3.1 spec from the same Zod schemas used for validation.
-
-### swagger-ui-dist
-
-[swagger-ui-dist](https://swagger.io/tools/swagger-ui/) serves the generated
-OpenAPI spec as an interactive UI at `/api-docs`, copied into `public/` at build
-time via `scripts/copy-swagger-ui.ts`.
+- **[Zod](https://zod.dev/)** — Runtime validation at every boundary: route handlers, server actions, and environment variables. Schemas live in `src/validation/`, one file per domain, shared between the read route and the write action so they can never drift.
+- **[zod-openapi](https://github.com/samchungy/zod-openapi)** — Generates an OpenAPI 3.1 spec from the same Zod schemas used for validation.
+- **[swagger-ui-dist](https://swagger.io/tools/swagger-ui/)** — Serves the generated OpenAPI spec as an interactive UI at `/api-docs`, copied into `public/` at build time via `scripts/copy-swagger-ui.ts`.
 
 ---
 
 ## Data Fetching & State
 
-### SWR
-
-[SWR](https://swr.vercel.app/) handles all client-side data fetching. Every API
-call from the browser goes through a SWR hook in `src/hooks/`.
-
-### Zustand
-
-[Zustand](https://zustand.pmnd.rs/) manages UI state that doesn't belong in a
-server fetch: modals, selections, ephemeral form state. Stores live in
-`src/store/`, one file per domain. See `src/store/counter-store.ts` for the
-reference shape.
+- **[SWR](https://swr.vercel.app/)** — Handles all client-side data fetching. Every API call from the browser goes through a SWR hook in `src/hooks/`.
+- **[Zustand](https://zustand.pmnd.rs/)** — Manages UI state that doesn't belong in a server fetch: modals, selections, ephemeral form state. Stores live in `src/store/`, one file per domain. See `src/store/counter-store.ts` for the reference shape.
 
 ---
 
 ## Logging
 
-### Winston
-
-[Winston](https://github.com/winstonjs/winston) handles all structured
-server-side logging via `rootLogger` in `src/classes/loggers/application/`.
-Every log line carries a `logSource` (`api`, `action`, `service`) so logs can
-be filtered by architectural layer. See [Logging conventions](/docs/conventions/logging).
+- **[Winston](https://github.com/winstonjs/winston)** — All structured server-side logging via `rootLogger` in `src/classes/loggers/application/`. Every log line carries a `logSource` (`api`, `action`, `service`) so logs can be filtered by architectural layer. See [Logging conventions](/docs/conventions/logging).
 
 ---
 
 ## Testing
 
-### Vitest
-
-[Vitest](https://vitest.dev/) is the unit and integration test runner, configured
-with the jsdom environment for component tests.
-
-### React Testing Library & user-event
-
-[React Testing Library](https://testing-library.com/) and
-[user-event](https://testing-library.com/docs/user-event/intro/) are used to
-test behaviour (decisions, branches, state changes), not appearance.
-`user-event` simulates realistic user interactions rather than direct DOM events.
-
-### @testing-library/jest-dom
-
-[@testing-library/jest-dom](https://github.com/testing-library/jest-dom) adds
-readable Vitest matchers (`toBeInTheDocument`, `toHaveClass`, etc.), bootstrapped
-in `vitest.setup.ts`.
-
-### Playwright
-
-[Playwright](https://playwright.dev/) runs end-to-end tests in `e2e-tests/`,
-covering full user flows against a running app. Run with `pnpm e2e`.
+- **[Vitest](https://vitest.dev/)** — Unit and integration test runner, configured with the jsdom environment for component tests.
+- **[React Testing Library](https://testing-library.com/) & [user-event](https://testing-library.com/docs/user-event/intro/)** — Tests behaviour (decisions, branches, state changes), not appearance. `user-event` simulates realistic user interactions rather than direct DOM events.
+- **[@testing-library/jest-dom](https://github.com/testing-library/jest-dom)** — Readable Vitest matchers (`toBeInTheDocument`, `toHaveClass`, etc.), bootstrapped in `vitest.setup.ts`.
+- **[Playwright](https://playwright.dev/)** — End-to-end tests in `e2e-tests/`, covering full user flows against a running app. Run with `pnpm e2e`.
 
 ---
 
 ## Code Quality
 
-### ESLint
-
-[ESLint](https://eslint.org/) handles static analysis via flat config in
-`eslint.config.ts`. Key plugins: `eslint-plugin-tsdoc` (enforces TSDoc),
-`eslint-plugin-import` + `simple-import-sort` (import hygiene),
-`@stylistic/eslint-plugin` (comment style rules), and a local
-`single-line-comment-style` rule.
-
-### Prettier
-
-[Prettier](https://prettier.io/) is the opinionated formatter, running on all
-staged files via lint-staged.
-
-### Husky & lint-staged
-
-[Husky](https://typicode.github.io/husky/) and
-[lint-staged](https://github.com/lint-staged/lint-staged) power the pre-commit
-hook. On `.ts/.tsx` changes the full `tsc --noEmit`, test suite, and build run.
-Use `SKIP_CHECKS=1 git commit` only for intentional WIP.
-
-### Trivy
-
-[Trivy](https://aquasecurity.github.io/trivy/) is a security scanner that runs
-on pre-commit whenever `package.json` or `pnpm-lock.yaml` changes. It scans for
-known vulnerabilities in dependencies and commits are blocked if issues are flagged.
-
-Install with `brew install trivy` on macOS.
+- **[ESLint](https://eslint.org/)** — Static analysis via flat config in `eslint.config.ts`. Key plugins: `eslint-plugin-tsdoc` (enforces TSDoc), `eslint-plugin-import` + `simple-import-sort` (import hygiene), `@stylistic/eslint-plugin` (comment style rules), and a local `single-line-comment-style` rule.
+- **[Prettier](https://prettier.io/)** — Opinionated formatter, running on all staged files via lint-staged.
+- **[Husky](https://typicode.github.io/husky/) & [lint-staged](https://github.com/lint-staged/lint-staged)** — Power the pre-commit hook. On `.ts/.tsx` changes the full `tsc --noEmit`, test suite, and build run. Use `SKIP_CHECKS=1 git commit` only for intentional WIP.
+- **[Trivy](https://aquasecurity.github.io/trivy/)** — Security scanner that runs on pre-commit whenever `package.json` or `pnpm-lock.yaml` changes. Blocks commits if known vulnerabilities are flagged. Install with `brew install trivy` on macOS.
 
 <Callout type='warn'>
   Trivy itself has faced [supply chain style
   attacks](https://www.paloaltonetworks.com/blog/cloud-security/trivy-supply-chain-attack/),
   so keep an eye on the [GitHub Advisory
   Database](https://github.com/advisories) for known vulnerabilities in your
-  toolchain
+  toolchain.
 </Callout>
 
 ---
 
 ## Tooling
 
-### Fumadocs
-
-[Fumadocs](https://fumadocs.vercel.app/) is the documentation framework
-powering this site.
-
-### pnpm
-
-[pnpm](https://pnpm.io/) is the package manager.
-
-### tsx
-
-[tsx](https://github.com/privatenumber/tsx) runs TypeScript files directly
-without a compile step. Used by all `scripts/*.ts` and `src/db/*.ts` entry
-points (migrations, seed, smoke check).
-[npx](https://docs.npmjs.com/cli/v10/commands/npx) (the Node package runner)
-is the recommended way to run a script one-off: `npx tsx ./scripts/<script>.ts`.
-
-### TSDoc
-
-[TSDoc](https://tsdoc.org/) is the documentation annotation standard for
-TypeScript. All public symbols are documented with `/** */` blocks, enforced by
-the ESLint `tsdoc` plugin on pre-commit. See [Code Style](/docs/conventions/code-style)
-for the canonical shape.
-
-### Diagrams
-
-[Diagrams](https://diagrams.mingrammer.com/) is a Python library for generating
-the architecture diagram as code. The definition lives in `diagrams/main.py`
-and outputs `architecture.png`. Run it with `uv run python main.py` from the
-`diagrams/` directory.
-
-### uv
-
-[uv](https://docs.astral.sh/uv/) is a fast Python package manager used solely
-to run the diagrams script. It handles the Python environment and dependencies
-in `diagrams/pyproject.toml` without needing a manual `venv` setup.
-
-### concurrently
-
-[concurrently](https://github.com/open-cli-tools/concurrently) runs the app and
-docs dev servers in parallel via `pnpm dev:all` with colour-coded output per
-process.
-
-### Sonner
-
-[Sonner](https://sonner.emilkowal.ski/) is the toast notification library, wired
-in `src/components/common/toast.tsx` and provided at the app root for
-non-blocking user feedback on mutations.
-
-### dotenv
-
-[dotenv](https://github.com/motdotla/dotenv) loads `.env.local` for scripts
-running outside the Next.js context. Next.js handles `.env` loading natively for
-the app itself.
+- **[Fumadocs](https://fumadocs.vercel.app/)** — The documentation framework powering this site.
+- **[pnpm](https://pnpm.io/)** — The package manager.
+- **[tsx](https://github.com/privatenumber/tsx)** — Runs TypeScript files directly without a compile step. Used by all `scripts/*.ts` and `src/db/*.ts` entry points (migrations, seed, smoke check).
+- **[TSDoc](https://tsdoc.org/)** — Documentation annotation standard for TypeScript. All public symbols are documented with `/** */` blocks, enforced by the ESLint `tsdoc` plugin on pre-commit. See [Code Style](/docs/conventions/code-style) for the canonical shape.
+- **[concurrently](https://github.com/open-cli-tools/concurrently)** — Runs the app and docs dev servers in parallel via `pnpm dev:all` with colour-coded output per process.
+- **[Sonner](https://sonner.emilkowal.ski/)** — Toast notification library, wired in `src/components/common/toast.tsx` and provided at the app root for non-blocking user feedback on mutations.
+- **[dotenv](https://github.com/motdotla/dotenv)** — Loads `.env.local` for scripts running outside the Next.js context. Next.js handles `.env` loading natively for the app itself.
+- **[Diagrams](https://diagrams.mingrammer.com/)** — Python library for generating the architecture diagram as code. The definition lives in `diagrams/main.py`. Run with `uv run python main.py` from the `diagrams/` directory.
+- **[uv](https://docs.astral.sh/uv/)** — Fast Python package manager used solely to run the diagrams script. Handles the Python environment in `diagrams/pyproject.toml` without a manual `venv` setup.
 
 ---
 
 ## Deployment
 
-### Vercel
-
-[Vercel](https://vercel.com/) happy path for getting started with deploying Next apps. Little to no configuration needed beyond connecting
-the repo.
-
-Set `DATABASE_URL` and the Clerk environment variables in the Vercel
-project settings and deploy.
+- **[Vercel](https://vercel.com/)** — Happy path for deploying Next.js apps with minimal configuration. Set `DATABASE_URL` and the Clerk environment variables in the Vercel project settings and deploy.
 
 ---
 
 ## Development Environment
 
-### Docker Desktop / Rancher Desktop
-
-[Docker Desktop](https://www.docker.com/products/docker-desktop/) and
-[Rancher Desktop](https://rancherdesktop.io/) are both supported for running
-the local Postgres container. Rancher Desktop is free and works well on Apple
-Silicon; Docker Desktop requires a paid licence for larger teams. Either
-provides the `docker` CLI needed for `docker compose up -d`.
-
-### Dev Containers
-
-[Dev Containers](https://containers.dev/) are lightweight Docker containers that give you
-an isolated, reproducible environment with all dependencies preinstalled. The
-configuration lives in `.devcontainer/` — it installs Postgres 17, `pnpm`, `uv`,
-and all project dependencies automatically on first start. Open the project in
-VS Code and choose **Reopen in Container** to get a working environment without
-any manual setup.
+- **[Docker Desktop](https://www.docker.com/products/docker-desktop/) / [Rancher Desktop](https://rancherdesktop.io/)** — Both supported for running the local Postgres container. Rancher Desktop is free and works well on Apple Silicon; Docker Desktop requires a paid licence for larger teams.
+- **[Dev Containers](https://containers.dev/)** — Lightweight Docker containers providing an isolated, reproducible environment with all dependencies preinstalled. Configuration lives in `.devcontainer/` — installs Postgres 17, `pnpm`, `uv`, and all project dependencies on first start. Open in VS Code and choose **Reopen in Container** to get a working environment without any manual setup.
