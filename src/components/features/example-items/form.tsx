@@ -19,6 +19,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
 import type { useExampleItems } from '@/hooks/use-example-items';
+import { useTimezoneStore } from '@/store/timezone-store';
 import type { exampleItemUpdateSchema } from '@/validation/example-item';
 import {
   exampleItemSchema,
@@ -67,6 +68,7 @@ export function ItemFormFields({
   control,
   showLabels = true,
 }: ItemFormFieldsProps) {
+  const selectedTimezone = useTimezoneStore((state) => state.selectedTimezone);
   return (
     <>
       <FormField
@@ -141,23 +143,65 @@ export function ItemFormFields({
       <FormField
         control={control}
         name='expiresAt'
-        render={({ field }) => (
-          <FormItem>
-            {showLabels && <FormLabel>Expiry date</FormLabel>}
-            <FormControl>
-              <DatePicker
-                value={field.value}
-                onChange={field.onChange}
-                placeholder={
-                  showLabels
-                    ? 'Pick an expiry date (optional)'
-                    : 'Expiry date (optional)'
-                }
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
+        render={({ field }) => {
+          /*
+           * Build a noon-UTC Date from the stored YYYY-MM-DD string so the
+           * hint shows locale/format differences rather than the midnight
+           * rollback (which is demonstrated separately in the item list).
+           * Midnight UTC would shift the day back in negative-offset timezones,
+           * muddying the format demo.
+           */
+          const noonUtc = field.value
+            ? new Date(`${field.value}T12:00:00Z`)
+            : null;
+
+          const displayEnGB = noonUtc
+            ? new Intl.DateTimeFormat('en-GB', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric',
+                timeZone: selectedTimezone,
+              }).format(noonUtc)
+            : null;
+
+          const displayEnUS = noonUtc
+            ? new Intl.DateTimeFormat('en-US', {
+                month: '2-digit',
+                day: '2-digit',
+                year: 'numeric',
+                timeZone: selectedTimezone,
+              }).format(noonUtc)
+            : null;
+
+          return (
+            <FormItem>
+              {showLabels && <FormLabel>Expiry date</FormLabel>}
+              <FormControl>
+                <DatePicker
+                  value={field.value}
+                  onChange={field.onChange}
+                  placeholder={
+                    showLabels
+                      ? 'Pick an expiry date (optional)'
+                      : 'Expiry date (optional)'
+                  }
+                />
+              </FormControl>
+              <FormMessage />
+              {showLabels && field.value && displayEnGB && displayEnUS && (
+                <div className='text-muted-foreground/70 space-y-0.5 font-mono text-xs'>
+                  <p>stored: {field.value}</p>
+                  <p>
+                    en-GB ({selectedTimezone}): {displayEnGB}
+                  </p>
+                  <p>
+                    en-US ({selectedTimezone}): {displayEnUS}
+                  </p>
+                </div>
+              )}
+            </FormItem>
+          );
+        }}
       />
     </>
   );

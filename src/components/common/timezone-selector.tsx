@@ -2,16 +2,18 @@
 
 import { GlobeIcon } from 'lucide-react';
 
-import { DEMO_TIMEZONES, useTimezoneStore } from '@/store/timezone-store';
+import { useTimezoneStore } from '@/store/timezone-store';
+import { DEMO_TIMEZONES } from '@/store/timezone-store';
+import { formatDate } from '@/utils/dates';
 
 /**
  * Dev-only timezone selector for the date timezone demo.
  *
- * Renders only in development — invisible in production builds. Changing the
- * timezone updates the Zustand store, which causes any component reading
- * `useTimezoneStore` to re-render with dates formatted in the new timezone.
- * This makes the UTC-midnight date shift bug visually demonstrable without
- * restarting the dev server.
+ * Renders only in development — invisible in production builds. Shows today's
+ * date formatted in the selected timezone alongside the selector. Switching
+ * timezone causes the date to re-render live, making it immediately obvious
+ * how the same moment-in-time displays as a different calendar date across
+ * timezones — particularly near day boundaries.
  *
  * @example
  * ```tsx
@@ -25,9 +27,11 @@ export function TimezoneSelector() {
     return null;
   }
 
+  const todayFormatted = formatDate(new Date(), 'display', selectedTimezone);
+
   return (
-    <div className='flex items-center gap-1.5'>
-      <GlobeIcon className='text-muted-foreground h-3.5 w-3.5' />
+    <div className='flex items-center gap-2'>
+      <GlobeIcon className='text-muted-foreground h-3.5 w-3.5 shrink-0' />
       <select
         value={selectedTimezone}
         onChange={(e) => setTimezone(e.target.value)}
@@ -40,6 +44,9 @@ export function TimezoneSelector() {
           </option>
         ))}
       </select>
+      <span className='text-muted-foreground/60 border-border border-l pl-2 font-mono text-xs'>
+        {todayFormatted}
+      </span>
     </div>
   );
 }
