@@ -291,6 +291,63 @@ afterEach(() => {
 
 ---
 
+## End-to-end tests
+
+E2e tests verify user-facing flows against a running app — they're the last line of defence
+before shipping, not a substitute for unit tests. Use them for critical paths that cross
+multiple layers (routing, server actions, client state) and can't be meaningfully tested
+in isolation.
+
+**What earns an e2e test:**
+
+- Critical user flows (sign-in, core feature interactions)
+- Client-state behaviour that's difficult to verify without a real browser (e.g. Zustand
+  store mutations reflected in the UI)
+- Smoke checks that the app starts and key pages render
+
+**What doesn't:**
+
+- Logic already covered by a unit test — don't duplicate coverage
+- Presentation details — if a unit test already verifies the decision, an e2e test
+  asserting the same outcome in the browser adds friction without value
+
+### Location
+
+E2e tests live in `e2e-tests/tests/` at the project root — they're the one exception to
+the co-location rule, since they run against the compiled app rather than individual
+modules.
+
+### Running
+
+```bash
+pnpm e2e        # headless Playwright run
+pnpm e2e:ui     # Playwright UI mode (step through tests visually)
+pnpm e2e:report # open the HTML report from the last run
+```
+
+Playwright spins up `next dev` automatically via `webServer` in `playwright.config.ts`
+and reuses an already-running server when one is detected — so if you have `pnpm dev`
+running, tests start instantly.
+
+<Callout type='info'>
+  The suite runs with a single worker (`workers: 1`). Parallel workers all hit
+  the dev server cold simultaneously, causing a CPU spike that throttles the
+  server and makes tests flaky. Increase workers once the suite is large enough
+  that wall-clock time becomes a problem — ideally after switching to `next
+  start` (production build) as the e2e target.
+</Callout>
+
+### Reference specs
+
+The template ships two specs as reference coverage for the core patterns:
+
+| Spec              | What it covers                                                             |
+| ----------------- | -------------------------------------------------------------------------- |
+| `home.spec.ts`    | Smoke check — home page renders, counter is visible at zero                |
+| `counter.spec.ts` | Zustand client state — increment, decrement, and reset reflected in the UI |
+
+---
+
 ## Running tests
 
 ```bash
