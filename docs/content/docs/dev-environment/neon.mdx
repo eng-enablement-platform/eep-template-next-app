@@ -2,3 +2,66 @@
 title: Neon Setup
 description: Creating a Neon project, getting your connection string, and pointing the app at it.
 ---
+
+[Neon](https://neon.tech) is the recommended Postgres provider for production. It's
+serverless, scales to zero when idle, and has a generous free tier — well suited for
+the early stages of a project.
+
+---
+
+## Create a project
+
+1. Sign up or log in at [neon.tech](https://neon.tech)
+2. Create a new project (choose a region close to your deployment)
+3. Neon creates a default database and user automatically
+
+---
+
+## Get your connection string
+
+In the Neon dashboard, navigate to your project → **Connection Details**.
+
+Select **Pooled connection** (uses PgBouncer — better for serverless environments
+where many short-lived connections would otherwise exhaust the connection limit).
+
+Copy the connection string — it looks like:
+
+```
+postgresql://user:password@ep-xxx.eu-west-2.aws.neon.tech/neondb?sslmode=require
+```
+
+---
+
+## Configure the app
+
+Set `DATABASE_URL` in your environment:
+
+**Local dev pointing at Neon** (`.env.local`):
+
+```bash
+DATABASE_URL=postgresql://user:password@ep-xxx.eu-west-2.aws.neon.tech/neondb?sslmode=require
+```
+
+**Vercel**: add `DATABASE_URL` in the Vercel project settings under Environment Variables.
+
+No code changes needed — the app uses `DATABASE_URL` everywhere and the driver
+handles the rest.
+
+---
+
+## Run migrations against Neon
+
+Once `DATABASE_URL` points at Neon, the same migration command applies:
+
+```bash
+pnpm db:migrate
+```
+
+This is idempotent — safe to run again after pulling new migrations in future.
+
+<Callout type='info'>
+  Neon supports database branching — you can create a branch of your production
+  database for staging or preview environments. Each branch is an isolated copy
+  that can be migrated and tested independently. Worth exploring as your project
+  grows.
+</Callout>

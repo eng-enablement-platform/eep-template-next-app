@@ -2,3 +2,96 @@
 title: Dev Container
 description: Zero-setup development environment — what it provides and how to use it.
 ---
+
+The repo ships a [Dev Container](https://containers.dev/) for a zero-setup environment.
+Clone the repo, open it in VS Code or Cursor, and everything is ready — no manual Node,
+pnpm, Python, or database installation required.
+
+---
+
+## Prerequisites
+
+You need a Docker-compatible runtime. Either works:
+
+- **[Docker Desktop](https://www.docker.com/products/docker-desktop/)** — the standard option
+- **[Rancher Desktop](https://rancherdesktop.io/)** — free alternative; use the `dockerd (moby)` container engine
+
+Make sure whichever you choose is running before opening the container.
+
+---
+
+## What it provides
+
+The devcontainer uses Docker Compose and starts two services side-by-side:
+
+| Service      | What it is                                        | Port   |
+| ------------ | ------------------------------------------------- | ------ |
+| **app**      | Dev environment (Node 24, pnpm, Python 3.14, Zsh) | —      |
+| **postgres** | Postgres 17 (matches `docker-compose.yml`)        | `5432` |
+
+Inside the `app` container you get:
+
+- **Node 24** + **pnpm** matching `.nvmrc` and `engines`
+- **Python 3.14** + **uv** + **Graphviz** — ready to regenerate the architecture diagram
+- **Zsh** + Oh My Zsh with autosuggestions, syntax highlighting, and history search
+- **VS Code extensions** pre-installed: ESLint, Prettier, Tailwind IntelliSense, Playwright, Vitest, GitLens, Python/Ruff, Material Icon Theme, Error Lens
+- **`pnpm install`** already run — deps ready immediately
+- **`DATABASE_URL`** auto-wired to the Postgres service — no manual change needed
+- **`.env.local`** auto-sourced in your terminal on start — Clerk keys picked up automatically once the file exists
+
+---
+
+## Getting started
+
+<CollapsibleSteps>
+
+<CollapsibleStep title="Open in the container" defaultOpen={true}>
+
+1. Make sure Docker Desktop or Rancher Desktop is running
+2. Open the repo in VS Code or Cursor
+3. Open the Command Palette (`Cmd+Shift+P`) → **Dev Containers: Reopen in Container**
+4. Wait for the build — first time only, subsequent opens are instant
+
+</CollapsibleStep>
+
+<CollapsibleStep title="Set up environment variables" defaultOpen={true}>
+
+```bash
+cp .env.local_template .env.local
+```
+
+Fill in your Clerk keys. `DATABASE_URL` is already set to the Postgres service — leave it as-is.
+
+</CollapsibleStep>
+
+<CollapsibleStep title="Run migrations and start the server" defaultOpen={true}>
+
+```bash
+pnpm db:migrate   # apply migrations (idempotent)
+pnpm db:seed      # optional — seed demo data
+pnpm dev          # app on http://localhost:3000
+```
+
+</CollapsibleStep>
+
+</CollapsibleSteps>
+
+---
+
+## Troubleshooting
+
+**Docs site Turbopack errors / read-only filesystem**
+
+If `pnpm dev:docs` spams `Read-only file system` errors or Turbopack loops, it means
+`docs/.next/` was built on the host machine and mounted into the container where the
+`vscode` user can't write to it. Fix:
+
+```bash
+rm -rf docs/.next && pnpm dev:docs
+```
+
+One-time fix — once `.next` is rebuilt inside the container it stays writable.
+
+**After changing `.devcontainer/devcontainer.json`**
+
+Run **Dev Containers: Rebuild Container** from the Command Palette to pick up the changes.

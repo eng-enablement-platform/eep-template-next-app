@@ -1,4 +1,82 @@
 ---
 title: Database
-description: Local Postgres vs Neon, migrations, seeding, and the smoke check.
+description: Local Postgres via Docker, migrations, seeding, and the smoke check.
 ---
+
+## Local setup
+
+Local dev runs Postgres 17 in Docker, matching the schema and driver used in production.
+The connection string is pre-filled in `.env.local_template`:
+
+```
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/app
+```
+
+```bash
+docker compose up -d    # start Postgres on :5432
+docker compose down     # stop (keeps the data volume)
+docker compose down -v  # stop and wipe all data
+```
+
+<Callout type='warn'>
+  If Postgres is already running on `:5432` (another project, a standalone
+  container), `docker compose up -d` will fail silently. Check what's running
+  with `docker ps` and stop the conflicting container first. This repo's
+  container is named `next-template-postgres`.
+</Callout>
+
+---
+
+## Migrations
+
+Migrations are generated from `src/db/schema.ts` using Drizzle Kit and live in `drizzle/`.
+
+```bash
+pnpm db:generate   # generate a new SQL migration from schema changes
+pnpm db:migrate    # apply all pending migrations (idempotent, safe to re-run)
+```
+
+Always run `pnpm db:migrate` after a fresh clone or after pulling changes that include
+new migrations.
+
+---
+
+## Seeding
+
+```bash
+pnpm db:seed
+```
+
+Clears `example_items` and inserts 3 fixed demo rows. Useful for resetting to a known
+state when testing the example CRUD feature. Skip if you have data you want to keep.
+
+---
+
+## Smoke check
+
+```bash
+pnpm db:check
+```
+
+A fast, read-only probe of the full `DATABASE_URL → pg.Pool → Drizzle → example_items`
+path. Useful after a fresh clone or when the DB is misbehaving — it confirms the
+connection, driver, and schema are all wired correctly without mutating any data.
+
+---
+
+## Studio
+
+```bash
+pnpm db:studio
+```
+
+Opens [Drizzle Studio](https://orm.drizzle.team/drizzle-studio/overview) — a browser-based
+table viewer and editor. Useful for inspecting data during development.
+
+---
+
+## Production
+
+For production, replace `DATABASE_URL` with your hosted provider's connection string.
+[Neon](https://neon.tech) is the recommended option — see [Neon Setup](/docs/dev-environment/neon)
+for the setup steps. No code changes are needed; only the env var changes.

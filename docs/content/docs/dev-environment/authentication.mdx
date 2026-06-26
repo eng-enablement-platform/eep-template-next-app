@@ -2,3 +2,84 @@
 title: Authentication Setup
 description: Creating a Clerk application, getting your API keys, and configuring the session token for role-based access.
 ---
+
+## Create a Clerk application
+
+1. Go to [dashboard.clerk.com](https://dashboard.clerk.com) and create a new application
+2. Choose your sign-in methods (email is fine for local dev)
+3. Navigate to **API Keys** and copy:
+   - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
+   - `CLERK_SECRET_KEY`
+
+Add both to `.env.local`.
+
+<Callout type='warn'>
+  `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` is inlined into the client bundle at `next
+  build`, not read at runtime. This works fine on Vercel (each environment
+  builds separately). If you build a single Docker image and promote it across
+  environments, the key is baked in at build time and the runtime value never
+  reaches the bundle. See the self-hosting note in `src/app/layout.tsx` if
+  that's your deployment model.
+</Callout>
+
+---
+
+## Route gating
+
+Auth is enforced in `src/proxy.ts` (Next.js 16 renamed `middleware.ts` to `proxy.ts` to
+make the network boundary explicit). It redirects unauthenticated users to `/sign-in`
+and gates admin routes by role. Keep this layer to lightweight checks — redirects and
+session claim reads. Heavier auth (DB lookups, full validation) belongs in route handlers
+or the DAL.
+
+---
+
+## Granting Admin access
+
+Admin-only routes (`/admin/*`, `/api-docs/*`) are gated by a `role` claim in the session
+token. Two steps are required — missing either gives a silent 403.
+
+<CollapsibleSteps>
+
+<CollapsibleStep title="Set public metadata on the user" defaultOpen={false}>
+
+Clerk Dashboard → Users → pick the user → **Metadata** tab → **Public**:
+
+```json
+{ "role": "Admin" }
+```
+
+Save.
+
+</CollapsibleStep>
+
+<CollapsibleStep title="Map metadata into the session token" defaultOpen={false}>
+
+Clerk Dashboard → **Configure** → **Sessions** → **Customize session token** → Edit:
+
+```json
+{ "metadata": "{{user.public_metadata}}" }
+```
+
+Save, then sign out and back in so a fresh token is minted.
+
+</CollapsibleStep>
+
+</CollapsibleSteps>
+
+If you still get a 403 after both steps, the claim is missing from the JWT — check that
+step 2 was saved, or that the session isn't stale (sign out and back in).
+
+---
+
+## E2E test user
+
+For Playwright authenticated tests, you need a user in this Clerk instance. The simplest
+approach: just sign in to the running app — that creates your account automatically. Then
+set their email in `.env.local`:
+
+```bash
+E2E_CLERK_USER_EMAIL=you@yourdomain.com
+```
+
+See [Testing](/docs/conventions/testing#authentication-setup) for the full e2e auth setup.
