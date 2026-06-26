@@ -1,4 +1,4 @@
-import { clerk, setupClerkTestingToken } from '@clerk/testing/playwright';
+import { clerk } from '@clerk/testing/playwright';
 import { test as base, type Page } from '@playwright/test';
 
 /**
@@ -28,17 +28,28 @@ type AuthFixtures = {
 
 export const test = base.extend<AuthFixtures>({
   authenticatedPage: async ({ page }, use) => {
-    await setupClerkTestingToken({ page });
-
+    /*
+     * Navigate to an unprotected page first — clerk.signIn() requires Clerk
+     * to be loaded in the page before it can run.
+     */
     await page.goto('/sign-in');
 
+    /*
+     * emailAddress approach: signs in via the Backend API using CLERK_SECRET_KEY.
+     * Bypasses OTP and MFA entirely. The user must exist in the Clerk dashboard.
+     * No +clerk_test email format required.
+     */
     await clerk.signIn({
       page,
-      signInParams: {
-        strategy: 'email_code',
-        identifier: process.env.E2E_CLERK_USER_EMAIL ?? '',
-      },
+      emailAddress: process.env.E2E_CLERK_USER_EMAIL ?? '',
     });
+
+    /*
+     * Wait for Clerk to finish settling after sign-in before handing the page
+     * to the test. Without this, the page may still be mid-redirect and
+     * elements the test expects won't be present yet.
+     */
+    await clerk.loaded({ page });
 
     await use(page);
 

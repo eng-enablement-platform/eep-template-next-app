@@ -358,32 +358,28 @@ password flow).
 
 <CollapsibleSteps>
 
-<CollapsibleStep title="Create a dedicated test user in your Clerk dashboard" defaultOpen={false}>
+<CollapsibleStep title="Get a Clerk user for testing" defaultOpen={false}>
 
-Go to [dashboard.clerk.com](https://dashboard.clerk.com) → your application → Users → Create user.
-The email **must** use the `+clerk_test` subaddress format:
+You need any user that exists in your Clerk instance. The easiest way is to
+just sign in to the running app (`pnpm dev`) — that creates your account
+automatically. Alternatively, go to [dashboard.clerk.com](https://dashboard.clerk.com)
+→ your application → Users → Create user.
 
-```
-yourname+clerk_test@yourdomain.com
-```
-
-Gmail ignores everything after `+`, so the email still delivers to your inbox.
-This format is required by the Clerk testing SDK — a regular email will fail with
-`Email should be a test email`.
+Either way, use the email from that account as `E2E_CLERK_USER_EMAIL`.
 
 </CollapsibleStep>
 
 <CollapsibleStep title="Add the credentials to .env.local" defaultOpen={false}>
 
 ```bash
-CLERK_SECRET_KEY=sk_test_...   # already set from Clerk setup
-E2E_CLERK_USER_EMAIL=yourname+clerk_test@yourdomain.com
+CLERK_SECRET_KEY=sk_test_...     # already set from Clerk setup
+E2E_CLERK_USER_EMAIL=you@yourdomain.com
 ```
 
-`CLERK_SECRET_KEY` is the secret key for the same Clerk instance this app is
-configured with — the one whose publishable key is in
-`NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`. The test user must exist in **that** Clerk
-instance.
+`CLERK_SECRET_KEY` must belong to the same Clerk instance as
+`NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` — the test user must exist in **that** instance.
+The SDK uses the secret key to call Clerk's Backend API and sign in without any
+browser interaction, OTP, or password.
 
 </CollapsibleStep>
 
