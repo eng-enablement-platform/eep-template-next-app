@@ -76,6 +76,18 @@ Takes props, renders markup, no branching. Asserting "the markup rendered" tests
 that React works — it catches no bugs and breaks on every cosmetic change.
 `error`, `page-not-found`, `toast`, `auth` get no unit test for this reason.
 
+<Callout type='info'>
+  The tiers above cover [**unit
+  tests**](https://www.ibm.com/think/topics/unit-testing) but testing doesn't
+  stop here! This doc also covers:
+
+- [TDD](#test-driven-development-tdd)
+- [Integration tests](#integration-tests)
+- [e2e tests](#end-to-end-tests)
+- [Contract tests](#contract-tests)
+
+</Callout>
+
 ---
 
 ## Test Driven Development (TDD)
@@ -349,6 +361,41 @@ The template ships two specs as reference coverage for the core patterns:
 
 ---
 
+## Integration tests
+
+[Integration tests](https://www.ibm.com/think/topics/integration-testing#:~:text=Integration%20testing%20is%20a%20software,each%20other%20and%20interact%20successfully.) verify that multiple layers of the application work correctly together
+e.g. a server action calling a service calling the database. They catch bugs
+that unit tests miss because those operate in isolation with mocked dependencies.
+
+This template **doesn't ship integration test infrastructure** because the right setup is
+highly project-specific: you need a test database, migrations, seed/teardown between
+runs, and isolation that fits your deployment environment.
+
+**When to reach for them:**
+
+- A data flow crosses two or more layers and mocking feels like it's hiding the real risk
+- You've had a bug where each layer was individually correct but the wiring between them
+  was wrong
+- A critical mutation (payment, auth, data deletion) needs end-to-end confidence that
+  no unit test or e2e test can give cheaply
+
+**Practical setup pointers:**
+
+- Use a separate test database (a local Postgres instance or a Neon branch)
+- Run migrations before the suite and truncate tables between tests, not between files
+- Keep them out of the pre-commit hook — they're slow and require infrastructure
+- A dedicated `pnpm test:integration` script keeps them easy to run on demand or in CI
+
+<Callout type='info'>
+  The e2e tests in this template provide some integration-level confidence for
+  the example-items feature — they exercise the full stack against a running app
+  with a real database. For many projects that coverage is sufficient; dedicated
+  integration tests earn their place when the data flows grow complex enough
+  that e2e tests become too slow or brittle to cover every case.
+</Callout>
+
+---
+
 ## Contract tests
 
 [Contract tests](https://medium.com/contract-testing/introduction-to-contract-testing-a02156fb1279) verify
@@ -412,6 +459,12 @@ with a generous timeout (15s) to accommodate real network latency.
 
 ## Running tests
 
+<Callout>
+  The full unit test suite runs automatically on pre-commit whenever `.ts` /
+  `.tsx` files are staged. See [Git](/docs/conventions/git#pre-commit-hook) for
+  the full hook breakdown.
+</Callout>
+
 ```bash
 pnpm test           # vitest run (single pass)
 pnpm test:watch     # vitest watch mode
@@ -419,7 +472,3 @@ pnpm test:contract  # contract tests — live network, run separately
 pnpm e2e            # Playwright end-to-end
 pnpm e2e:ui         # Playwright UI mode
 ```
-
-The full unit test suite runs automatically on pre-commit whenever `.ts` / `.tsx`
-files are staged. See [Git](/docs/conventions/git#pre-commit-hook) for the full
-hook breakdown.
