@@ -20,6 +20,7 @@
     "lint:probe": "bash scripts/lint-probe.sh",
     "test": "vitest run --passWithNoTests",
     "test:watch": "vitest",
+    "test:contract": "vitest run --config vitest.contract.config.ts",
     "test:tz": "TZ=America/Denver vitest run --config vitest.tz.config.ts && TZ=America/New_York vitest run --config vitest.tz.config.ts && TZ=Pacific/Auckland vitest run --config vitest.tz.config.ts",
     "typecheck": "tsc --noEmit",
     "e2e": "playwright test -c e2e-tests/playwright.config.ts",
