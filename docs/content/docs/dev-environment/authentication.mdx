@@ -6,12 +6,17 @@ description: Creating a Clerk application, getting your API keys, and configurin
 ## Create a Clerk application
 
 1. Go to [dashboard.clerk.com](https://dashboard.clerk.com) and create a new application
-2. Choose your sign-in methods (email is fine for local dev)
-3. Navigate to **API Keys** and copy:
+2. Navigate to **API Keys** and copy:
    - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
    - `CLERK_SECRET_KEY`
 
 Add both to `.env.local`.
+
+<Callout>
+  Consult the [Clerk
+  documentation](https://clerk.com/docs?utm_source=google&utm_medium=cpc&utm_campaign=authentication-intl&utm_content=docsgeneral&utm_term=sitelinks&utm_source=google&utm_medium=cpc&utm_campaign=SC_Google_Search_Authentication_INTL&utm_adgroup=Authentication_General&utm_term=authentication%20api&gad_source=1&gad_campaignid=23349481137&gbraid=0AAAAAqJUiX7u354XfMYI0tUk14oAZSFC0&gclid=Cj0KCQjwxvjRBhC2ARIsAI7KJa01BFamoRpAjiPnjuZeRNczowXnCc1XOy7c9oy-UM8oj1GHXIFCbUMaArq0EALw_wcB)
+  if you require more information
+</Callout>
 
 <Callout type='warn'>
   `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` is inlined into the client bundle at `next
@@ -28,9 +33,7 @@ Add both to `.env.local`.
 
 Auth is enforced in `src/proxy.ts` (Next.js 16 renamed `middleware.ts` to `proxy.ts` to
 make the network boundary explicit). It redirects unauthenticated users to `/sign-in`
-and gates admin routes by role. Keep this layer to lightweight checks — redirects and
-session claim reads. Heavier auth (DB lookups, full validation) belongs in route handlers
-or the DAL.
+and gates admin routes by role.
 
 ---
 
@@ -41,27 +44,33 @@ token. Two steps are required — missing either gives a silent 403.
 
 <CollapsibleSteps>
 
-<CollapsibleStep title="Set public metadata on the user" defaultOpen={false}>
-
-Clerk Dashboard → Users → pick the user → **Metadata** tab → **Public**:
-
-```json
-{ "role": "Admin" }
-```
-
-Save.
-
-</CollapsibleStep>
-
 <CollapsibleStep title="Map metadata into the session token" defaultOpen={false}>
 
-Clerk Dashboard → **Configure** → **Sessions** → **Customize session token** → Edit:
+This is a one-time instance-level setting. Clerk Dashboard → **Configure** →
+**Sessions** → **Customize session token** → Edit:
 
 ```json
 { "metadata": "{{user.public_metadata}}" }
 ```
 
-Save, then sign out and back in so a fresh token is minted.
+Save. This tells Clerk to include `public_metadata` in every JWT it mints for
+this instance — without it, the `role` claim never reaches your app.
+
+![Clerk session token customisation](/clerk-session-token.png)
+
+</CollapsibleStep>
+
+<CollapsibleStep title="Set the role on the user" defaultOpen={false}>
+
+Clerk Dashboard → **Users** → pick the user → **Metadata** tab → **Public**:
+
+```json
+{ "role": "Admin" }
+```
+
+Save, then sign out and back in so a fresh token is minted with the new claim.
+
+![Clerk user role metadata](/clerk-user-role.png)
 
 </CollapsibleStep>
 

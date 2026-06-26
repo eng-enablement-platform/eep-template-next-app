@@ -13,8 +13,6 @@ description: Prerequisites, environment variables, and getting the app running l
 
 ---
 
-## Install Node.js
-
 The repo ships an `.nvmrc` pinning the required Node version. Pick whichever
 version manager you prefer:
 
@@ -53,7 +51,7 @@ The key variables to set before the app will run:
 | Variable                            | What it is                 | Where to get it                                                                   |
 | ----------------------------------- | -------------------------- | --------------------------------------------------------------------------------- |
 | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Clerk public key           | [Clerk dashboard](https://dashboard.clerk.com) → API Keys                         |
-| `CLERK_SECRET_KEY`                  | Clerk secret key           | Same place                                                                        |
+| `CLERK_SECRET_KEY`                  | Clerk secret key           | [Clerk dashboard](https://dashboard.clerk.com) → API Keys                         |
 | `DATABASE_URL`                      | Postgres connection string | Pre-filled for local Docker (`postgresql://postgres:postgres@localhost:5432/app`) |
 
 The remaining variables (`NEXT_PUBLIC_CLERK_SIGN_IN_URL` etc.) are pre-filled in the template and work as-is for local dev.
@@ -68,7 +66,7 @@ See [Authentication Setup](/docs/dev-environment/authentication) for Clerk-speci
 docker compose up -d
 ```
 
-Then run migrations (idempotent — safe to re-run, skips already-applied ones):
+Then run migrations (safe to re-run, skips already-applied ones):
 
 ```bash
 pnpm db:migrate
