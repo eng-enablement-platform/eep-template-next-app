@@ -91,12 +91,14 @@ rewritten or discarded rather than acting as a safety net.
 
 ### Worked example — timezone-safe date parsing
 
-Dates are a good fit for TDD — JavaScript's date handling is notoriously fiddly (zero-based
-month indexes, timezone offsets, locale differences), and the contract for a date utility
-is clear upfront, making it easy to write precise tests before the implementation exists.
+Let's look at an actual practical example in this template that shows the benefits of TDD.
 
-The `parseDateSafe` utility in `src/utils/dates.ts` was written test-first. The
-bug it solves is real: `new Date('2025-03-15')` parses as UTC midnight, which
+JavaScript's date handling is notoriously fiddly (zero-based month indexes, timezone offsets, locale differences), but
+present us with a good opportunity to utilise TDD. The contract for a date utility is clear upfront, making it easy to write precise tests before the implementation exists.
+
+The `parseDateSafe` utility in `src/utils/dates.ts` was written test-first.
+
+**The bug it solves:** `new Date('2025-03-15')` parses as UTC midnight, which
 rolls back to March 14 for any user in a negative-offset timezone (UTC-7, UTC-8
 etc.). The fix is to parse date-only strings as local midnight using `date-fns`
 `parse()` instead.
