@@ -6,13 +6,10 @@ description: What earns a test, how to write it, and where it lives.
 ## Philosophy
 
 All development work should be completed in a QA-oriented manner, which helps limit
-the number of tests required. What does that mean in practice? Be deliberate about
-feature requirements, verify your work thoroughly, and treat manual exploration as part
-of the process — not an afterthought.
-
-When an agent is writing the code, you become the QA. Neither you nor the agent should
-blindly write tests as features land — untargeted tests add noise, slow down the
-feedback loop, and give false confidence without catching real bugs.
+the number of tests required. What do I mean by "QA-oriented manner"? Well, being detailed
+about feature requirements, testing things out yourself thorugly, if your not looking at the code
+becuase an agent is writting it you become the QA. You or the agent shouldn;t blindly write
+tests for things as they become pointless.
 
 Before writing a test ask: _would this prevent a future bug or make refactoring
 safer?_ If yes, write it.
