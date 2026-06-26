@@ -5,17 +5,17 @@ description: What earns a test, how to write it, and where it lives.
 
 ## Philosophy
 
-All development work should be completed in a QA-oriented manner, which helps limit
-the number of tests required. What do I mean by "QA-oriented manner"? Well, being detailed
-about feature requirements, testing things out yourself thorugly, if your not looking at the code
-becuase an agent is writting it you become the QA. You or the agent shouldn;t blindly write
-tests for things as they become pointless.
+All development work should be completed in a QA-oriented manner, which means being precise about
+requirements, verifying your work thoroughly, and not outsourcing that responsibility
+to a test suite.
 
-Before writing a test ask: _would this prevent a future bug or make refactoring
-safer?_ If yes, write it.
+When an agent is writing all of the code, you become the QA. Neither you nor the agent should
+reach for tests automatically. Un-targeted tests add noise, erode the feedback loop, and
+create false confidence without catching real bugs. **The goal isn't to chase coverage metrics but test what actually matters!**
 
 <Callout>
-  The goal isn't to chase coverage metrics but test what actually matters.
+  Before writing a test, ask: _would this prevent a future bug or make
+  refactoring safer?_ If yes, write it.
 </Callout>
 
 ---
@@ -78,17 +78,22 @@ that React works — it catches no bugs and breaks on every cosmetic change.
 
 ---
 
-## TDD
+## Test Driven Development (TDD)
 
-TDD pays off for small, isolated functions with a clear contract — pure
-utilities, validation schemas, well-defined logic. Write the test first, watch
-it fail, make it pass.
+[TDD](https://www.ibm.com/think/topics/test-driven-development) can be a contentious topic, some developers apply it to everything, others never touch it.
+The pragmatic middle ground: TDD pays off for small, isolated functions with a clear contract — pure utilities, validation
+schemas, well-defined logic. Write the test first, watch it fail, make it pass.
 
-It doesn't pay off for larger integration work where the spec is still being
-discovered. Tests written against a moving API end up brittle and get thrown
-away — write them once the shape has stabilised.
+Where I feel it doesn't really pay off is larger integration work where the spec is still being discovered.
+As the module boundaries and interface shapes evolve, tests written against them become
+liable to break for structural reasons rather than logic errors and they often end up being
+rewritten or discarded rather than acting as a safety net.
 
 ### Worked example — timezone-safe date parsing
+
+Dates are a good fit for TDD — JavaScript's date handling is notoriously fiddly (zero-based
+month indexes, timezone offsets, locale differences), and the contract for a date utility
+is clear upfront, making it easy to write precise tests before the implementation exists.
 
 The `parseDateSafe` utility in `src/utils/dates.ts` was written test-first. The
 bug it solves is real: `new Date('2025-03-15')` parses as UTC midnight, which
@@ -96,7 +101,9 @@ rolls back to March 14 for any user in a negative-offset timezone (UTC-7, UTC-8
 etc.). The fix is to parse date-only strings as local midnight using `date-fns`
 `parse()` instead.
 
-**Step 1 — write the failing tests first.**
+<CollapsibleSteps>
+
+<CollapsibleStep title="Write the failing tests first" defaultOpen={false}>
 
 Before writing any implementation, write tests that express the contract
 you need. They will fail because the module doesn't exist yet.
@@ -133,7 +140,9 @@ describe('parseDateSafe', () => {
 
 Run them — they fail (module not found). That's expected. This is the red phase.
 
-**Step 2 — implement to make the tests green.**
+</CollapsibleStep>
+
+<CollapsibleStep title="Implement to make the tests green" defaultOpen={false}>
 
 ```ts
 // src/utils/dates.ts
@@ -158,7 +167,9 @@ export const parseDateSafe = (value: string): Date | null => {
 };
 ```
 
-**Step 3 — run under multiple timezones to prove the fix holds.**
+</CollapsibleStep>
+
+<CollapsibleStep title="Run under multiple timezones to prove the fix holds" defaultOpen={false}>
 
 The standard test suite runs under jsdom, which caches the system timezone at
 startup. To test timezone behaviour properly, use the dedicated config that
@@ -178,6 +189,10 @@ TZ=Pacific/Auckland vitest run --config vitest.tz.config.ts
 
 All three must pass. If the native `new Date('YYYY-MM-DD')` gotcha had slipped
 through, the Denver run would fail — Dec 28 instead of Dec 29.
+
+</CollapsibleStep>
+
+</CollapsibleSteps>
 
 <Callout type='idea'>
   This is where TDD earns its keep. The contract ("same calendar date in any
