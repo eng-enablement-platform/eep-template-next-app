@@ -24,12 +24,18 @@ Two log files are written to `.logs/` at the project root:
 In production the files write to `/tmp/.logs/` (writable on most platforms).
 Console output is also emitted in all environments except `test`.
 
+<Callout>
+  The logger automatically goes silent during `next build`
+  (`NEXT_PHASE=phase-production-build`). This prevents startup noise from
+  polluting build output — the logger returns a no-op instance during that
+  phase.
+</Callout>
+
 ---
 
 ## logSource vs scope
 
-**`logSource`** is the architectural layer — constrained to the `LOG_SOURCE`
-enum so casing and the set can't drift:
+**`logSource`** is the architectural layer:
 
 | `logSource` | Layer                        |
 | ----------- | ---------------------------- |
@@ -37,8 +43,7 @@ enum so casing and the set can't drift:
 | `action`    | `actions/` server actions    |
 | `service`   | `classes/services/<domain>/` |
 
-**`scope`** is the free-form escape hatch for the specific module or concern.
-Pass it as a field on the log call — never invent a new `logSource` for it:
+**`scope`** is the **optional** free-form notation for the specific module or concern:
 
 ```ts
 logger.error({
@@ -125,10 +130,8 @@ Override for a single run:
 LOG_LEVEL=debug pnpm dev
 ```
 
-**`DB_QUERY_LOG`** — streams raw Drizzle SQL and params to the console. Off by
-default; a noisy opt-in diagnostic for watching queries live during development.
-Not part of the structured logger — DB errors that matter belong in the calling
-layer via `rootLogger`.
+**`DB_QUERY_LOG`** — streams raw Drizzle SQL and params to the console. This is an
+opt-in diagnostic for watching queries live during development.
 
 ```bash
 DB_QUERY_LOG=1 pnpm dev
@@ -136,11 +139,23 @@ DB_QUERY_LOG=1 pnpm dev
 
 ---
 
-## Build-time silence
+## Console logging
 
-The logger automatically goes silent during `next build`
-(`NEXT_PHASE=phase-production-build`). This prevents startup noise from polluting
-build output — the logger returns a no-op instance during that phase.
+`console.log` and friends are fine for short-lived debugging.
+
+```ts
+console.log(response); // quick value inspect
+console.table(items); // tabular view of an array
+console.dir(obj, { depth: 3 }); // deep object structure
+```
+
+<Callout type='warn'>
+  Just make sure to clean these up before committing. Stray `console.log` calls
+  end up in production bundle output and server logs, adding noise that makes
+  real issues harder to spot. If a log line is worth keeping, it belongs in
+  `rootLogger` so it's structured, filterable, and respects the verbosity
+  settings.
+</Callout>
 
 ---
 
