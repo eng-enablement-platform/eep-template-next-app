@@ -7,7 +7,7 @@ description: What earns a test, how to write it, and where it lives.
 
 All development work should be completed in a QA-oriented manner, which means being precise about
 requirements, verifying your work thoroughly, and not outsourcing that responsibility
-to a test suite.
+to a test suite. This should actually limit the number of tests that are needed in a project.
 
 When an agent is writing all of the code, you become the QA. Neither you nor the agent should
 reach for tests automatically. Un-targeted tests add noise, erode the feedback loop, and
@@ -103,6 +103,13 @@ rolls back to March 14 for any user in a negative-offset timezone (UTC-7, UTC-8
 etc.). The fix is to parse date-only strings as local midnight using `date-fns`
 `parse()` instead.
 
+<Callout type='warn'>
+  Committing failing tests will be blocked by the pre-commit hook. Use
+  `SKIP_CHECKS=1 git commit -m "..."` to checkpoint intentionally broken state
+  during the red phase. This flag exists precisely for TDD workflows. Lint and
+  style checks still run; only `tsc`, tests, and the build are skipped.
+</Callout>
+
 <CollapsibleSteps>
 
 <CollapsibleStep title="Write the failing tests first" defaultOpen={false}>
@@ -196,13 +203,6 @@ through, the Denver run would fail — Dec 28 instead of Dec 29.
 
 </CollapsibleSteps>
 
-<Callout type='idea'>
-  This is where TDD earns its keep. The contract ("same calendar date in any
-  timezone") is clear upfront, the tests express it precisely, and the multi-TZ
-  run gives you confidence a regular test suite can't. You couldn't write this
-  test suite *after* the implementation without already knowing the bug exists.
-</Callout>
-
 ---
 
 ## Co-location
@@ -225,8 +225,7 @@ full co-location rule.
 ## Test-only exports
 
 Expose internals for testing under a single `_forTests` named export at the
-bottom of the file. Never export internal classes or functions individually —
-keep the public API clean.
+bottom of the file.
 
 ```ts
 // public API
@@ -236,9 +235,10 @@ export const exampleItemService = new ExampleItemService();
 export const _forTests = { ExampleItemService };
 ```
 
-The `_` prefix signals to any reader or agent that this is not part of the
-public API.
-
+<Callout type='warn'>
+  Never export internal classes or functions individually — keep the public API
+  clean.
+</Callout>
 ---
 
 ## Zustand stores
