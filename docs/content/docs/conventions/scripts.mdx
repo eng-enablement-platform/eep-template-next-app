@@ -4,9 +4,8 @@ description: What the scripts/ folder is for and how to use it.
 ---
 
 The `scripts/` folder sits at the project root and runs **outside the Next.js
-context** — no App Router, no server components, no edge runtime. Every file is
-executed directly with `tsx` (via `pnpm exec tsx scripts/my-script.ts`), which
-means you get full Node.js access and can import from `src/` freely.
+context**. Scripts are language-agnostic, use whatever fits the task best. The convention
+in this repo is TypeScript (run via `pnpm exec tsx`) or Bash
 
 ---
 
@@ -17,13 +16,16 @@ means you get full Node.js access and can import from `src/` freely.
 Permanent utilities that support the development workflow. They live in
 `scripts/` indefinitely and are typically wired to a `package.json` command:
 
-| Script               | Command                        | What it does                                                         |
-| -------------------- | ------------------------------ | -------------------------------------------------------------------- |
-| `seed.ts`            | `pnpm db:seed`                 | Clears and re-populates `example_items` with deterministic test data |
-| `db-smoke-check.ts`  | `pnpm db:check`                | Verifies the DB connection and migration state                       |
-| `copy-swagger-ui.ts` | `pnpm docs:assets` (pre-build) | Vendors Swagger UI assets into `public/`                             |
+| Script               | Command                        | What it does                                                                                                   |
+| -------------------- | ------------------------------ | -------------------------------------------------------------------------------------------------------------- |
+| `seed.ts`            | `pnpm db:seed`                 | Clears and re-populates `example_items` with deterministic test data                                           |
+| `db-smoke-check.ts`  | `pnpm db:check`                | Verifies the DB connection and migration state                                                                 |
+| `copy-swagger-ui.ts` | `pnpm docs:assets` (pre-build) | Vendors Swagger UI assets into `public/`                                                                       |
+| `lint-probe.sh`      | `pnpm lint:probe`              | Regression-tests `eslint.config.ts` — probes each rule to confirm it fires (and doesn't) on synthetic snippets |
 
-These are committed, documented, and expected to stay working.
+<Callout>
+  These are committed, documented, and expected to stay working.
+</Callout>
 
 ### Exploration scripts
 
@@ -53,13 +55,15 @@ main().catch(console.error);
 NODE_OPTIONS='--conditions=react-server' pnpm exec tsx scripts/explore-hubspot-contacts.ts
 ```
 
-Exploration scripts are temporary — use them to validate your understanding,
-then either promote the logic into a service class or delete the file. They
-should not accumulate in the repo.
+<Callout>
+  Exploration scripts are temporary, use them to validate your understanding,
+  then either promote the logic into a service class or delete the file.
+</Callout>
 
 <Callout type='warn'>
   Exploration scripts must not be wired to `package.json` commands or imported
-  from `src/`. They exist only to be run manually during development.
+  from `src/`. They exist only to be run manually during development and should
+  not accumulate in the repo.
 </Callout>
 
 ---
@@ -122,8 +126,8 @@ main().catch(console.error);
 
 Two rules:
 
-1. `config()` must be called **before** any `src/` import — service constructors read env vars at instantiation time.
-2. Wrap everything in an `async function main()` — top-level await is not supported in CJS output.
+1. **`config()` must be called before any `src/` import** — Service constructors read env vars at instantiation time.
+2. **Wrap everything in an `async function main()`** — Top-level await is not supported in CJS output.
 
 ---
 
@@ -138,13 +142,3 @@ NODE_OPTIONS='--conditions=react-server' pnpm exec tsx scripts/my-script.ts
 ```
 
 ---
-
-## What belongs here vs elsewhere
-
-| Scenario                           | Where it goes                                |
-| ---------------------------------- | -------------------------------------------- |
-| One-off API or service exploration | `scripts/` — delete when done                |
-| Reusable data-fetching logic       | `src/classes/services/<domain>/`             |
-| Shared utility function            | `src/utils/`                                 |
-| Database migration                 | `drizzle/` (via `pnpm db:generate`)          |
-| Test for a unit of logic           | `__tests__/` co-located with the source file |
