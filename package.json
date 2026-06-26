@@ -68,6 +68,7 @@
     "pnpm": ">=10"
   },
   "devDependencies": {
+    "@clerk/testing": "^2.1.6",
     "@playwright/test": "^1.60.0",
     "@stylistic/eslint-plugin": "^5.10.0",
     "@tailwindcss/postcss": "^4",

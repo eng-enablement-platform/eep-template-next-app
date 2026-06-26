@@ -73,6 +73,7 @@ description: Every technology in this template, why it's here, and how it connec
 - **[React Testing Library](https://testing-library.com/) & [user-event](https://testing-library.com/docs/user-event/intro/)** — Tests behaviour (decisions, branches, state changes), not appearance. `user-event` simulates realistic user interactions rather than direct DOM events.
 - **[@testing-library/jest-dom](https://github.com/testing-library/jest-dom)** — Readable Vitest matchers (`toBeInTheDocument`, `toHaveClass`, etc.), bootstrapped in `vitest.setup.ts`.
 - **[Playwright](https://playwright.dev/)** — End-to-end tests in `e2e-tests/`, covering full user flows against a running app. Run with `pnpm e2e`.
+- **[@clerk/testing](https://clerk.com/docs/testing/playwright/overview)** — Official Clerk SDK for Playwright. Provides `clerkSetup()` (global setup) and the `clerk.signIn()` helper used by the `authenticatedPage` fixture to sign in via the Backend API without a password or OTP flow.
 
 ---
 

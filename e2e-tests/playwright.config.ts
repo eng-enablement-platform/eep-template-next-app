@@ -1,4 +1,10 @@
 import { defineConfig, devices } from '@playwright/test';
+import dotenv from 'dotenv';
+import path from 'path';
+
+/* Load .env.local so CLERK_SECRET_KEY and E2E_CLERK_USER_EMAIL are available
+ * to the global setup and fixture without needing to export them manually. */
+dotenv.config({ path: path.resolve(__dirname, '../.env.local') });
 
 const baseURL = 'http://localhost:3000';
 
@@ -28,6 +34,8 @@ export default defineConfig({
     /* Keep the full trace only on failure — view via `pnpm e2e:report`. */
     trace: 'retain-on-failure',
   },
+
+  globalSetup: './global-setup.ts',
 
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
 

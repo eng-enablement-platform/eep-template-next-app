@@ -350,14 +350,74 @@ running, tests start instantly.
   start` (production build) as the e2e target.
 </Callout>
 
+### Authentication setup
+
+The app is gated by Clerk, so authenticated tests need a real Clerk user and the
+`@clerk/testing` SDK to sign in programmatically via the Backend API (no browser
+password flow).
+
+<CollapsibleSteps>
+
+<CollapsibleStep title="Create a dedicated test user in your Clerk dashboard" defaultOpen={false}>
+
+Go to [dashboard.clerk.com](https://dashboard.clerk.com) → your application → Users → Create user.
+The email **must** use the `+clerk_test` subaddress format:
+
+```
+yourname+clerk_test@yourdomain.com
+```
+
+Gmail ignores everything after `+`, so the email still delivers to your inbox.
+This format is required by the Clerk testing SDK — a regular email will fail with
+`Email should be a test email`.
+
+</CollapsibleStep>
+
+<CollapsibleStep title="Add the credentials to .env.local" defaultOpen={false}>
+
+```bash
+CLERK_SECRET_KEY=sk_test_...   # already set from Clerk setup
+E2E_CLERK_USER_EMAIL=yourname+clerk_test@yourdomain.com
+```
+
+`CLERK_SECRET_KEY` is the secret key for the same Clerk instance this app is
+configured with — the one whose publishable key is in
+`NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`. The test user must exist in **that** Clerk
+instance.
+
+</CollapsibleStep>
+
+<CollapsibleStep title="Use the authenticatedPage fixture in your tests" defaultOpen={false}>
+
+The `authenticatedPage` fixture in `e2e-tests/fixtures/auth.fixture.ts` signs in
+before each test and signs out after. It uses `CLERK_SECRET_KEY` to call Clerk's
+Backend API directly — no password, no OTP, no browser interaction:
+
+```ts
+import { test, expect } from '../fixtures/auth.fixture';
+
+test('counter increments', async ({ authenticatedPage }) => {
+  await authenticatedPage.goto('/');
+  await authenticatedPage.getByRole('button', { name: 'Increment' }).click();
+  await expect(authenticatedPage.getByText('Count: 1')).toBeVisible();
+});
+```
+
+For tests that don't need auth (smoke checks, redirect behaviour), import from
+`@playwright/test` directly and use the plain `page` fixture.
+
+</CollapsibleStep>
+
+</CollapsibleSteps>
+
 ### Reference specs
 
 The template ships two specs as reference coverage for the core patterns:
 
-| Spec              | What it covers                                                             |
-| ----------------- | -------------------------------------------------------------------------- |
-| `home.spec.ts`    | Smoke check — home page renders, counter is visible at zero                |
-| `counter.spec.ts` | Zustand client state — increment, decrement, and reset reflected in the UI |
+| Spec              | What it covers                                                                        |
+| ----------------- | ------------------------------------------------------------------------------------- |
+| `home.spec.ts`    | Smoke checks — unauthenticated redirect to sign-in, Clerk component renders           |
+| `counter.spec.ts` | Zustand client state (authenticated) — increment, decrement, and reset in the browser |
 
 ---
 
