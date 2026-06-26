@@ -1,4 +1,156 @@
 ---
 title: Logging
-description: How structured logging works, logSource vs scope, and the verbosity knobs.
+description: How structured logging works, logSource vs scope, verbosity knobs, and the DB query diagnostic.
 ---
+
+## Overview
+
+All server-side logging goes through `rootLogger` from
+`src/classes/loggers/application/`. Every log line carries a `logSource` field
+that maps to an architectural layer, making it easy to follow a layer in
+production:
+
+```bash
+grep '"logSource":"action"' .logs/winston-combined.log
+```
+
+Two log files are written to `.logs/` at the project root:
+
+| File                   | Contents       |
+| ---------------------- | -------------- |
+| `winston-combined.log` | All log levels |
+| `winston-error.log`    | Errors only    |
+
+In production the files write to `/tmp/.logs/` (writable on most platforms).
+Console output is also emitted in all environments except `test`.
+
+---
+
+## logSource vs scope
+
+**`logSource`** is the architectural layer — constrained to the `LOG_SOURCE`
+enum so casing and the set can't drift:
+
+| `logSource` | Layer                        |
+| ----------- | ---------------------------- |
+| `api`       | `app/api/` route handlers    |
+| `action`    | `actions/` server actions    |
+| `service`   | `classes/services/<domain>/` |
+
+**`scope`** is the free-form escape hatch for the specific module or concern.
+Pass it as a field on the log call — never invent a new `logSource` for it:
+
+```ts
+logger.error({
+  message: 'Failed to create example item',
+  scope: 'example-items',
+  error,
+});
+```
+
+This keeps `logSource` closed (architectural layer only) while leaving `scope`
+open for whatever granularity you need.
+
+---
+
+## Usage
+
+Get a logger by calling `rootLogger` with the appropriate source at the top of
+your file. The logger is a winston child logger — call `info`, `warn`, `error`,
+or `debug` with a structured object:
+
+```ts
+import { LOG_SOURCE, rootLogger } from '@/classes/loggers/application';
+
+const logger = rootLogger(LOG_SOURCE.ACTION);
+
+// Informational — structured fields alongside the message
+logger.info({ message: 'Item created', id: data.id });
+
+// Error — include scope and the raw error for stack trace
+logger.error({
+  message: 'Failed to create item',
+  scope: 'example-items',
+  error,
+});
+```
+
+See `src/actions/example-item-actions.ts` for the reference shape in a server
+action.
+
+---
+
+## Where to log
+
+**Log at the boundary that owns the outcome, not in the service.**
+
+Services are thin wrappers around data calls — they rethrow on failure without
+logging. The write boundary (a server action or a route handler) is where an
+exception becomes a user-facing result, so that is the one place it's caught
+and logged. Logging in the service and re-logging in the action would record
+the same failure twice under two different sources.
+
+```ts
+// ✅ Action owns the outcome — log once here
+try {
+  const data = await exampleItemService.create(parsed.data);
+  logger.info({ message: 'Item created', id: data.id });
+  return { ok: true, data };
+} catch (error) {
+  logger.error({ message: 'Create failed', scope: 'example-items', error });
+  return { ok: false, error: 'Something went wrong' };
+}
+
+// ❌ Don't log in the service and rethrow — it double-logs
+```
+
+---
+
+## Verbosity
+
+Two independent knobs control how much you see:
+
+**`LOG_LEVEL`** — the winston level floor for all `rootLogger` output. Defaults
+per environment when unset:
+
+| Environment   | Default level |
+| ------------- | ------------- |
+| `development` | `debug`       |
+| `test`        | `warn`        |
+| `production`  | `info`        |
+
+Override for a single run:
+
+```bash
+LOG_LEVEL=debug pnpm dev
+```
+
+**`DB_QUERY_LOG`** — streams raw Drizzle SQL and params to the console. Off by
+default; a noisy opt-in diagnostic for watching queries live during development.
+Not part of the structured logger — DB errors that matter belong in the calling
+layer via `rootLogger`.
+
+```bash
+DB_QUERY_LOG=1 pnpm dev
+```
+
+---
+
+## Build-time silence
+
+The logger automatically goes silent during `next build`
+(`NEXT_PHASE=phase-production-build`). This prevents startup noise from polluting
+build output — the logger returns a no-op instance during that phase.
+
+---
+
+## OpenTelemetry
+
+The current logging setup covers structured logs well but doesn't provide
+distributed tracing or metrics. [OpenTelemetry](https://opentelemetry.io/) is on
+the roadmap — it will add trace IDs, spans, and a standard export pipeline so
+logs, traces, and metrics can be correlated in tools like Grafana or Honeycomb.
+
+When that's wired in, `logSource` and `scope` fields will carry through as
+span attributes automatically, so the structured logging conventions you follow
+today will translate directly.
