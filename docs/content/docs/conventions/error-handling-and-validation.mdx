@@ -1,0 +1,221 @@
+---
+title: Error Handling & Validation
+description: How errors are typed, thrown, caught, and surfaced across the stack — and where validation lives.
+---
+
+## Philosophy
+
+Error handling and validation are first-class concerns, not afterthoughts. The
+goal is to fail loudly at boundaries (invalid input, unexpected server errors),
+fail gracefully in the UI (user-facing messages that don't expose internals),
+and never swallow errors silently.
+
+<Callout type='idea'>
+  Further reading on the thinking behind typed, structured errors:
+
+- [Handling Errors Like a Pro in TypeScript](https://engineering.udacity.com/handling-errors-like-a-pro-in-typescript-d7a314ad4991)
+- [TypeScript Error Handling Pitfalls and How to Avoid Them](https://www.dhiwise.com/post/typescript-error-handling-pitfalls-and-how-to-avoid-them)
+
+</Callout>
+
+---
+
+## Quick reference
+
+| Concern               | Tool                      | Location                 |
+| --------------------- | ------------------------- | ------------------------ |
+| Input validation      | Zod `safeParse`           | `src/validation/`        |
+| Structured error type | `ApplicationError`        | `src/classes/errors/`    |
+| Unknown → string      | `formatErrorMessage`      | `src/utils/`             |
+| Route validation 400  | `validationErrorResponse` | `src/app/api/utils/`     |
+| Route catch-all 500   | `routeErrorHandler`       | `src/app/api/utils/`     |
+| Action result type    | `ActionResult<T>`         | `src/actions/`           |
+| UI error display      | `ErrorDisplay`            | `src/components/common/` |
+
+## Validation
+
+Validation schemas live in `src/validation/`, one file per domain, using Zod.
+They are the **single source of truth** for a domain's input shape.
+
+```
+src/validation/
+  example-item.ts   # schemas for the example-items domain
+```
+
+### Schema shape
+
+Each domain file exports:
+
+- A **create schema** — required fields with sensible defaults
+- An **update schema** — the same base made fully `.partial()` so callers send
+  only what changed
+- **Types** inferred from the schemas via `z.infer`
+
+```ts
+// 1. Base — no defaults. This is what both schemas are built from.
+const exampleItemFields = z.object({
+  quantity: z.number().int().min(0),
+  status: z.enum(['draft', 'active', 'archived']),
+  // ...other fields
+});
+
+// 2. Create schema — layers defaults on top of the base.
+//    Omitting quantity or status gives you 0 / 'draft'.
+export const exampleItemSchema = exampleItemFields.extend({
+  quantity: exampleItemFields.shape.quantity.default(0),
+  status: exampleItemFields.shape.status.default('draft'),
+});
+
+// 3. Update schema — base made partial. Absent = genuinely absent.
+export const exampleItemUpdateSchema = exampleItemFields.partial();
+```
+
+<Callout>
+The base is kept **default-free** deliberately. Zod's `.default()` fills a
+field when it's absent — even on a `.partial()` schema. If the base had
+`quantity.default(0)` and you did `exampleItemFields.partial()`, a `PATCH`
+with only `{ status: 'active' }` would parse to `{ status: 'active', quantity: 0 }`,
+silently resetting quantity in the database. Keeping the base default-free
+means an absent field on an update stays absent.
+</Callout>
+
+### OpenAPI integration
+
+The `.meta()` annotations on schema fields double as the OpenAPI contract — the
+spec in `src/lib/openapi/` feeds these schemas to `createDocument`, so the
+API docs, the validator, and the column shape all derive from one file.
+
+### Parsing at the boundary
+
+<Callout type='warn'>
+  Always use `safeParse` at the boundary rather than `parse`. `parse` throws and
+  bypasses your error handling; `safeParse` returns a discriminated result you
+  can branch on explicitly:
+</Callout>
+
+```ts
+const parsed = exampleItemSchema.safeParse(await request.json());
+
+if (!parsed.success) {
+  return validationErrorResponse(parsed.error);
+}
+
+// parsed.data is fully typed from here
+const item = await exampleItemService.create(parsed.data);
+```
+
+---
+
+## Error types
+
+### ApplicationError
+
+`ApplicationError` (in `src/classes/errors/`) is a structured error class for
+when you need context attached to a runtime error. It extends `Error` with a
+`context` object carrying the source, function name, and original error:
+
+```ts
+throw new ApplicationError('Failed to fetch user data', {
+  source: 'API', // where it originated
+  function: 'getUserData',
+  originalError: error, // formatted to a string automatically
+});
+```
+
+It lives in `classes/errors/` without a `server-only` import. That's
+intentional — it's cross-cutting infrastructure, and adding `server-only`
+would block edge cases like catching it in an `ErrorBoundary` for an
+`instanceof` check. In practice you'll rarely if ever throw it client-side;
+the structured context it carries (`source`, `function`, `originalError`) is
+only useful when something is observing it — Winston on the server, not the
+browser console.
+
+<Callout>
+  If you do need client-side error observability, that's a job for a monitoring
+  tool like [Sentry](https://sentry.io) — it captures unhandled exceptions from
+  the browser, attaches context, and surfaces them in a dashboard. That's not
+  wired up in this template but is a natural next addition for production apps.
+</Callout>
+
+### formatErrorMessage
+
+`formatErrorMessage` (in `src/utils/`) safely narrows `unknown` to a string.
+Use it anywhere you catch an unknown error and need a displayable message:
+
+```ts
+import { formatErrorMessage } from '@/utils/format-error-message';
+
+catch (error) {
+  const message = formatErrorMessage(error); // always returns a string
+}
+```
+
+---
+
+## Error handling by layer
+
+### Route handlers
+
+Route handlers use two shared utilities from `src/app/api/utils/`:
+
+**`validationErrorResponse`** — returns a consistent 400 with flattened field
+errors after a failed `safeParse`:
+
+```ts
+if (!parsed.success) {
+  return validationErrorResponse(parsed.error);
+  // → 400 { error: 'Validation failed', fieldErrors: { name: ['required'] } }
+}
+```
+
+**`routeErrorHandler`** — catches unexpected errors in the `catch` block, logs
+them, and returns a consistent 500:
+
+```ts
+try {
+  const items = await exampleItemService.getAll();
+  return NextResponse.json({ items }, { status: 200 });
+} catch (error) {
+  return routeErrorHandler(error, 'GET /api/example-items');
+  // → logs the failure, returns 500 { error, details }
+}
+```
+
+### Server actions
+
+Actions return a discriminated `ActionResult<T>` instead of throwing, so the
+client can branch on success vs failure without a try/catch:
+
+```ts
+export type ActionResult<TData> =
+  | { ok: true; data: TData }
+  | { ok: false; error: string; fieldErrors?: FieldErrors };
+```
+
+Validation failures return `{ ok: false, error, fieldErrors }`. Unexpected
+errors are caught, logged once at the action boundary, and returned as
+`{ ok: false, error: 'Something went wrong' }` — never leaking internal
+details to the client.
+
+### Services
+
+Services rethrow without logging. The action or route handler that calls the
+service is the write boundary and the one place the failure is logged. Logging
+in both the service and the handler would record the same failure twice under
+two different sources.
+
+### UI
+
+Two error surfaces handle client-side errors:
+
+- **`app/error.tsx`** — Next.js's reserved segment boundary, fires when a
+  route segment throws during render or hydration. Delegates to `ErrorDisplay`.
+- **`ErrorBoundary`** (`src/components/common/error-boundary.tsx`) — a client
+  boundary for errors thrown after hydration, which Next's boundary misses.
+  Uses `ErrorDisplay` as its fallback.
+
+`ErrorDisplay` is purely presentational — a message and a route back home. In
+production-facing paths, don't pass raw error messages to it; they may leak
+implementation details.
+
+---

@@ -1,4 +1,11 @@
 {
   "title": "Conventions",
-  "pages": ["code-style-structure", "git", "testing", "logging", "scripts"]
+  "pages": [
+    "code-style-structure",
+    "git",
+    "testing",
+    "logging",
+    "scripts",
+    "error-handling-and-validation"
+  ]
 }
