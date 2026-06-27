@@ -528,3 +528,25 @@ pnpm test:contract  # contract tests — live network, run separately
 pnpm e2e            # Playwright end-to-end
 pnpm e2e:ui         # Playwright UI mode
 ```
+
+---
+
+## Vitest config files
+
+There are multiple `vitest.*.ts` files at the project root — each exists because
+different test classes need genuinely different runtime environments and can't
+share a single config without compromising correctness or feedback speed.
+
+| File                         | Purpose                                                                                                                                                                      |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `vitest.config.ts`           | Main unit suite. jsdom environment for component tests, T3 Env stubs, `server-only` alias. Default for `pnpm test`.                                                          |
+| `vitest.tz.config.ts`        | Timezone tests only. Uses `node` environment — jsdom caches the system timezone at startup and ignores runtime `TZ` changes, so timezone-sensitive date tests must run here. |
+| `vitest.contract.config.ts`  | Contract tests. `node` environment with a generous timeout for live network calls. Excluded from the main suite to keep `pnpm test` fast.                                    |
+| `vitest.setup.ts`            | Global setup file — registers jest-dom matchers and runs RTL cleanup after each test. Referenced by `vitest.config.ts`.                                                      |
+| `vitest.server-only-stub.ts` | Empty module that stubs the `server-only` package. Prevents vitest from throwing when importing server-layer code.                                                           |
+
+<Callout>
+  These files live at the project root because Vitest discovers
+  `vitest.config.ts` there by default — moving them to a subfolder would require
+  passing `--config` explicitly to every script.
+</Callout>

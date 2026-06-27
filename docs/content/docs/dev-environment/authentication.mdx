@@ -42,6 +42,14 @@ Auth is enforced in `src/proxy.ts` (Next.js 16 renamed `middleware.ts` to `proxy
 make the network boundary explicit). It redirects unauthenticated users to `/sign-in`
 and gates admin routes by role.
 
+<Callout type='warn'>
+  The live demo deployment of this template is intentionally locked to Admin
+  users only. If you sign up and find yourself on an "Access restricted" page,
+  that's expected — the deployment is a private testing environment, not a
+  public product. When scaffolding a real project from this template, relax the
+  gate in `proxy.ts` to allow broader access.
+</Callout>
+
 ---
 
 ## Why the routes use `[[...sign-in]]`
