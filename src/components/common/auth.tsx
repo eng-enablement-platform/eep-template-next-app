@@ -12,7 +12,9 @@ type AuthProps = {
  * Consumed by the catch-all `[[...sign-in]]` / `[[...sign-up]]` routes, which is
  * why Clerk's path-based routing resolves without extra config.
  *
- * @param subtitle - Defaults to a type-appropriate prompt when omitted.
+ * @param type - Whether to render the sign-in or sign-up Clerk widget.
+ * @param title - Heading displayed above the Clerk widget. Defaults to `'Welcome to My App!'`.
+ * @param subtitle - Subheading below the title. Defaults to a type-appropriate prompt when omitted.
  * @example
  * ```tsx
  * <Auth type='sign-in' title='Welcome back!' />

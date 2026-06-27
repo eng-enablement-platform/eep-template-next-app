@@ -23,7 +23,7 @@ export default function Home() {
           </h1>
           <p className='text-muted-foreground max-w-xl text-lg leading-relaxed text-pretty'>
             A working scaffold with auth, state, database, API layer, logging
-            and docs all wired in. Replace this page to make it yours!
+            and docs all wired in!
           </p>
         </div>
 
