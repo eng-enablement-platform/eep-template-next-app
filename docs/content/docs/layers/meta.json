@@ -1,4 +1,5 @@
 {
   "title": "The Layers",
+  "icon": "LayoutTemplate",
   "pages": ["client", "api", "server"]
 }

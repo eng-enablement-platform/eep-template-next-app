@@ -1,5 +1,6 @@
 {
   "title": "Dev Environment",
+  "icon": "MonitorCog",
   "pages": [
     "local-setup",
     "authentication",

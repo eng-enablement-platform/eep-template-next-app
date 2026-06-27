@@ -1,5 +1,6 @@
 {
   "title": "Conventions",
+  "icon": "BookOpenCheck",
   "pages": [
     "git",
     "code-style-structure",
