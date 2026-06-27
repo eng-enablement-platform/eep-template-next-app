@@ -1,0 +1,221 @@
+---
+title: Vercel Deployment
+description: End-to-end guide for deploying to Vercel with Clerk (production instance) and Neon.
+---
+
+The happy path for deploying this template is Vercel + Clerk + Neon. All three
+have free tiers, first-class Next.js support, and minimal configuration to wire
+together.
+
+<Callout type='info'>
+  CI/CD automation for database migrations and some deployment steps is on the
+  roadmap. For now, the steps below cover a manual first deployment. Subsequent
+  deploys happen automatically on push to `main`.
+</Callout>
+
+---
+
+## Before you start
+
+Make sure you have:
+
+- A [Vercel](https://vercel.com) account
+- A [Clerk](https://clerk.com) account (dev keys work for a quick start; a production instance is recommended for real users)
+- A [Neon](https://neon.tech) account with a project set up — see [Neon Setup](/docs/dev-environment/neon)
+
+---
+
+## Using dev keys (quick start)
+
+You can deploy to Vercel using your Clerk **development** keys (`pk_test_` /
+`sk_test_`) to get something running quickly. Clerk's dev instance works fine
+for early testing and demos.
+
+Just be aware of the limitations:
+
+- Dev instances have stricter rate limits
+- Email/SMS sending is capped (100 emails / 20 SMS per month)
+- Google SSO and other OAuth providers require additional GCP setup (see below)
+- Clerk will show a warning banner in your UI
+
+When you're ready for real users, create a production Clerk instance and swap
+the keys in Vercel — no code changes needed.
+
+---
+
+## Step 1 — Create a production Clerk instance (recommended)
+
+<CollapsibleSteps>
+
+<CollapsibleStep title="Create a production application in Clerk" defaultOpen={false}>
+
+Clerk Dashboard → **Create application** → choose your sign-in methods →
+set the environment to **Production**.
+
+Copy the production API keys:
+
+- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` (starts with `pk_live_`)
+- `CLERK_SECRET_KEY` (starts with `sk_live_`)
+
+</CollapsibleStep>
+
+<CollapsibleStep title="Configure the session token" defaultOpen={false}>
+
+Same as the dev setup — do this once per Clerk instance.
+
+Clerk Dashboard → **Configure** → **Sessions** → **Customize session token** → Edit:
+
+```json
+{ "metadata": "{{user.public_metadata}}" }
+```
+
+Save.
+
+</CollapsibleStep>
+
+<CollapsibleStep title="Set your production domain in Clerk" defaultOpen={false}>
+
+Clerk Dashboard → **Configure** → **Domains** → add your Vercel deployment URL
+(e.g. `your-app.vercel.app`) or your custom domain.
+
+Clerk uses this to validate the origin of auth requests — without it, sign-in
+will fail in production.
+
+</CollapsibleStep>
+
+</CollapsibleSteps>
+
+### Google SSO (optional)
+
+If you want users to sign in with Google, Clerk needs a GCP OAuth client ID and
+secret. Clerk cannot enable Google SSO without it.
+
+<CollapsibleSteps>
+
+<CollapsibleStep title="Create a GCP OAuth client" defaultOpen={false}>
+
+1. Go to [console.cloud.google.com](https://console.cloud.google.com) and create
+   or select a project
+2. Navigate to **APIs & Services** → **Credentials** → **Create Credentials** →
+   **OAuth client ID**
+3. Set application type to **Web application**
+4. Under **Authorised redirect URIs**, add the Clerk callback URL. Find the exact
+   URL in: Clerk Dashboard → **Configure** → **SSO Connections** → Google →
+   **Redirect URI** — copy it from there before creating the GCP credential
+5. Click **Create** and copy the **Client ID** and **Client Secret**
+
+</CollapsibleStep>
+
+<CollapsibleStep title="Add the credentials to Clerk" defaultOpen={false}>
+
+Clerk Dashboard → **Configure** → **SSO Connections** → **Google** → toggle on
+→ paste your **Client ID** and **Client Secret** → Save.
+
+Google will now appear as a sign-in option.
+
+</CollapsibleStep>
+
+</CollapsibleSteps>
+
+<Callout type='info'>
+  You need a **separate GCP OAuth client per Clerk instance** — dev and
+  production have different redirect URIs (`clerk.accounts.dev` vs your
+  production Clerk domain). Create two GCP clients and wire each into the
+  corresponding Clerk instance.
+</Callout>
+
+---
+
+## Step 2 — Create a Neon production database
+
+If you haven't already, create a Neon project and get your pooled connection
+string. See [Neon Setup](/docs/dev-environment/neon) for the steps.
+
+Use a **separate Neon project or branch** for production — never point production
+at your local or development database.
+
+---
+
+## Step 3 — Deploy to Vercel
+
+<CollapsibleSteps>
+
+<CollapsibleStep title="Import your repository" defaultOpen={false}>
+
+[Vercel Dashboard](https://vercel.com/new) → **Import Git Repository** → select
+your repo. Vercel will detect Next.js automatically.
+
+</CollapsibleStep>
+
+<CollapsibleStep title="Set environment variables" defaultOpen={false}>
+
+In the Vercel project settings → **Environment Variables**, add:
+
+| Variable                              | Value                                   |
+| ------------------------------------- | --------------------------------------- |
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`   | `pk_live_...` (production Clerk key)    |
+| `CLERK_SECRET_KEY`                    | `sk_live_...` (production Clerk secret) |
+| `NEXT_PUBLIC_CLERK_SIGN_IN_URL`       | `/sign-in`                              |
+| `NEXT_PUBLIC_CLERK_SIGN_UP_URL`       | `/sign-up`                              |
+| `NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL` | `/`                                     |
+| `NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL` | `/`                                     |
+| `DATABASE_URL`                        | Your Neon pooled connection string      |
+
+<Callout type='warn'>
+  `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` is inlined into the client bundle at build
+  time. Set it before the first deploy — changing it later requires a rebuild.
+  Make sure you're using the **production** key (`pk_live_`), not the dev key
+  (`pk_test_`).
+</Callout>
+
+</CollapsibleStep>
+
+<CollapsibleStep title="Deploy" defaultOpen={false}>
+
+Click **Deploy**. Vercel will build and deploy the app. The first build takes
+a minute or two.
+
+Once deployed, your app is live at `https://your-project.vercel.app`.
+
+</CollapsibleStep>
+
+</CollapsibleSteps>
+
+---
+
+## Step 4 — Run production migrations
+
+Vercel does not run database migrations automatically. After the first deploy,
+run migrations against your Neon production database manually:
+
+```bash
+# Point at your production DATABASE_URL
+DATABASE_URL=postgresql://... pnpm db:migrate
+```
+
+<Callout type='info'>
+  Automating migrations as part of the deployment pipeline (e.g. a Vercel build
+  step or a GitHub Actions workflow) is on the roadmap. For now, run them
+  manually after each deploy that includes schema changes.
+</Callout>
+
+---
+
+## Subsequent deploys
+
+After the initial setup, every push to `main` triggers an automatic Vercel
+deployment. You only need to:
+
+- Re-run `pnpm db:migrate` (against production) when a deploy includes new migrations
+- Update environment variables in Vercel if new ones are added
+
+---
+
+## Environments
+
+Vercel supports three environments: **Production**, **Preview**, and **Development**.
+Preview deployments are created automatically for every pull request — useful
+for reviewing changes before merging.
+
+Consider maintaining separate Clerk and Neon instances for production vs preview
+to keep data and auth state isolated.

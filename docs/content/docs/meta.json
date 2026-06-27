@@ -6,6 +6,7 @@
     "architecture",
     "layers",
     "conventions",
-    "dev-environment"
+    "dev-environment",
+    "deployment"
   ]
 }
