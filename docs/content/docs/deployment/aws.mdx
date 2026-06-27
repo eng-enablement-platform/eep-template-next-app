@@ -1,0 +1,32 @@
+---
+title: AWS
+description: Deploying the template to AWS — coming soon.
+---
+
+<Callout type='warn'>
+  This guide is a placeholder. AWS deployment documentation is planned for a
+  future release.
+</Callout>
+
+AWS deployment is on the roadmap. The template is framework-agnostic at the
+infrastructure level — the Next.js app can run anywhere Node.js runs. Planned
+coverage includes:
+
+- **App Runner** — the lowest-friction managed option; point it at the repo and
+  AWS handles builds, scaling, and HTTPS. Closest to the Vercel experience.
+- **ECS + Fargate** — containerised deployment with more control over networking,
+  IAM, and scaling policy. Better fit for teams already running workloads on ECS.
+- **Amplify Hosting** — AWS's native Next.js hosting with CI/CD baked in.
+  Feature parity with Vercel for the App Router is improving but not yet complete.
+
+Key differences from the Vercel deployment to be aware of when this is ready:
+
+- `NEXT_PUBLIC_*` vars are inlined at build time — a single Docker image promoted
+  across environments will have the wrong values baked in. See the self-hosting
+  note in `src/app/layout.tsx` for the workaround.
+- Database migrations will need to run as part of a deployment pipeline or a
+  post-deploy task, not a local CLI command.
+- The Clerk publishable key caveat above applies here too — runtime injection
+  requires serving the key from a server route rather than the build step.
+
+Check back here for the full guide once this is written.

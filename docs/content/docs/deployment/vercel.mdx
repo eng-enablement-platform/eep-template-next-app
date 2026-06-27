@@ -1,162 +1,75 @@
 ---
 title: Vercel Deployment
-description: End-to-end guide — Clerk, Neon, Vercel, and a custom domain with Cloudflare DNS.
+description: End-to-end guide — domain, Vercel, Neon, and Clerk production setup.
 ---
 
-The full deployment stack for this template is **Clerk** (auth) + **Neon** (database)
-
-- **Vercel** (hosting) + **Cloudflare** (domain + DNS). All four have free tiers and
-  wire together with minimal configuration.
+The full deployment stack is **Cloudflare** (domain + DNS) → **Vercel** (hosting)
+→ **Neon** (database) → **Clerk** (auth). The steps below follow this order — get
+the infrastructure in place first, then wire in auth last.
 
 <Callout type='info'>
-  CI/CD automation for database migrations is on the roadmap. For now, the steps
-  below cover a manual first deployment. Subsequent deploys happen automatically
+  CI/CD automation for database migrations is on the roadmap. For now, these
+  steps cover a manual first deployment. Subsequent deploys happen automatically
   on every push to `main`.
 </Callout>
 
----
-
-## Before you start
-
-- A [Vercel](https://vercel.com) account
-- A [Clerk](https://clerk.com) account
-- A [Neon](https://neon.tech) account with a project — see [Neon Setup](/docs/dev-environment/neon)
+<Callout type='warn'>
+  **Clerk production instances require a custom domain you own.** `*.vercel.app`
+  URLs are not supported — Clerk needs to set DNS records on your domain, which
+  isn't possible on a domain Vercel owns. If you don't have a domain yet, skip
+  to the [dev key quick start](#using-dev-keys-quick-start) below and come back
+  once you've bought one.
+</Callout>
 
 ---
 
 ## Using dev keys (quick start)
 
-You can get something running fast using Clerk **development** keys (`pk_test_` /
-`sk_test_`). Clerk's dev instance works fine for early testing.
+If you don't have a custom domain yet, deploy with Clerk **development** keys
+(`pk_test_` / `sk_test_`) on the Vercel-generated URL. This gets the app running
+immediately and is fine for personal testing. When you have a domain, create a
+production Clerk instance and swap the keys — no code changes needed.
 
-Limitations to be aware of:
+Limitations of dev keys:
 
 - Stricter rate limits
 - Email/SMS capped at 100 emails / 20 SMS per month
-- Google SSO requires additional GCP setup (see below)
 - Clerk shows a warning banner in the UI
-
-When you're ready for real users, create a production instance and swap the keys
-in Vercel — no code changes needed.
 
 ---
 
-## Step 1 — Set up a production Clerk instance
+## Step 1 — Buy a domain
+
+[Cloudflare Registrar](https://www.cloudflare.com/products/registrar/) sells domains
+at cost with free DNS management — the best value registrar for this stack.
 
 <CollapsibleSteps>
 
-<CollapsibleStep title="Create a production application in Clerk" defaultOpen={false}>
+<CollapsibleStep title="Buy your domain on Cloudflare" defaultOpen={false}>
 
-Clerk Dashboard → **Create application** → choose your sign-in methods →
-set the environment to **Production**.
+1. Go to [dash.cloudflare.com](https://dash.cloudflare.com) → **Domain Registration**
+   → **Register Domains**
+2. Search for your domain
 
-![Clerk production instance setup](/clerk/clerk-setup-prod-instance.png)
+![Cloudflare domain search results](/cloudflare/cloudflare-buy-domain.png)
 
-Clerk offers the option to clone settings from your dev instance — this copies
-your sign-in method configuration across so you don't have to set it up twice.
+3. Select your domain and proceed to purchase
 
-![Clerk clone dev instance option](/clerk/clerk-clone-dev-instance.png)
+![Cloudflare domain purchase form](/cloudflare/cloudflare-purchase-domain.png)
 
-When prompted for the **Application domain**, enter your custom domain (e.g.
-`eep-next-template.dev`) if you have one, or your Vercel deployment URL
-(`your-project.vercel.app`) if you're not using a custom domain yet. This can
-be updated later but must match where your app is actually deployed.
+4. Complete the purchase — Cloudflare confirms and activates the domain
 
-![Clerk application domain field](/clerk/clerk-app-domain.png)
+![Cloudflare domain confirmation](/cloudflare/cloudflare-domain-confirmation.png)
 
-Once created, Clerk shows a setup checklist.
-
-<Callout>
-  You don't need to complete the checklist right now — you can close it and come
-  back at any time from the Clerk dashboard. If you do work through it and hit
-  the Google SSO step, follow the [GCP OAuth setup](#google-sso-optional) steps
-  below for guidance on getting your Client ID and Secret.
+<Callout type='idea'>
+  `.dev` is a natural fit for developer tools — Google-owned, HTTPS enforced by
+  the registry (browsers won't load `.dev` without SSL), and signals the purpose
+  immediately. `yourproject.dev` is a good pattern. A single domain covers both
+  your app and docs site via subdomains — `docs.yourproject.dev` costs nothing
+  extra.
 </Callout>
 
-![Clerk production setup checklist](/clerk/clerk-prod-setup-checklist.png)
-
-</CollapsibleStep>
-
-<CollapsibleStep title="Configure the session token" defaultOpen={false}>
-
-Do this once per Clerk instance — it's required for role-based access to work.
-
-Clerk Dashboard → **Configure** → **Sessions** → **Customize session token** → Edit:
-
-```json
-{ "metadata": "{{user.public_metadata}}" }
-```
-
-Save.
-
-</CollapsibleStep>
-
-<CollapsibleStep title="Set your production domain in Clerk" defaultOpen={false}>
-
-Clerk Dashboard → **Configure** → **Domains** → add your Vercel deployment URL
-(e.g. `your-app.vercel.app`) or your custom domain if you have one.
-
-Clerk uses this to validate auth request origins — without it, sign-in will fail
-in production. If you're adding a custom domain and need DNS verification, see
-[Step 5 — Custom domain](#step-5--custom-domain-optional) for the Cloudflare DNS
-records you'll need to add.
-
-</CollapsibleStep>
-
-</CollapsibleSteps>
-
-### Google SSO (optional)
-
-<Callout>
-  Consult the [Clerk
-  documentation](https://clerk.com/docs/guides/configure/auth-strategies/social-connections/google)
-  if you require more information
-</Callout>
-
-<CollapsibleSteps>
-
-<CollapsibleStep title="Create a GCP OAuth client" defaultOpen={false}>
-
-1. Go to [console.cloud.google.com](https://console.cloud.google.com) → create or
-   select a project
-2. Navigate to **APIs & Services**
-
-![GCP APIs and Services](/gcp/gcp-apis-services.png)
-
-3. Go to **Credentials**
-
-![GCP Credentials page](/gcp/gcp-creds.png)
-
-4. **Create Credentials** → **OAuth client ID**
-
-![GCP Create Credentials dropdown](/gcp/gcp-create-creds.png)
-
-5. Application type: **Web application**. Under **Authorised redirect URIs**, add
-   the Clerk callback URL — find the exact value in: Clerk Dashboard →
-   **Configure** → **SSO Connections** → **Google** → **Redirect URI**
-
-![GCP OAuth client creation form](/gcp/gcp-create-oauth-client.png)
-
-6. Click **Create** → copy the **Client ID** and **Client Secret**
-
-<Callout type='info'>
-  On a Clerk **dev instance**, Google SSO works locally with zero GCP setup —
-  Clerk uses shared credentials under the hood. If you do want to set this up
-  for dev you will need a **separate GCP OAuth client** as dev and production
-  have different redirect URIs.
-</Callout>
-
-</CollapsibleStep>
-
-<CollapsibleStep title="Add the credentials to Clerk" defaultOpen={false}>
-
-Clerk Dashboard → **Configure** → **SSO Connections** → **Google** → toggle on.
-
-![Clerk SSO connections setup](/clerk/clerk-sso-setup.png)
-
-Paste your **Client ID** and **Client Secret** → Save.
-
-![Clerk GCP credentials entry](/clerk/clerk-gcp-details.png)
+Once purchased, Cloudflare is automatically your DNS provider.
 
 </CollapsibleStep>
 
@@ -205,15 +118,47 @@ In the Vercel project → **Settings** → **Environment Variables**, add:
 <Callout type='warn'>
   `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` is inlined into the client bundle at build
   time — set it before the first deploy. Changing it later requires a rebuild.
-  Use the production key (`pk_live_`), not the dev key (`pk_test_`).
+  Use the production key (`pk_live_`), not the dev key (`pk_test_`). You'll get
+  these from Clerk in Step 4 — you can set env vars after creating the project
+  and before clicking Deploy.
 </Callout>
+
+</CollapsibleStep>
+
+<CollapsibleStep title="Add your custom domain to Vercel" defaultOpen={false}>
+
+Vercel Dashboard → your project → **Settings** → **Domains** → enter your domain
+→ **Add**.
+
+Vercel shows you the DNS records to add to Cloudflare:
+
+| Record  | Name       | Value                  |
+| ------- | ---------- | ---------------------- |
+| `A`     | `@` (apex) | Vercel's IP address    |
+| `CNAME` | `www`      | `cname.vercel-dns.com` |
+
+Add these in Cloudflare: **DNS** → **Records** → **Add record**. Set both to
+**DNS only** (grey cloud) — the orange Cloudflare proxy breaks Vercel's SSL
+certificate provisioning.
+
+DNS propagates in a few minutes. Vercel shows a green checkmark once it detects
+the records and provisions SSL.
+
+</CollapsibleStep>
+
+<CollapsibleStep title="Add the docs subdomain (optional)" defaultOpen={false}>
+
+If you're deploying the docs site as a separate Vercel project:
+
+1. Docs Vercel project → **Settings** → **Domains** → add `docs.yourproject.dev`
+2. Vercel gives you a `CNAME` pointing to `cname.vercel-dns.com`
+3. Add that `CNAME` in Cloudflare DNS (`docs` name, **DNS only**)
 
 </CollapsibleStep>
 
 <CollapsibleStep title="Deploy" defaultOpen={false}>
 
-Click **Deploy**. First build takes a minute or two. Once done, your app is live
-at `https://your-project.vercel.app`.
+Click **Deploy**. First build takes a minute or two. Once done your app is live.
 
 </CollapsibleStep>
 
@@ -221,7 +166,165 @@ at `https://your-project.vercel.app`.
 
 ---
 
-## Step 4 — Run production migrations
+## Step 4 — Set up a production Clerk instance
+
+Now that your domain is live, create the Clerk production instance pointed at it.
+
+<CollapsibleSteps>
+
+<CollapsibleStep title="Create a production application in Clerk" defaultOpen={false}>
+
+Clerk Dashboard → **Create application** → choose your sign-in methods →
+set the environment to **Production**.
+
+![Clerk production instance setup](/clerk/clerk-setup-prod-instance.png)
+
+Clerk offers the option to clone settings from your dev instance — this copies
+your sign-in method configuration so you don't have to set it up twice.
+
+![Clerk clone dev instance option](/clerk/clerk-clone-dev-instance.png)
+
+When prompted for the **Application domain**, enter your custom domain (e.g.
+`eep-next-template.dev`).
+
+![Clerk application domain field](/clerk/clerk-app-domain.png)
+
+Copy the production API keys — you can always retrieve these later from Clerk
+Dashboard → **API Keys**:
+
+- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` (starts with `pk_live_`)
+- `CLERK_SECRET_KEY` (starts with `sk_live_`)
+
+Add them to your Vercel project environment variables.
+
+</CollapsibleStep>
+
+<CollapsibleStep title="Configure the session token" defaultOpen={false}>
+
+Do this once per Clerk instance — required for role-based access to work.
+
+Clerk Dashboard → **Configure** → **Sessions** → **Customize session token** → Edit:
+
+```json
+{ "metadata": "{{user.public_metadata}}" }
+```
+
+Save.
+
+</CollapsibleStep>
+
+<CollapsibleStep title="Add Clerk DNS records in Cloudflare" defaultOpen={false}>
+
+Once created, Clerk shows a setup checklist. The DNS setup is **only accessible
+from this checklist** — there is no standalone Domains page in the sidebar.
+
+![Clerk production setup checklist](/clerk/clerk-prod-setup-checklist.png)
+
+<Callout type='warn'>
+  If you close the checklist, reopen it via the **Tasks** icon in the top-right
+  of the Clerk dashboard navbar.
+
+![Clerk setup tasks icon](/clerk/clerk-setup-tasks.png)
+
+</Callout>
+
+<Callout>
+  You don't need to complete the checklist immediately — close it and come back
+  when ready.
+</Callout>
+
+Clerk provides 5 CNAME records for session management, email verification, and
+auth flows. Copy each one from the checklist:
+
+![Clerk domains setup](/clerk/clerk-domains.png)
+
+<Callout type='idea'>
+  **What is DNS and what is a CNAME?**
+
+DNS (Domain Name System) is the internet's address book — it maps human-readable
+names like `eep-next-template.dev` to the servers that handle requests for them.
+A **CNAME** record says "this subdomain is an alias for another domain" — so
+`accounts.eep-next-template.dev` pointing to `accounts.clerk.services` means
+requests to your accounts subdomain get handled by Clerk's servers. This is how
+Clerk runs auth flows that appear to live on your domain without you hosting
+anything yourself.
+
+</Callout>
+
+Add each record in Cloudflare: **DNS** → **Records** → **Add record**. The
+**Name** field is just the subdomain part (e.g. `accounts`, not
+`accounts.eep-next-template.dev`) — Cloudflare appends the domain automatically.
+
+You already have Vercel's records in this same panel — Cloudflare DNS holds all
+records for your domain in one place regardless of which service they're for.
+Vercel's records route traffic to your app; Clerk's records route auth subdomains
+to Clerk's servers. They don't conflict.
+
+<Callout type='warn'>
+  Set every Clerk DNS record to **DNS only** (grey cloud, not orange) in
+  Cloudflare. The orange proxy breaks Clerk's domain verification.
+</Callout>
+
+Once all records are added, hit **Check DNS records** in Clerk to verify.
+Cloudflare propagates almost instantly.
+
+</CollapsibleStep>
+
+</CollapsibleSteps>
+
+### Google SSO (optional)
+
+<Callout type='info'>
+  On a Clerk **dev instance**, Google SSO works locally with zero GCP setup —
+  Clerk uses shared credentials under the hood. You only need your own GCP OAuth
+  client for a **production instance**.
+</Callout>
+
+<CollapsibleSteps>
+
+<CollapsibleStep title="Create a GCP OAuth client" defaultOpen={false}>
+
+1. Go to [console.cloud.google.com](https://console.cloud.google.com) → create or
+   select a project
+2. Navigate to **APIs & Services**
+
+![GCP APIs and Services](/gcp/gcp-apis-services.png)
+
+3. Go to **Credentials**
+
+![GCP Credentials page](/gcp/gcp-creds.png)
+
+4. **Create Credentials** → **OAuth client ID**
+
+![GCP Create Credentials dropdown](/gcp/gcp-create-creds.png)
+
+5. Application type: **Web application**. Under **Authorised redirect URIs**, add
+   the Clerk callback URL — find the exact value in: Clerk Dashboard →
+   **Configure** → **SSO Connections** → **Google** → **Redirect URI**
+
+![GCP OAuth client creation form](/gcp/gcp-create-oauth-client.png)
+
+6. Click **Create** → copy the **Client ID** and **Client Secret**
+
+</CollapsibleStep>
+
+<CollapsibleStep title="Add the credentials to Clerk" defaultOpen={false}>
+
+Clerk Dashboard → **Configure** → **SSO Connections** → **Google** → toggle on.
+
+![Clerk SSO connections setup](/clerk/clerk-sso-setup.png)
+
+Paste your **Client ID** and **Client Secret** → Save.
+
+![Clerk GCP credentials entry](/clerk/clerk-gcp-details.png)
+
+</CollapsibleStep>
+
+</CollapsibleSteps>
+
+---
+
+## Step 5 — Run production migrations
 
 Vercel does not run migrations automatically. After the first deploy:
 
@@ -236,151 +339,37 @@ DATABASE_URL=postgresql://... pnpm db:migrate
 
 ---
 
-## Step 5 — Custom domain (optional)
-
-<Callout>
-  If you're happy with a `your-project.vercel.app` URL you can stop here —
-  Vercel handles the domain for you and everything works out of the box. Come
-  back to this step when you're ready for a real domain.
-</Callout>
-
-### Buy a domain and connect it to Vercel
-
-[Cloudflare Registrar](https://www.cloudflare.com/products/registrar/) sells domains
-at cost (no markup) and gives you free DNS management and SSL — the best value
-registrar for this stack.
-
-<CollapsibleSteps>
-
-<CollapsibleStep title="Buy your domain on Cloudflare" defaultOpen={false}>
-
-1. Go to [dash.cloudflare.com](https://dash.cloudflare.com) → **Domain Registration**
-   → **Register Domains**
-2. Search for your domain
-
-![Cloudflare domain search results](/cloudflare/cloudflare-buy-domain.png)
-
-3. Select your domain and proceed to purchase
-
-![Cloudflare domain purchase form](/cloudflare/cloudflare-purchase-domain.png)
-
-4. Complete the purchase — Cloudflare confirms and activates the domain
-
-![Cloudflare domain confirmation](/cloudflare/cloudflare-domain-confirmation.png)
-
-<Callout type='idea'>
-  `.dev` is a natural fit for developer tools — Google-owned, HTTPS enforced by
-  the registry (browsers won't load it without SSL), and signals the purpose
-  immediately. `yourproject.dev` is a good pattern.
-</Callout>
-
-Once purchased, Cloudflare is automatically your DNS provider.
-
-</CollapsibleStep>
-
-</CollapsibleSteps>
-
-### Connect your domain to Vercel
-
-<CollapsibleSteps>
-
-<CollapsibleStep title="Add the domain to your Vercel project" defaultOpen={false}>
-
-Vercel Dashboard → your project → **Settings** → **Domains** → enter your domain
-→ **Add**.
-
-Vercel shows you the DNS records to add — copy them for the next step. For a
-typical setup:
-
-| Record  | Name       | Value                  |
-| ------- | ---------- | ---------------------- |
-| `A`     | `@` (apex) | Vercel's IP address    |
-| `CNAME` | `www`      | `cname.vercel-dns.com` |
-
-</CollapsibleStep>
-
-<CollapsibleStep title="Add the DNS records in Cloudflare" defaultOpen={false}>
-
-Cloudflare Dashboard → your domain → **DNS** → **Records** → **Add record**.
-
-Add the `A` record and the `CNAME` from the previous step.
-
-<Callout type='warn'>
-  Set the proxy status to **DNS only** (grey cloud) on both records — the orange
-  cloud (Cloudflare proxy) intercepts traffic before it reaches Vercel and
-  breaks SSL certificate provisioning. You can re-enable it later once
-  everything is working.
-</Callout>
-
-DNS propagates in a few minutes with Cloudflare. Vercel shows a green checkmark
-in Domains once it detects the records and provisions the SSL certificate.
-
-</CollapsibleStep>
-
-<CollapsibleStep title="Add the docs subdomain (optional)" defaultOpen={false}>
-
-If you're deploying the docs site as a separate Vercel project:
-
-1. Docs Vercel project → **Settings** → **Domains** → add `docs.yourproject.dev`
-2. Vercel gives you a `CNAME` pointing to `cname.vercel-dns.com`
-3. Add that `CNAME` in Cloudflare DNS (`docs` name, **DNS only**)
-
-</CollapsibleStep>
-
-</CollapsibleSteps>
-
-### Update Clerk for your custom domain
-
-<CollapsibleSteps>
-
-<CollapsibleStep title="Add your domain to the Clerk production instance" defaultOpen={false}>
-
-Clerk Dashboard → **Configure** → **Domains** → **Add domain** → enter your domain.
-
-Clerk asks you to add a DNS record to verify ownership. Add it in Cloudflare,
-wait for verification, then set it as the primary domain.
-
-</CollapsibleStep>
-
-<CollapsibleStep title="Update the GCP OAuth redirect URI (Google SSO only)" defaultOpen={false}>
-
-If you set up Google SSO, the GCP OAuth client has a redirect URI pointing to the
-old Clerk domain. Add the new one:
-
-1. [GCP Console](https://console.cloud.google.com) → **APIs & Services** →
-   **Credentials** → your OAuth client
-2. **Authorised redirect URIs** → add the new Clerk callback URL (find it in Clerk
-   Dashboard → **Configure** → **SSO Connections** → **Google** → **Redirect URI**)
-3. Save
-
-</CollapsibleStep>
-
-</CollapsibleSteps>
-
-### DNS records summary
-
-| Type            | Name               | Value                  | Proxy    | Purpose                   |
-| --------------- | ------------------ | ---------------------- | -------- | ------------------------- |
-| `A`             | `@`                | Vercel IP              | DNS only | Main app apex domain      |
-| `CNAME`         | `www`              | `cname.vercel-dns.com` | DNS only | www redirect              |
-| `CNAME`         | `docs`             | `cname.vercel-dns.com` | DNS only | Docs site                 |
-| `TXT` / `CNAME` | _(Clerk-provided)_ | _(Clerk-provided)_     | DNS only | Clerk domain verification |
-
----
-
 ## Step 6 — Verify
 
-Trigger a fresh Vercel deployment (or push a commit) to pick up any env var
-changes, then confirm:
+Trigger a fresh Vercel deployment (push a commit, or redeploy from the dashboard)
+to pick up the Clerk production env vars, then confirm:
 
-- App loads at your domain (or `your-project.vercel.app` if skipping custom domain)
+- App loads at your domain
 - Sign-in and sign-up flows complete without errors
 - Google SSO redirects correctly (if enabled)
 
 <Callout>
-  If sign-in fails after adding a custom domain, check Clerk Dashboard →
-  **Configure** → **Domains** first, then the GCP OAuth client redirect URIs.
+  If sign-in fails, the most likely causes are: Clerk DNS records not yet
+  propagated, Cloudflare orange cloud proxy enabled on a Clerk record, or the
+  GCP OAuth redirect URI not updated after adding your domain.
 </Callout>
+
+---
+
+## DNS records summary
+
+All records live in the same Cloudflare DNS panel:
+
+| Type    | Name              | Value                         | Proxy    | Purpose             |
+| ------- | ----------------- | ----------------------------- | -------- | ------------------- |
+| `A`     | `@`               | Vercel IP                     | DNS only | App apex domain     |
+| `CNAME` | `www`             | `cname.vercel-dns.com`        | DNS only | www redirect        |
+| `CNAME` | `docs`            | `cname.vercel-dns.com`        | DNS only | Docs subdomain      |
+| `CNAME` | `accounts`        | `accounts.clerk.services`     | DNS only | Clerk auth          |
+| `CNAME` | `clerk`           | `frontend-api.clerk.services` | DNS only | Clerk Frontend API  |
+| `CNAME` | `clk._domainkey`  | _(Clerk-provided)_            | DNS only | Email DKIM signing  |
+| `CNAME` | `clk2._domainkey` | _(Clerk-provided)_            | DNS only | Email DKIM signing  |
+| `CNAME` | `clkmail`         | _(Clerk-provided)_            | DNS only | Clerk email sending |
 
 ---
 

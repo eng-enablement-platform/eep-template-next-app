@@ -1,0 +1,33 @@
+---
+title: Self Hosting
+description: Running the template on your own VPS or bare metal — coming soon.
+---
+
+<Callout type='warn'>
+  This guide is a placeholder. Self-hosting documentation is planned for a
+  future release.
+</Callout>
+
+Self-hosting gives you full control over the infrastructure at the cost of more
+operational responsibility. Planned coverage includes:
+
+- **VPS setup** — DigitalOcean, Hetzner, Linode, or any Linux box. Running
+  the app as a Docker container behind an Nginx reverse proxy with SSL via
+  Let's Encrypt / Certbot.
+- **Docker** — the app builds to a standard Docker image. The `Dockerfile` and
+  `docker-compose.yml` for production will be documented here alongside the
+  environment variable injection pattern that avoids the `NEXT_PUBLIC_*`
+  build-time bake-in issue.
+- **Process management** — keeping the app alive with PM2 or as a systemd
+  service if running directly on the host without Docker.
+- **Database** — running Postgres on the same box vs pointing at a managed
+  provider (Neon) from a self-hosted app. Trade-offs covered.
+- **Migrations** — running `pnpm db:migrate` as part of the deploy script rather
+  than from a local machine.
+
+The main caveat for self-hosting is the `NEXT_PUBLIC_*` build-time inlining
+issue — if you build one Docker image and promote it across environments, the
+Clerk publishable key gets baked in at build time and cannot be changed at
+runtime. The workaround is documented in `src/app/layout.tsx`.
+
+Check back here for the full guide once this is written.
