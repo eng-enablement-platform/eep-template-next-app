@@ -37,6 +37,33 @@ and gates admin routes by role.
 
 ---
 
+## Why the routes use `[[...sign-in]]`
+
+Clerk's prebuilt UI handles multiple authentication methods — email/password, magic links,
+OAuth providers (Google, GitHub, etc.) — and each step in each flow lands on a different
+URL path:
+
+```
+/sign-in
+/sign-in/factor-one
+/sign-in/oauth/google/start
+/sign-in/oauth/github/callback
+/sign-in/sso-callback
+```
+
+Rather than creating a separate Next.js page file for every possible path, the routes use
+Next.js [optional catch-all segments](https://nextjs.org/docs/app/building-your-application/routing/dynamic-routes#optional-catch-all-segments):
+
+```
+app/(auth)/sign-in/[[...sign-in]]/page.tsx
+```
+
+The `[[...sign-in]]` segment matches `/sign-in` and any sub-path beneath it — so one
+page file covers the entire authentication flow without any additional routing config.
+Clerk's component handles the internal navigation between steps.
+
+---
+
 ## Granting Admin access
 
 Admin-only routes (`/admin/*`, `/api-docs/*`) are gated by a `role` claim in the session
