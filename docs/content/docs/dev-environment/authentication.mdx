@@ -3,6 +3,19 @@ title: Authentication Setup
 description: Creating a Clerk application, getting your API keys, and configuring the session token for role-based access.
 ---
 
+[Clerk](https://clerk.com) is the managed authentication provider used by this template.
+It handles sign-up, sign-in, session management, OAuth providers (Google, GitHub, etc.),
+and user profiles — all without you building or maintaining any auth infrastructure.
+The free tier covers most early-stage projects.
+
+<Callout>
+  Consult the [Clerk
+  documentation](https://clerk.com/docs?utm_source=google&utm_medium=cpc&utm_campaign=authentication-intl&utm_content=docsgeneral&utm_term=sitelinks&utm_source=google&utm_medium=cpc&utm_campaign=SC_Google_Search_Authentication_INTL&utm_adgroup=Authentication_General&utm_term=authentication%20api&gad_source=1&gad_campaignid=23349481137&gbraid=0AAAAAqJUiX7u354XfMYI0tUk14oAZSFC0&gclid=Cj0KCQjwxvjRBhC2ARIsAI7KJa01BFamoRpAjiPnjuZeRNczowXnCc1XOy7c9oy-UM8oj1GHXIFCbUMaArq0EALw_wcB)
+  if you require more information
+</Callout>
+
+---
+
 ## Create a Clerk application
 
 1. Go to [dashboard.clerk.com](https://dashboard.clerk.com) and create a new application
@@ -11,12 +24,6 @@ description: Creating a Clerk application, getting your API keys, and configurin
    - `CLERK_SECRET_KEY`
 
 Add both to `.env.local`.
-
-<Callout>
-  Consult the [Clerk
-  documentation](https://clerk.com/docs?utm_source=google&utm_medium=cpc&utm_campaign=authentication-intl&utm_content=docsgeneral&utm_term=sitelinks&utm_source=google&utm_medium=cpc&utm_campaign=SC_Google_Search_Authentication_INTL&utm_adgroup=Authentication_General&utm_term=authentication%20api&gad_source=1&gad_campaignid=23349481137&gbraid=0AAAAAqJUiX7u354XfMYI0tUk14oAZSFC0&gclid=Cj0KCQjwxvjRBhC2ARIsAI7KJa01BFamoRpAjiPnjuZeRNczowXnCc1XOy7c9oy-UM8oj1GHXIFCbUMaArq0EALw_wcB)
-  if you require more information
-</Callout>
 
 <Callout type='warn'>
   `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` is inlined into the client bundle at `next
