@@ -1,5 +1,5 @@
 ---
-title: Vercel Deployment
+title: Vercel
 description: End-to-end guide — domain, Vercel, Neon, and Clerk production setup.
 ---
 
@@ -105,15 +105,16 @@ and set the **Root Directory** to `docs/`.
 
 In the Vercel project → **Settings** → **Environment Variables**, add:
 
-| Variable                              | Value                                   |
-| ------------------------------------- | --------------------------------------- |
-| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`   | `pk_live_...` (production Clerk key)    |
-| `CLERK_SECRET_KEY`                    | `sk_live_...` (production Clerk secret) |
-| `NEXT_PUBLIC_CLERK_SIGN_IN_URL`       | `/sign-in`                              |
-| `NEXT_PUBLIC_CLERK_SIGN_UP_URL`       | `/sign-up`                              |
-| `NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL` | `/`                                     |
-| `NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL` | `/`                                     |
-| `DATABASE_URL`                        | Your Neon pooled connection string      |
+| Variable                              | Required | Value                                   |
+| ------------------------------------- | -------- | --------------------------------------- |
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`   | Yes      | `pk_live_...` (production Clerk key)    |
+| `CLERK_SECRET_KEY`                    | Yes      | `sk_live_...` (production Clerk secret) |
+| `DATABASE_URL`                        | Yes      | Your Neon pooled connection string      |
+| `NEXT_PUBLIC_DOCS_URL`                | No       | `https://docs.yourproject.dev`          |
+| `NEXT_PUBLIC_CLERK_SIGN_IN_URL`       | No       | Defaults to `/sign-in`                  |
+| `NEXT_PUBLIC_CLERK_SIGN_UP_URL`       | No       | Defaults to `/sign-up`                  |
+| `NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL` | No       | Defaults to `/`                         |
+| `NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL` | No       | Defaults to `/`                         |
 
 <Callout type='warn'>
   `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` is inlined into the client bundle at build
@@ -201,6 +202,15 @@ Add them to your Vercel project environment variables.
 
 <CollapsibleStep title="Configure the session token" defaultOpen={false}>
 
+<Callout type='info'>
+  If you cloned settings from your dev instance, this session claim is already
+  configured and you can skip this step. You will still need to manually add the
+  Admin role to your user in the production Clerk dashboard before you can
+  access the full app — see [Granting Admin
+  access](/docs/dev-environment/authentication#granting-admin-access) for the
+  steps.
+</Callout>
+
 Do this once per Clerk instance — required for role-based access to work.
 
 Clerk Dashboard → **Configure** → **Sessions** → **Customize session token** → Edit:
@@ -208,8 +218,6 @@ Clerk Dashboard → **Configure** → **Sessions** → **Customize session token
 ```json
 { "metadata": "{{user.public_metadata}}" }
 ```
-
-Save.
 
 </CollapsibleStep>
 
@@ -380,3 +388,65 @@ Every push to `main` triggers an automatic Vercel deployment. You only need to:
 - Re-run `pnpm db:migrate` (against production `DATABASE_URL`) when a deploy
   includes new migrations
 - Update Vercel env vars if new ones are added to the schema
+
+---
+
+## Troubleshooting
+
+These are the issues you're most likely to hit, documented from going through
+this setup end to end.
+
+### `Failed to load Clerk JS` / `failed to load script: /__clerk/...`
+
+The Clerk JS bundle loads via the `clerk` CNAME (`clerk.yourdomain.dev` →
+`frontend-api.clerk.services`). This error means that record either hasn't
+propagated yet or wasn't added.
+
+- Confirm the `clerk` CNAME is in Cloudflare DNS set to **DNS only** (grey cloud)
+- Even after Clerk shows DNS as verified, **redeploy on Vercel** — the running
+  build needs to pick up the verified domain configuration
+- Try a fresh incognito window after redeploying to avoid browser DNS cache
+
+### `Unable to attribute this request to an instance` / publishable key error
+
+This means the publishable key in your Vercel env vars either doesn't match
+the production Clerk instance, or the instance hasn't fully activated yet.
+
+- Confirm `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` starts with `pk_live_` (not
+  `pk_test_`) in Vercel → Settings → Environment Variables
+- Make sure it's set for the **Production** environment, not just Development
+- After updating the key, **redeploy** — this var is baked into the bundle at
+  build time so updating it without redeploying has no effect
+- If the key is correct and the error persists, **wait a few minutes** — Clerk's
+  production instance takes time to fully activate after DNS verification.
+  This is normal and will resolve on its own
+
+### `www.yourdomain.dev` serving the app instead of redirecting
+
+Vercel adds `www` as a separate domain by default. It needs to be set to
+**redirect** to the apex domain, not serve the app independently. In Vercel
+→ Settings → Domains, click `www.yourdomain.dev` and set it to redirect to
+`yourdomain.dev` with a **308 Permanent Redirect**.
+
+If Vercel blocks the redirect saying "another domain is already redirecting
+here", the apex and www are configured in the wrong order. Remove the apex
+domain, set up www as the redirect first, then re-add the apex as primary.
+
+### Clerk DNS shows verified but the sign-in component still fails
+
+Clerk's verification and the browser resolving the DNS are independent. Clerk
+checks from its own servers; your browser checks from your local DNS resolver.
+After Clerk verifies:
+
+1. Flush your local DNS cache: `sudo dscacheutil -flushcache && sudo killall -HUP mDNSResponder`
+2. Try an incognito window
+3. Redeploy on Vercel to ensure the build reflects the verified state
+
+### Build command / env vars
+
+- Leave the Vercel build command as default — Vercel detects `pnpm-lock.yaml`
+  and uses pnpm automatically
+- `NEXT_PUBLIC_*` vars are inlined at **build time** not runtime — any change
+  requires a full redeploy to take effect
+- The `NEXT_PUBLIC_CLERK_SIGN_IN_URL` redirect vars are optional — they default
+  to `/sign-in`, `/sign-up`, `/` via T3 Env and don't need to be set in Vercel
