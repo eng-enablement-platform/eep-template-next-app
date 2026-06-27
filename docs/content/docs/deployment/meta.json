@@ -1,5 +1,5 @@
 {
   "title": "Deployment",
   "icon": "Rocket",
-  "pages": ["vercel", "custom-domain"]
+  "pages": ["vercel"]
 }
