@@ -80,3 +80,29 @@ table viewer and editor. Useful for inspecting data during development.
 For production, replace `DATABASE_URL` with your hosted provider's connection string.
 [Neon](https://neon.tech) is the recommended option — see [Neon Setup](/docs/dev-environment/neon)
 for the setup steps. No code changes are needed; only the env var changes.
+
+---
+
+## Extending with caching
+
+This template uses Postgres for all persistence. As your app grows you may reach a point
+where certain workloads benefit from a cache layer — common triggers are:
+
+- **Rate limiting** API routes (the most common early need)
+- **Caching expensive queries** to avoid redundant DB round-trips across serverless invocations
+- **Background job queues** via QStash
+
+[Upstash Redis](https://upstash.com) is the natural fit for this stack. It is serverless-billed
+(pay per request, not per hour), connects over HTTP so it works correctly in Vercel's
+serverless environment, and has a native Vercel integration that injects env vars automatically.
+The setup mirrors Neon: create a database, add two env vars
+(`UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN`), and you're connected.
+
+When you add it, follow the same service pattern as everything else in `classes/` — a
+`classes/services/cache/` singleton wrapping `@upstash/redis`. Rate limiting drops into
+`proxy.ts` via `@upstash/ratelimit` without touching any other layer.
+
+<Callout type='idea'>
+  Don't add it until you have a concrete reason to. Postgres handles far more
+  load than most early-stage products ever generate.
+</Callout>
