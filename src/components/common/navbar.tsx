@@ -6,6 +6,7 @@ import { ThemeToggle } from '@/components/common/theme-toggle';
 import { TimezoneSelector } from '@/components/common/timezone-selector';
 import { HomeProfile } from '@/components/features/home-profile';
 import { Button } from '@/components/ui/button';
+import { env } from '@/lib/env';
 
 /**
  * Application navbar — rendered on every authenticated page via `RootLayoutClient`.
@@ -23,10 +24,10 @@ export function Navbar() {
   return (
     <header className='border-border bg-background/80 sticky top-0 z-10 flex w-full items-center justify-between border-b px-4 py-4 backdrop-blur-sm'>
       <div className='flex items-center gap-1'>
-        {process.env.NEXT_PUBLIC_DOCS_URL && (
+        {env.NEXT_PUBLIC_DOCS_URL && (
           <Button asChild variant='link' className='text-muted-foreground'>
             <a
-              href={process.env.NEXT_PUBLIC_DOCS_URL}
+              href={env.NEXT_PUBLIC_DOCS_URL}
               target='_blank'
               rel='noopener noreferrer'
             >

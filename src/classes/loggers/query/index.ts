@@ -2,6 +2,8 @@ import 'server-only';
 
 import { type Logger } from 'drizzle-orm/logger';
 
+import { env } from '@/lib/env';
+
 /**
  * Custom logger class for Drizzle ORM queries.
  *
@@ -26,7 +28,7 @@ class QueryLogger implements Logger {
     }
 
     // Opt-in firehose: silent unless explicitly switched on for a dev session.
-    if (process.env.DB_QUERY_LOG !== '1') {
+    if (env.DB_QUERY_LOG !== '1') {
       return;
     }
 

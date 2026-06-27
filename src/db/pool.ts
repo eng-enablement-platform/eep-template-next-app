@@ -1,5 +1,7 @@
 import { Pool } from 'pg';
 
+import { env } from '@/lib/env';
+
 /**
  * Construct a `pg.Pool` from the `DATABASE_URL` connection string.
  *
@@ -12,17 +14,11 @@ import { Pool } from 'pg';
  * singleton (`db.ts`) carries it, while standalone `tsx` scripts (migrations,
  * seed) import `buildPool` directly and run outside Next's module graph.
  *
- * @throws if `DATABASE_URL` is not set.
  * @returns A new pool ready to accept queries. The caller owns its lifecycle:
  *   keep it alive as a singleton for the long-running app, or call `.end()`
- *   for short-lived scripts.
+ *   for short-lived scripts. `DATABASE_URL` is validated at startup by T3 Env
+ *   (`src/lib/env`) — a missing or malformed URL fails the build before this runs.
  */
 export function buildPool(): Pool {
-  const { DATABASE_URL } = process.env;
-
-  if (!DATABASE_URL) {
-    throw new Error('DATABASE_URL is not set. See env.local_template.');
-  }
-
-  return new Pool({ connectionString: DATABASE_URL });
+  return new Pool({ connectionString: env.DATABASE_URL });
 }

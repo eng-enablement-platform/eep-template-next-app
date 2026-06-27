@@ -28,5 +28,17 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./vitest.setup.ts'],
     include: ['src/**/*.{test,spec}.{ts,tsx}'],
+    /*
+     * Stub required env vars so T3 Env (`src/lib/env`) can validate at
+     * module-load time without real secrets. Tests that exercise actual
+     * DB or external service calls are integration/e2e tests and run
+     * against a real environment.
+     */
+    env: {
+      NODE_ENV: 'test',
+      DATABASE_URL: 'postgresql://test:test@localhost:5432/test',
+      CLERK_SECRET_KEY: 'sk_test_placeholder',
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: 'pk_test_placeholder',
+    },
   },
 });

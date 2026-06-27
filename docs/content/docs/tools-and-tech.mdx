@@ -49,6 +49,7 @@ description: Every technology in this template, why it's here, and how it connec
 ## API & Validation
 
 - **[Zod](https://zod.dev/)** — Runtime validation at every boundary: route handlers, server actions, and environment variables. Schemas live in `src/validation/`, one file per domain, shared between the read route and the write action so they can never drift.
+- **[T3 Env](https://env.t3.gg/)** (`@t3-oss/env-nextjs`) — Validates all environment variables at build time using Zod. Required vars missing or malformed fail the build immediately with a clear error rather than producing a broken deployment. The schema lives in `src/lib/env/index.ts` and is the single source of truth — `env.d.ts` has been removed.
 - **[zod-openapi](https://github.com/samchungy/zod-openapi)** — Generates an OpenAPI 3.1 spec from the same Zod schemas used for validation.
 - **[swagger-ui-dist](https://swagger.io/tools/swagger-ui/)** — Serves the generated OpenAPI spec as an interactive UI at `/api-docs`, copied into `public/` at build time via `scripts/copy-swagger-ui.ts`.
 

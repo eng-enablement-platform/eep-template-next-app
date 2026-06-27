@@ -2,6 +2,8 @@ import 'server-only';
 
 import winston, { type Logger } from 'winston';
 
+import { env } from '@/lib/env';
+
 /**
  * The layer a log line originated from. Sources are the architectural layers
  * so that `logSource` always maps 1:1 to a folder.
@@ -30,8 +32,8 @@ export type LogSource = (typeof LOG_SOURCE)[keyof typeof LOG_SOURCE];
  * @returns The winston level name to use as the logger's floor.
  */
 const resolveLogLevel = (): string => {
-  if (process.env.LOG_LEVEL) {
-    return process.env.LOG_LEVEL;
+  if (env.LOG_LEVEL) {
+    return env.LOG_LEVEL;
   }
 
   switch (process.env.NODE_ENV) {

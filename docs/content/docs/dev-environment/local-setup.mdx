@@ -56,6 +56,13 @@ The key variables to set before the app will run:
 
 The remaining variables (`NEXT_PUBLIC_CLERK_SIGN_IN_URL` etc.) are pre-filled in the template and work as-is for local dev.
 
+<Callout type='warn'>
+  All environment variables are validated at build time using [T3
+  Env](https://env.t3.gg/). If a required variable is missing or malformed, the
+  build fails immediately with a clear error message rather than silently
+  producing a broken deployment.
+</Callout>
+
 See [Authentication Setup](/docs/dev-environment/authentication) for Clerk-specific steps and [Database](/docs/dev-environment/database) for DB setup.
 
 ---
