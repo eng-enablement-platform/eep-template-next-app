@@ -1,0 +1,134 @@
+---
+title: PRs
+description: Guidance on raising good pull requests and conducting effective code reviews.
+---
+
+<Callout>
+  These are general conventions any team can adopt and adapt — follow them and
+  they should set you up for a solid, consistent workflow. They also form the
+  basis of how we work on this project itself, so if you're contributing back to
+  the template, see
+  [CONTRIBUTING.md](https://github.com/your-org/eep-template-next-app/blob/main/CONTRIBUTING.md)
+  for the full contribution guidelines.
+</Callout>
+
+---
+
+## Pull Requests
+
+A good PR tells a story. It clearly communicates what changes are being made,
+why they're necessary, and how they accomplish the intended goal. Think of your
+PR as a professional communication tool, not just a collection of code changes.
+
+### What good looks like
+
+**Fill out the PR template thoroughly.** Include a clear description of your
+changes and explain the reasoning behind them. Give the reviewer the context to
+make an informed review.
+
+**Do a self-review before publishing.** Make sure all conflicts are resolved,
+no existing functionality is broken, and the intended changes actually work.
+
+**Keep changes small and incremental.** Don't bundle multiple pieces of work
+into one large PR, and avoid touching areas of the code outside the initial
+scope. If you have to break this rule for a good reason, acknowledge it in the
+PR description.
+
+**Add a video walkthrough for complex changes.** If the PR is large or breaks
+the convention above, a short Loom or similar overview can save a lot of back
+and forth in review.
+
+**Keep an eye on your PR after it's up.** Once all threads are resolved and
+approvals are in, merge promptly. Use auto-merge if it helps.
+
+### PR template
+
+The template ships with `.github/pull_request_template.md`. GitHub picks this
+up automatically — whenever anyone opens a PR the description box is
+pre-filled with it. No configuration needed.
+
+The template covers four sections:
+
+- **Problem / Feature** — what problem this solves or what feature it adds
+- **Solution** — the approach taken and any key decisions
+- **Steps to Verify** — how a reviewer should test or validate the change
+- **AI / Agent Assistance** — what AI tools were used, what they suggested, and how the output was verified
+
+---
+
+## Code Reviews
+
+The goal of a code review isn't just to find issues — it's to collaborate,
+learn from each other, and improve the overall quality of the codebase. Always approach code reviews as
+opportunities for collective learning and growth.
+Offer insights with respect and receive feedback with openness.
+
+### What good looks like
+
+**Give each other grace.** We all miss things, we all make mistakes. Point
+people in the right direction and help them learn — don't use reviews as an
+opportunity to score points.
+
+**Be responsive.** Keep an eye on incoming PRs and stay on top of threads
+raised against your own work.
+
+**Acknowledge good practices.** Reviews aren't only about finding problems.
+Positive reinforcement helps everyone build better habits.
+
+**Stay in scope.** Don't go off on tangents to other parts of the codebase
+outside the requested changes.
+
+**Be specific.** Instead of "this could be better," explain how, why, and what
+impact it has.
+
+**Resolve your threads.** As a reviewer, close threads once the author has
+responded. As an author, notify the reviewer when you've addressed a comment.
+
+**Check the preview first.** Before anything else, does the functionality
+actually work in the branch deployment?
+
+A rough reviewer checklist:
+
+- Does the code fulfil its intended purpose?
+- Is it readable and maintainable?
+- Are appropriate tests in place?
+- Is the change properly documented with clear context and reasoning?
+
+---
+
+## PR Comments Matrix
+
+A guide for both reviewers (how to phrase comments) and authors (how to respond).
+The goal: keep review expectations clear and avoid back-and-forth about what
+must change now versus later.
+
+| Comment Type                 | Typical Label                                            | When It's Used                                                      | Action Owner                 | When To Address                                                        |
+| ---------------------------- | -------------------------------------------------------- | ------------------------------------------------------------------- | ---------------------------- | ---------------------------------------------------------------------- |
+| **Nit / Style**              | `nit:`, "Minor", "Optional", "Non-blocking"              | Small readability/style tweaks that don't change logic              | Usually author               | Fix if trivial, OK to skip with a reply if truly marginal              |
+| **Tech Task / Clean-up**     | "Could we…", "Nice-to-have", "Future improvement"        | Useful refactors or clean-ups not required to ship                  | Author (with lead if bigger) | Create a follow-up ticket, link it in the PR, resolve the thread       |
+| **Tech Debt / Risk**         | "We should…", "This may bite us later", "Medium concern" | Issues that could cause problems but don't block merging            | Author + reviewer            | Fix now if small, or create a prioritised ticket and link it           |
+| **Must-Fix (Blocking)**      | "Blocking", "This needs to change", "Required"           | Bugs, incorrect behaviour, security issues, clear design violations | Author                       | Fix before merging — do not approve or merge until resolved            |
+| **Question / Clarification** | "Can you clarify…?", "I don't follow this"               | Reviewer doesn't understand intent, approach, or context            | Author                       | Answer or adjust code/comment — if it reveals a bug, treat as Must-Fix |
+| **Info / FYI**               | "FYI", "For awareness"                                   | Sharing context, patterns, or docs — not asking for a change        | N/A                          | No change required unless the author decides to adopt the suggestion   |
+
+### For reviewers
+
+Prefix comments where you can:
+
+- `nit:` for tiny things
+- `blocking:` or "this needs to change" for must-fix items
+- "Future improvement:" or "Follow-up:" for things that should become an issue
+
+If it's a later task, say so explicitly: _"Let's create a follow-up issue for this — non-blocking for this PR."_
+
+### For authors
+
+- **Blocking comments:** fix or discuss until you agree.
+- **Later improvements:** create an issue, link it in the PR discussion, and state: _"Captured in #123, resolving this thread."_
+- **Nits:** fix if quick, or reply with: _"Good call, I'll pick this up in a follow-up"_ or _"Leaving as-is for now because X."_
+
+---
+
+## Resources
+
+- [Make code reviews your superpower](https://www.awesomecodereviews.com/)

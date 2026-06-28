@@ -3,6 +3,7 @@
   "icon": "BookOpenCheck",
   "pages": [
     "git",
+    "pull-requests",
     "code-style-structure",
     "error-handling-and-validation",
     "logging",

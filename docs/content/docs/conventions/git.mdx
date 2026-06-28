@@ -3,6 +3,15 @@ title: Git
 description: Branching, commits, stacked MRs, and the pre-commit hook.
 ---
 
+<Callout>
+  These are general conventions any team can adopt and adapt — follow them and
+  they should set you up for a solid, consistent workflow. They also form the
+  basis of how we work on this project itself, so if you're contributing back to
+  the template, see
+  [CONTRIBUTING.md](https://github.com/your-org/eep-template-next-app/blob/main/CONTRIBUTING.md)
+  for the full contribution guidelines.
+</Callout>
+
 ## Branches
 
 Branch names follow a consistent format so the history is scannable and CI can
@@ -115,3 +124,5 @@ SKIP_CHECKS=1 git commit -m "wip: rough sketch"
   Lint, Trivy, and style still run even with `SKIP_CHECKS=1`. Never use it to
   bypass failing tests on shippable code.
 </Callout>
+
+---
