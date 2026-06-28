@@ -3,9 +3,9 @@ title: Vercel
 description: End-to-end guide — domain, Vercel, Neon, and Clerk production setup.
 ---
 
-The full deployment stack is **Cloudflare** (domain + DNS) → **Vercel** (hosting)
-→ **Neon** (database) → **Clerk** (auth). The steps below follow this order — get
-the infrastructure in place first, then wire in auth last.
+The full deployment stack is **Cloudflare** (domain + DNS) → **Vercel** (hosting) → **Clerk** (auth)
+
+![Deployment diagram — Cloudflare DNS, Vercel, Clerk, and GitHub CI/CD](/code/deployment.png)
 
 <Callout type='info'>
   CI/CD automation for database migrations is on the roadmap. For now, these
@@ -25,10 +25,10 @@ the infrastructure in place first, then wire in auth last.
 
 ## Using dev keys (quick start)
 
-If you don't have a custom domain yet, deploy with Clerk **development** keys
+If you don't have a custom domain yet, you can deploy with Clerk **development** keys
 (`pk_test_` / `sk_test_`) on the Vercel-generated URL. This gets the app running
 immediately and is fine for personal testing. When you have a domain, create a
-production Clerk instance and swap the keys — no code changes needed.
+production Clerk instance and swap the keys out.
 
 Limitations of dev keys:
 
@@ -41,32 +41,29 @@ Limitations of dev keys:
 ## Step 1 — Buy a domain
 
 [Cloudflare Registrar](https://www.cloudflare.com/products/registrar/) sells domains
-at cost with free DNS management — the best value registrar for this stack.
+at cost with free DNS management.
 
 <CollapsibleSteps>
 
 <CollapsibleStep title="Buy your domain on Cloudflare" defaultOpen={false}>
 
-1. Go to [dash.cloudflare.com](https://dash.cloudflare.com) → **Domain Registration**
-   → **Register Domains**
-2. Search for your domain
+Go to [dash.cloudflare.com](https://dash.cloudflare.com) → **Domain Registration**
+→ **Register Domains**. Search for your domain
 
 ![Cloudflare domain search results](/cloudflare/cloudflare-buy-domain.png)
 
-3. Select your domain and proceed to purchase
+Select your domain and proceed to purchase
 
 ![Cloudflare domain purchase form](/cloudflare/cloudflare-purchase-domain.png)
 
-4. Complete the purchase — Cloudflare confirms and activates the domain
+Complete the purchase — Cloudflare confirms and activates the domain
 
 ![Cloudflare domain confirmation](/cloudflare/cloudflare-domain-confirmation.png)
 
 <Callout type='idea'>
-  `.dev` is a natural fit for developer tools — Google-owned, HTTPS enforced by
-  the registry (browsers won't load `.dev` without SSL), and signals the purpose
-  immediately. `yourproject.dev` is a good pattern. A single domain covers both
-  your app and docs site via subdomains — `docs.yourproject.dev` costs nothing
-  extra.
+  `.dev` is a good fit for developer tools — Google-owned, HTTPS enforced by the
+  registry (browsers won't load `.dev` without SSL), and signals the purpose
+  immediately.
 </Callout>
 
 Once purchased, Cloudflare is automatically your DNS provider.
@@ -77,13 +74,15 @@ Once purchased, Cloudflare is automatically your DNS provider.
 
 ---
 
-## Step 2 — Create a Neon production database
+## Step 2 — Ensure you have a Neon database setup
 
 Create a Neon project and get your pooled connection string. See
 [Neon Setup](/docs/dev-environment/neon) for the steps.
 
-Use a **separate Neon project** for production — never point production at your
-local or development database.
+<Callout>
+  It's worth using a **separate Neon project** for production to keep things
+  clean and isolated
+</Callout>
 
 ---
 
@@ -93,11 +92,45 @@ local or development database.
 
 <CollapsibleStep title="Import your repository" defaultOpen={false}>
 
-[Vercel Dashboard](https://vercel.com/new) → **Import Git Repository** → select
-your repo. Vercel detects Next.js automatically.
+1. Go to [vercel.com/new](https://vercel.com/new). If this is your first time,
+   Vercel will ask you to verify your email before continuing.
 
-If you're deploying the docs site separately, import the same repo a second time
-and set the **Root Directory** to `docs/`.
+![Vercel email verification prompt](/vercel/vercel-verify-email.png)
+
+2. Choose your Git provider. Select **GitHub** (or GitLab/Bitbucket if that's
+   where your repo lives).
+
+![Vercel Git provider selection](/vercel/vercel-gitlab.png)
+
+3. Vercel needs the **GitHub App** installed to access your repositories. Click
+   **Install** to begin.
+
+![Vercel GitHub App install prompt](/vercel/vercel-github-install.png)
+
+4. GitHub asks which account and repositories to grant access to. Install for
+   the account that owns your repo — you can scope it to specific repos or all
+   repos.
+
+![GitHub App repository access screen](/vercel/vercel-install-app.png)
+
+5. Vercel confirms the GitHub connection is established.
+
+![Vercel GitHub connection verified](/vercel/vercel-github-verify.png)
+
+6. You're now on the **Import Project** screen. Your connected repositories are
+   listed here.
+
+![Vercel Import Project screen](/vercel/vercel-import-project.png)
+
+7. Find your repo and click **Import**. Vercel detects Next.js automatically
+   and pre-fills the build settings — no changes needed.
+
+![Vercel repo import selection](/vercel/vercel-import-repo.png)
+
+<Callout>
+  If you're deploying the docs site also, import the same repo a second time and
+  set the **Root Directory** to `docs/`.
+</Callout>
 
 </CollapsibleStep>
 
@@ -105,16 +138,12 @@ and set the **Root Directory** to `docs/`.
 
 In the Vercel project → **Settings** → **Environment Variables**, add:
 
-| Variable                              | Required | Value                                   |
-| ------------------------------------- | -------- | --------------------------------------- |
-| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`   | Yes      | `pk_live_...` (production Clerk key)    |
-| `CLERK_SECRET_KEY`                    | Yes      | `sk_live_...` (production Clerk secret) |
-| `DATABASE_URL`                        | Yes      | Your Neon pooled connection string      |
-| `NEXT_PUBLIC_DOCS_URL`                | No       | `https://docs.yourproject.dev`          |
-| `NEXT_PUBLIC_CLERK_SIGN_IN_URL`       | No       | Defaults to `/sign-in`                  |
-| `NEXT_PUBLIC_CLERK_SIGN_UP_URL`       | No       | Defaults to `/sign-up`                  |
-| `NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL` | No       | Defaults to `/`                         |
-| `NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL` | No       | Defaults to `/`                         |
+| Variable                            | Required                                        | Value                                   |
+| ----------------------------------- | ----------------------------------------------- | --------------------------------------- |
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Yes                                             | `pk_live_...` (production Clerk key)    |
+| `CLERK_SECRET_KEY`                  | Yes                                             | `sk_live_...` (production Clerk secret) |
+| `DATABASE_URL`                      | Yes                                             | Your Neon pooled connection string      |
+| `NEXT_PUBLIC_DOCS_URL`              | No - Only needed if deploying docs site as well | `https://docs.yourproject.dev`          |
 
 <Callout type='warn'>
   `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` is inlined into the client bundle at build
