@@ -5,6 +5,20 @@ description: End-to-end guide — domain, Vercel, Neon, and Clerk production set
 
 The full deployment stack is **Cloudflare** (domain + DNS) → **Vercel** (hosting) → **Clerk** (auth)
 
+<Callout type='idea'>
+  **What is [DNS](https://www.cloudflare.com/learning/dns/what-is-dns/) (Domain Name System) and what is a [CNAME?](https://www.cloudflare.com/learning/dns/dns-records/dns-cname-record/)**
+
+DNS is the internet's address book — it maps human-readable
+names like `yourproject.dev` to the servers that handle requests for them. A
+**CNAME** record says "this subdomain is an alias for another domain". This
+guide uses CNAMEs in two places: Vercel uses them to route `www.yourproject.dev`
+and `docs.yourproject.dev` to its hosting infrastructure, and Clerk uses them
+to route auth subdomains like `accounts.yourproject.dev` to its own servers.
+This is how both services handle traffic that appears to live on your domain
+without you hosting anything yourself.
+
+</Callout>
+
 ![Deployment diagram — Cloudflare DNS, Vercel, Clerk, and GitHub CI/CD](/code/deployment.png)
 
 <Callout type='info'>
@@ -74,19 +88,13 @@ Once purchased, Cloudflare is automatically your DNS provider.
 
 ---
 
-## Step 2 — Ensure you have a Neon database setup
+## Step 2 — Deploy to Vercel
 
-Create a Neon project and get your pooled connection string. See
-[Neon Setup](/docs/dev-environment/neon) for the steps.
-
-<Callout>
-  It's worth using a **separate Neon project** for production to keep things
-  clean and isolated
+<Callout type='warn'>
+  The Clerk sign-in won't appear until Step 3 is complete. Once deployed you'll
+  see your app with its heading, but Clerk won't load until the production
+  instance and DNS records are set up
 </Callout>
-
----
-
-## Step 3 — Deploy to Vercel
 
 <CollapsibleSteps>
 
@@ -137,6 +145,14 @@ time and set this to `docs/`.
 
 On the same screen, add your environment variables before hitting **Deploy**:
 
+<Callout type='info'>
+  If you're using the database portion of this template, make sure you have a
+  Neon project set up and your pooled connection string ready before this step.
+  See [Neon Setup](/docs/dev-environment/neon) for the steps. It's a good idea
+  to use a separate Neon project for production, this just keeps things clean
+  and isolated
+</Callout>
+
 | Variable                            | Required | Value                                          |
 | ----------------------------------- | -------- | ---------------------------------------------- |
 | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Yes      | `pk_live_...` (production Clerk key)           |
@@ -149,13 +165,13 @@ On the same screen, add your environment variables before hitting **Deploy**:
 <Callout type='warn'>
   `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` is inlined into the client bundle at build
   time — changing it later requires a full redeploy. You'll get the production
-  keys (`pk_live_` / `sk_live_`) from Clerk in Step 4. Set placeholder values
+  keys (`pk_live_` / `sk_live_`) from Clerk in Step 3. Set placeholder values
   for now if needed and update them before your first real deploy.
 </Callout>
 
 Hit **Deploy**. Once the build completes your app will be live — but the sign-in
 modal won't appear yet. You'll see the page with your app heading but Clerk won't
-load until Step 4 (production Clerk instance + DNS) is complete. That's expected.
+load until Step 3 (production Clerk instance + DNS) is complete. That's expected.
 
 </CollapsibleStep>
 
@@ -222,7 +238,7 @@ If you're deploying the docs site as a separate Vercel project:
 
 ---
 
-## Step 4 — Set up a production Clerk instance
+## Step 3 — Set up a production Clerk instance
 
 Now that your domain is live, create the Clerk production instance pointed at it.
 
@@ -245,13 +261,42 @@ When prompted for the **Application domain**, enter your custom domain (e.g.
 
 ![Clerk application domain field](/clerk/clerk-app-domain.png)
 
-Copy the production API keys — you can always retrieve these later from Clerk
-Dashboard → **API Keys**:
+</CollapsibleStep>
 
-- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` (starts with `pk_live_`)
-- `CLERK_SECRET_KEY` (starts with `sk_live_`)
+<CollapsibleStep title="Add Clerk DNS records in Cloudflare" defaultOpen={false}>
 
-Add them to your Vercel project environment variables.
+Once created, Clerk shows a setup checklist.
+
+![Clerk production setup checklist](/clerk/clerk-prod-setup-checklist.png)
+
+<Callout type='warn'>
+  If you close the checklist, it can be reopened via the **Tasks** icon in the top-right
+  of the Clerk dashboard navbar.
+
+![Clerk setup tasks icon](/clerk/clerk-setup-tasks.png)
+
+</Callout>
+
+<Callout>
+  You don't need to complete the checklist immediately — close it and come back
+  when ready.
+</Callout>
+
+Clerk provides 5 CNAME records for session management, email verification, and
+auth flows. Copy each one from the checklist and add them in Cloudflare: **DNS**
+→ **Records** → **Add record**.
+
+![Cloudflare Clerk DNS records](/cloudflare/cloudflare-clerk-dns.png)
+
+<Callout type='warn'>
+  Set every Clerk DNS record to **DNS only** (grey cloud, not orange) in
+  Cloudflare. The orange proxy breaks Clerk's domain verification.
+</Callout>
+
+Once all records are added, hit **Check DNS records** in Clerk to verify.
+Cloudflare propagates almost instantly.
+
+![Clerk DNS verification](/clerk/clerk-verify-dns.png)
 
 </CollapsibleStep>
 
@@ -273,63 +318,6 @@ Clerk Dashboard → **Configure** → **Sessions** → **Customize session token
 ```json
 { "metadata": "{{user.public_metadata}}" }
 ```
-
-</CollapsibleStep>
-
-<CollapsibleStep title="Add Clerk DNS records in Cloudflare" defaultOpen={false}>
-
-Once created, Clerk shows a setup checklist. The DNS setup is **only accessible
-from this checklist** — there is no standalone Domains page in the sidebar.
-
-![Clerk production setup checklist](/clerk/clerk-prod-setup-checklist.png)
-
-<Callout type='warn'>
-  If you close the checklist, reopen it via the **Tasks** icon in the top-right
-  of the Clerk dashboard navbar.
-
-![Clerk setup tasks icon](/clerk/clerk-setup-tasks.png)
-
-</Callout>
-
-<Callout>
-  You don't need to complete the checklist immediately — close it and come back
-  when ready.
-</Callout>
-
-Clerk provides 5 CNAME records for session management, email verification, and
-auth flows. Copy each one from the checklist:
-
-![Clerk domains setup](/clerk/clerk-domains.png)
-
-<Callout type='idea'>
-  **What is DNS and what is a CNAME?**
-
-DNS (Domain Name System) is the internet's address book — it maps human-readable
-names like `eep-next-template.dev` to the servers that handle requests for them.
-A **CNAME** record says "this subdomain is an alias for another domain" — so
-`accounts.eep-next-template.dev` pointing to `accounts.clerk.services` means
-requests to your accounts subdomain get handled by Clerk's servers. This is how
-Clerk runs auth flows that appear to live on your domain without you hosting
-anything yourself.
-
-</Callout>
-
-Add each record in Cloudflare: **DNS** → **Records** → **Add record**. The
-**Name** field is just the subdomain part (e.g. `accounts`, not
-`accounts.eep-next-template.dev`) — Cloudflare appends the domain automatically.
-
-You already have Vercel's records in this same panel — Cloudflare DNS holds all
-records for your domain in one place regardless of which service they're for.
-Vercel's records route traffic to your app; Clerk's records route auth subdomains
-to Clerk's servers. They don't conflict.
-
-<Callout type='warn'>
-  Set every Clerk DNS record to **DNS only** (grey cloud, not orange) in
-  Cloudflare. The orange proxy breaks Clerk's domain verification.
-</Callout>
-
-Once all records are added, hit **Check DNS records** in Clerk to verify.
-Cloudflare propagates almost instantly.
 
 </CollapsibleStep>
 
@@ -387,7 +375,7 @@ Paste your **Client ID** and **Client Secret** → Save.
 
 ---
 
-## Step 5 — Run production migrations
+## Step 4 — Run production migrations
 
 Vercel does not run migrations automatically. After the first deploy:
 
@@ -402,7 +390,7 @@ DATABASE_URL=postgresql://... pnpm db:migrate
 
 ---
 
-## Step 6 — Verify
+## Step 5 — Verify
 
 Trigger a fresh Vercel deployment (push a commit, or redeploy from the dashboard)
 to pick up the Clerk production env vars, then confirm:
