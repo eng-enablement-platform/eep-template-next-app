@@ -21,21 +21,15 @@ without you hosting anything yourself.
 
 ![Deployment diagram — Cloudflare DNS, Vercel, Clerk, and GitHub CI/CD](/code/deployment.png)
 
-<Callout type='info'>
-  CI/CD automation for database migrations is on the roadmap. For now, these
-  steps cover a manual first deployment. Subsequent deploys happen automatically
-  on every push to `main`.
-</Callout>
+---
 
 <Callout type='warn'>
   **Clerk production instances require a custom domain you own.** `*.vercel.app`
   URLs are not supported — Clerk needs to set DNS records on your domain, which
-  isn't possible on a domain Vercel owns. If you don't have a domain yet, skip
-  to the [dev key quick start](#using-dev-keys-quick-start) below and come back
-  once you've bought one.
+  isn't possible on a domain Vercel owns. If you don't have a domain yet, you
+  can use the Clerk dev keys but there are limitations and this is not advised
+  for a production app
 </Callout>
-
----
 
 ## Using dev keys (quick start)
 
@@ -76,8 +70,7 @@ Complete the purchase — Cloudflare confirms and activates the domain
 
 <Callout type='idea'>
   `.dev` is a good fit for developer tools — Google-owned, HTTPS enforced by the
-  registry (browsers won't load `.dev` without SSL), and signals the purpose
-  immediately.
+  registry (browsers won't load `.dev` without SSL)
 </Callout>
 
 Once purchased, Cloudflare is automatically your DNS provider.
@@ -278,8 +271,8 @@ Once created, Clerk shows a setup checklist.
 </Callout>
 
 <Callout>
-  You don't need to complete the checklist immediately — close it and come back
-  when ready.
+  You do not need to complete the checklist immediately. Feel free to close it
+  and come back to it later
 </Callout>
 
 Clerk provides 5 CNAME records for session management, email verification, and
@@ -293,7 +286,7 @@ auth flows. Copy each one from the checklist and add them in Cloudflare: **DNS**
   Cloudflare. The orange proxy breaks Clerk's domain verification.
 </Callout>
 
-Once all records are added, hit **Check DNS records** in Clerk to verify.
+Once all records are added, hit **Verify configuration** in Clerk to verify.
 Cloudflare propagates almost instantly.
 
 ![Clerk DNS verification](/clerk/clerk-verify-dns.png)
@@ -472,12 +465,3 @@ After Clerk verifies:
 1. Flush your local DNS cache: `sudo dscacheutil -flushcache && sudo killall -HUP mDNSResponder`
 2. Try an incognito window
 3. Redeploy on Vercel to ensure the build reflects the verified state
-
-### Build command / env vars
-
-- Leave the Vercel build command as default — Vercel detects `pnpm-lock.yaml`
-  and uses pnpm automatically
-- `NEXT_PUBLIC_*` vars are inlined at **build time** not runtime — any change
-  requires a full redeploy to take effect
-- The `NEXT_PUBLIC_CLERK_SIGN_IN_URL` redirect vars are optional — they default
-  to `/sign-in`, `/sign-up`, `/` via T3 Env and don't need to be set in Vercel
