@@ -9,7 +9,7 @@ Branch names follow a consistent format so the history is scannable and CI can
 infer intent from the name.
 
 ```
-<type>/<ticket-number>-<brief-description>
+<type>/<issue-number>-<brief-description>
 
 feat/EEP-123-user-invitations
 fix/EEP-456-session-expiry
@@ -19,7 +19,7 @@ Types:
 
 - `feat/` — new features
 - `fix/` — bug fixes
-- Ad-hoc (no ticket): `fix/<brief-description>` is fine for small isolated fixes
+- Ad-hoc (no issue): `fix/<brief-description>` is fine for small isolated fixes
 
 ---
 
@@ -46,9 +46,9 @@ docs: add git conventions page
 
 ---
 
-## Stacked MRs
+## Stacked PRs
 
-For large changes, stack branches rather than opening one giant MR. Each branch
+For large changes, stack branches rather than opening one giant PR. Each branch
 builds on the previous one, so you get smaller, reviewable diffs and can merge
 incrementally.
 
