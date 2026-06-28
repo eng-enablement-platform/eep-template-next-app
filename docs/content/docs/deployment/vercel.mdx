@@ -1,6 +1,6 @@
 ---
 title: Vercel
-description: End-to-end guide — domain, Vercel, Neon, and Clerk production setup.
+description: Domain, Vercel and Clerk production setup.
 ---
 
 The full deployment stack is **Cloudflare** (domain + DNS) → **Vercel** (hosting) → **Clerk** (auth)
@@ -335,27 +335,26 @@ Clerk Dashboard → **Configure** → **Sessions** → **Customize session token
 
 <CollapsibleStep title="Create a GCP OAuth client" defaultOpen={false}>
 
-1. Go to [console.cloud.google.com](https://console.cloud.google.com) → create or
-   select a project
-2. Navigate to **APIs & Services**
+Go to [console.cloud.google.com](https://console.cloud.google.com) → create or
+select a project. Navigate to **APIs & Services**
 
 ![GCP APIs and Services](/gcp/gcp-apis-services.png)
 
-3. Go to **Credentials**
-
-![GCP Credentials page](/gcp/gcp-creds.png)
-
-4. **Create Credentials** → **OAuth client ID**
+Go to **Credentials** → **Create Credentials** → **OAuth client ID**
 
 ![GCP Create Credentials dropdown](/gcp/gcp-create-creds.png)
 
-5. Application type: **Web application**. Under **Authorised redirect URIs**, add
-   the Clerk callback URL — find the exact value in: Clerk Dashboard →
-   **Configure** → **SSO Connections** → **Google** → **Redirect URI**
+Application type: **Web application**. Under **Authorised redirect URIs**, add
+the Clerk callback URL. Find the exact value in: Clerk Dashboard →
+**Configure** → **SSO Connections** → **Google** → **Redirect URI**
+
+![Clerk GCP credentials](/clerk/clerk-gcp-details.png)
 
 ![GCP OAuth client creation form](/gcp/gcp-create-oauth-client.png)
 
-6. Click **Create** → copy the **Client ID** and **Client Secret**
+Click **Create** → copy the **Client ID** and **Client Secret**
+
+![GCP Credentials page](/gcp/gcp-creds.png)
 
 </CollapsibleStep>
 
@@ -367,7 +366,7 @@ Clerk Dashboard → **Configure** → **SSO Connections** → **Google** → tog
 
 Paste your **Client ID** and **Client Secret** → Save.
 
-![Clerk GCP credentials entry](/clerk/clerk-gcp-details.png)
+![Clerk GCP credentials](/clerk/clerk-gcp-details.png)
 
 </CollapsibleStep>
 
