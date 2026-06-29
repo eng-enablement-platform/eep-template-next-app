@@ -1,10 +1,9 @@
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
-import { _forTests, usePosts } from '@/hooks/use-posts';
+import { JSONPLACEHOLDER_POSTS_KEY } from '@/config/constants/external-urls';
+import { usePosts } from '@/hooks/use-posts';
 import type { Post } from '@/types/post';
-
-const { POSTS_KEY } = _forTests;
 
 /*
  * SWR is mocked at the module level so tests can drive the three states
@@ -33,7 +32,7 @@ describe('usePosts', () => {
 
     renderHook(() => usePosts());
 
-    expect(mockUseSWR).toHaveBeenCalledWith(POSTS_KEY);
+    expect(mockUseSWR).toHaveBeenCalledWith(JSONPLACEHOLDER_POSTS_KEY);
   });
 
   it('returns isLoading true and no data while fetching', () => {

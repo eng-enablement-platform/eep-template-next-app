@@ -1,5 +1,6 @@
 import useSWR from 'swr';
 
+import { JSONPLACEHOLDER_POSTS_KEY } from '@/config/constants/external-urls';
 import type { Post } from '@/types/post';
 
 /*
@@ -9,10 +10,6 @@ import type { Post } from '@/types/post';
  * It exists for learning — not intended for production use.
  *
  */
-
-const JSONPLACEHOLDER_BASE_URL = 'https://jsonplaceholder.typicode.com';
-const POSTS_LIMIT = 3;
-const POSTS_KEY = `${JSONPLACEHOLDER_BASE_URL}/posts?_limit=${POSTS_LIMIT}`;
 
 type UsePostsReturn = {
   posts: Post[] | undefined;
@@ -31,7 +28,7 @@ type UsePostsReturn = {
  * ```
  */
 export function usePosts(): UsePostsReturn {
-  const { data, isLoading, error } = useSWR<Post[]>(POSTS_KEY);
+  const { data, isLoading, error } = useSWR<Post[]>(JSONPLACEHOLDER_POSTS_KEY);
 
   return {
     posts: data,
@@ -40,6 +37,3 @@ export function usePosts(): UsePostsReturn {
     error: error instanceof Error ? error : undefined,
   };
 }
-
-// test-only exports
-export const _forTests = { POSTS_KEY };

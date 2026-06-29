@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 
+import { JSONPLACEHOLDER_BASE_URL } from '../src/config/constants/external-urls';
+
 /**
  * EXAMPLE CONTRACT TEST
  *
@@ -17,8 +19,6 @@ import { z } from 'zod';
  *
  * @see https://jsonplaceholder.typicode.com
  */
-
-const JSONPLACEHOLDER_BASE_URL = 'https://jsonplaceholder.typicode.com';
 
 /*
  * Mirrors src/types/post.ts — the contract test owns its own schema so it

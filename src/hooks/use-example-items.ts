@@ -1,6 +1,7 @@
 import type { KeyedMutator } from 'swr';
 import useSWR from 'swr';
 
+import { API_ROUTES } from '@/config/constants/api-routes';
 import type { ExampleItem } from '@/db/types';
 
 type ExampleItemsResponse = { exampleItems: ExampleItem[] };
@@ -34,8 +35,9 @@ type UseExampleItemsReturn = {
  * ```
  */
 export function useExampleItems(): UseExampleItemsReturn {
-  const { data, isLoading, error, mutate } =
-    useSWR<ExampleItemsResponse>('/api/example-items');
+  const { data, isLoading, error, mutate } = useSWR<ExampleItemsResponse>(
+    API_ROUTES.exampleItems,
+  );
 
   return {
     items: data?.exampleItems,
