@@ -6,7 +6,7 @@ export function baseOptions(): BaseLayoutProps {
   return {
     nav: {
       title: (
-        <div className='flex items-center gap-3'>
+        <div className='flex items-center'>
           <Image
             src='/eep/eep-logo-nav.svg'
             alt='EEP'
