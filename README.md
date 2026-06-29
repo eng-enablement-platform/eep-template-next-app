@@ -1,4 +1,6 @@
-# EEP Next.js Template
+![EEP](public/eep-logo-full.svg)
+
+# Next.js Template
 
 A production-grade Next.js scaffold built on [Engineering Enablement Platform
 (EEP)](https://github.com/your-org/eep) principles. Ships full - authentication,

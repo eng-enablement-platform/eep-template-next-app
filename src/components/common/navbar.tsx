@@ -1,6 +1,7 @@
 'use client';
 
 import { BookOpen, FileText } from 'lucide-react';
+import Image from 'next/image';
 
 import { ThemeToggle } from '@/components/common/theme-toggle';
 import { TimezoneSelector } from '@/components/common/timezone-selector';
@@ -23,30 +24,39 @@ import { env } from '@/lib/env';
 export function Navbar() {
   return (
     <header className='border-border bg-background/80 sticky top-0 z-10 flex w-full items-center justify-between border-b px-4 py-4 backdrop-blur-sm'>
-      <div className='flex items-center gap-1'>
-        {env.NEXT_PUBLIC_DOCS_URL && (
+      <div className='flex items-center gap-4'>
+        <Image
+          src='/eep-logo-nav.svg'
+          alt='EEP'
+          width={120}
+          height={40}
+          priority
+        />
+        <div className='flex items-center gap-1'>
+          {env.NEXT_PUBLIC_DOCS_URL && (
+            <Button asChild variant='link' className='text-muted-foreground'>
+              <a
+                href={env.NEXT_PUBLIC_DOCS_URL}
+                target='_blank'
+                rel='noopener noreferrer'
+              >
+                <FileText />
+                Repo Docs
+              </a>
+            </Button>
+          )}
           <Button asChild variant='link' className='text-muted-foreground'>
             <a
-              href={env.NEXT_PUBLIC_DOCS_URL}
+              href='/api-docs'
               target='_blank'
               rel='noopener noreferrer'
+              title='Requires the Admin role - others get a 403'
             >
-              <FileText />
-              Repo Docs
+              <BookOpen />
+              API docs
             </a>
           </Button>
-        )}
-        <Button asChild variant='link' className='text-muted-foreground'>
-          <a
-            href='/api-docs'
-            target='_blank'
-            rel='noopener noreferrer'
-            title='Requires the Admin role - others get a 403'
-          >
-            <BookOpen />
-            API docs
-          </a>
-        </Button>
+        </div>
       </div>
       <div className='flex items-center gap-4'>
         <HomeProfile />
