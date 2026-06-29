@@ -323,6 +323,64 @@ How you package a concern depends on its size:
 
 ---
 
+## Constants
+
+App-wide values that are fixed at build time live in `src/config/constants/`.
+One file per concern, named for what it contains.
+
+<Files>
+  <Folder name='config' defaultOpen>
+    <Folder name='constants' defaultOpen>
+      <File
+        name='api-routes.ts'
+        description='// internal /api/* path constants'
+      />
+      <File
+        name='external-urls.ts'
+        description='// third-party base URLs and composed keys'
+      />
+    </Folder>
+  </Folder>
+</Files>
+
+### api-routes.ts
+
+Every internal `/api/*` path **consumed by an SWR hook** is defined here. SWR fetches
+by string key, so a hardcoded path like `'/api/example-items'` produces a silent
+runtime 404 if the route is deleted or renamed. Centralising paths here means a removed constant is a compile error in
+the hook that imports it.
+
+Use a plain string for flat routes, a builder function for parameterised ones:
+
+```ts
+export const API_ROUTES = {
+  /** `GET /api/example-items` — list all example items. */
+  exampleItems: '/api/example-items',
+
+  /**
+   * @param id - The numeric ID of the example item.
+   * @returns The resolved path, e.g. `/api/example-items/42`.
+   */
+  exampleItem: (id: number) => `/api/example-items/${id}`,
+} as const;
+```
+
+### external-urls.ts
+
+Every URL pointing to a service outside this application is defined here.
+Hooks and contract tests import the same constant, which ensures no drift between the two.
+
+```ts
+export const JSONPLACEHOLDER_BASE_URL =
+  'https://jsonplaceholder.typicode.com' as const;
+
+/** SWR cache key and fetch URL for the posts demo list (3 posts). */
+export const JSONPLACEHOLDER_POSTS_KEY =
+  `${JSONPLACEHOLDER_BASE_URL}/posts?_limit=3` as const;
+```
+
+---
+
 ## Services (backend)
 
 Each domain gets its own folder with an `index.ts` as the entry point. This

@@ -1,8 +1,7 @@
 /**
  * Internal API route path constants.
  *
- * Every internal `/api/*` path used by hooks or actions is defined here.
- * Hooks import from this module instead of hardcoding strings.
+ * Every internal `/api/*` path consumed by a SWR hook is defined here
  *
  * For parameterised routes, use the builder function — it produces a
  * fully-resolved path and keeps call sites free of manual string interpolation.
