@@ -8,10 +8,10 @@ description: Structured logging with Winston and distributed tracing with OpenTe
 The template ships with two observability layers that complement rather than
 replace each other:
 
-| Signal                 | Tool                   | What it tells you                                                                                |
-| ---------------------- | ---------------------- | ------------------------------------------------------------------------------------------------ |
-| **Structured logs**    | Winston (`rootLogger`) | What happened, at which layer, with what context. Filterable by `logSource` and `scope`.         |
-| **Distributed traces** | OpenTelemetry          | How long each part of a request took, which spans were nested inside which, where the time went. |
+| Signal                 | Tool                                                                  | What it tells you                                                                                |
+| ---------------------- | --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| **Structured logs**    | Winston (`rootLogger`)                                                | What happened, at which layer, with what context. Filterable by `logSource` and `scope`.         |
+| **Distributed traces** | [OpenTelemetry](https://opentelemetry.io/docs/what-is-opentelemetry/) | How long each part of a request took, which spans were nested inside which, where the time went. |
 
 Logs answer _"what happened?"_. Traces answer _"where did the time go?"_. Both
 are useful; neither replaces the other.
@@ -162,8 +162,38 @@ time, so it shows up in Jaeger under the right request.
 
 ## Production
 
-Point `OTEL_EXPORTER_OTLP_ENDPOINT` at your vendor's OTLP endpoint. No code
-changes needed — the same `instrumentation.ts` works everywhere:
+### Deploying to Vercel
+
+If you deploy to Vercel, `instrumentation.ts` is all you need — no extra
+configuration required. Vercel automatically picks it up and gives you two
+things for free:
+
+**Session Tracing** — in the Vercel dashboard, open the toolbar on any preview
+or production deployment and enable Session Tracing. Vercel captures
+infrastructure, rendering, and fetch spans for every request you make during
+that session and surfaces them in Logs → Traces. Good for ad-hoc debugging
+without a vendor account.
+
+**Trace Drains** — when you want traces in a persistent backend (Datadog,
+Grafana, Honeycomb), install the integration from the Vercel Marketplace. All
+routing happens on the Vercel side — no env vars or code changes needed in the
+app itself.
+
+<Callout>
+  Session Tracing and Trace Drains only work when you use `@vercel/otel`. If you
+  swap to the manual OpenTelemetry SDK, you lose both. This is why the template
+  uses `@vercel/otel` rather than configuring the SDK directly. You do **not**
+  need to switch away from `@vercel/otel` to use your own observability vendor —
+  it sends to any OTLP-compatible endpoint via `OTEL_EXPORTER_OTLP_ENDPOINT`.
+  Only switch to the manual SDK if you hit a specific config wall (custom
+  sampler, multiple exporters, non-OTLP protocol).
+</Callout>
+
+### Self-hosting or a custom vendor
+
+Point `OTEL_EXPORTER_OTLP_ENDPOINT` at your collector or vendor's OTLP
+endpoint. No code changes needed — the same `instrumentation.ts` works
+everywhere:
 
 | Vendor                | Endpoint                                                    |
 | --------------------- | ----------------------------------------------------------- |
@@ -178,6 +208,6 @@ Most vendors also require an API key via `OTEL_EXPORTER_OTLP_HEADERS`:
 OTEL_EXPORTER_OTLP_HEADERS=x-honeycomb-team=your-api-key
 ```
 
-On Vercel, set these in Project Settings → Environment Variables. No other
-configuration is needed — Next.js 15+ detects `instrumentation.ts`
-automatically.
+Set these in Vercel Project Settings → Environment Variables, or in your
+platform's equivalent. Next.js 15+ detects `instrumentation.ts` automatically
+— no other configuration needed.
