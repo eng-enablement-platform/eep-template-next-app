@@ -75,6 +75,15 @@ This brings up:
 - **OTel Collector** on ports `4317` (gRPC) and `4318` (HTTP)
 - **Jaeger UI** at [http://localhost:16686](http://localhost:16686)
 
+### Stop the OTel stack
+
+```bash
+docker compose -f docker-compose.otel.yml down
+```
+
+Trace data is not persisted — Jaeger stores everything in memory so it clears
+on each restart.
+
 ### Point Next.js at the collector
 
 Add to `.env.local` (copy from `.env.local_template`):
