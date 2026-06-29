@@ -1,0 +1,38 @@
+# Optional OTel stack for local development — Jaeger + OpenTelemetry Collector.
+#
+# Run standalone (OTel only) or combined with the base file:
+#
+#   docker compose -f docker-compose.otel.yml up -d
+#
+# Then set in .env.local:
+#
+#   OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318
+#   NEXT_OTEL_VERBOSE=1           # optional — surfaces more internal spans
+#
+# Jaeger UI → http://localhost:16686
+# Hit some routes in the app, then select "next-template" in the Service
+# dropdown and click "Find Traces" to see the waterfall.
+
+services:
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.104.0
+    container_name: next-template-otel-collector
+    restart: unless-stopped
+    command: ['--config=/etc/otel-collector-config.yaml']
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    ports:
+      - '4317:4317' # OTLP gRPC
+      - '4318:4318' # OTLP HTTP (Next.js default)
+    depends_on:
+      - jaeger
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: next-template-jaeger
+    restart: unless-stopped
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    ports:
+      - '16686:16686' # Jaeger UI
+      - '4317:4317' # OTLP gRPC (collector → Jaeger)

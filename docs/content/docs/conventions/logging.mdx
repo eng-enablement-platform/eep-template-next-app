@@ -161,11 +161,9 @@ console.dir(obj, { depth: 3 }); // deep object structure
 
 ## OpenTelemetry
 
-The current logging setup covers structured logs well but doesn't provide
-distributed tracing or metrics. [OpenTelemetry](https://opentelemetry.io/) is on
-the roadmap — it will add trace IDs, spans, and a standard export pipeline so
-logs, traces, and metrics can be correlated in tools like Grafana or Honeycomb.
+This page covers structured logs (Winston). The template also ships with
+distributed tracing via OpenTelemetry — spans for every request, render, fetch
+call, and route handler, visible locally in Jaeger.
 
-When that's wired in, `logSource` and `scope` fields will carry through as
-span attributes automatically, so the structured logging conventions you follow
-today will translate directly.
+See [Observability](/docs/conventions/observability) for the full setup,
+local dev workflow, custom spans, and production vendor config.

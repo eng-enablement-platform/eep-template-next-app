@@ -63,9 +63,11 @@ icon: Wrench
 
 ---
 
-## Logging
+## Observability
 
-- **[Winston](https://github.com/winstonjs/winston)** — All structured server-side logging via `rootLogger` in `src/classes/loggers/application/`. Every log line carries a `logSource` (`api`, `action`, `service`) so logs can be filtered by architectural layer. See [Logging conventions](/docs/conventions/logging).
+- **[Winston](https://github.com/winstonjs/winston)** — All structured server-side logging via `rootLogger` in `src/classes/loggers/application/`. Every log line carries a `logSource` (`api`, `action`, `service`) so logs can be filtered by architectural layer. See [Logging](/docs/conventions/logging).
+- **[@vercel/otel](https://github.com/vercel/otel)** — Thin wrapper around the OpenTelemetry SDK, compatible with both the Node.js and Edge runtimes. Registered in `src/instrumentation.ts` — Next.js calls this once on startup and all built-in spans (requests, rendering, fetch calls, route handlers) are emitted automatically. See [Observability](/docs/conventions/observability).
+- **[Jaeger](https://www.jaegertracing.io/)** — Open-source distributed tracing UI. Used locally to visualise OTel traces as waterfall diagrams. Runs via `docker-compose.otel.yml` alongside the OTel Collector; UI at `http://localhost:16686`. Not used in production — swap for Grafana, Honeycomb, or any OTLP-compatible backend by changing `OTEL_EXPORTER_OTLP_ENDPOINT`.
 
 ---
 

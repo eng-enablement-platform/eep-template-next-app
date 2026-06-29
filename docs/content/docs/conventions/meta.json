@@ -7,6 +7,7 @@
     "code-style-structure",
     "error-handling-and-validation",
     "logging",
+    "observability",
     "testing",
     "scripts"
   ]
