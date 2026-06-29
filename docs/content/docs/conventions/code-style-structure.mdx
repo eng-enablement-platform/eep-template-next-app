@@ -345,15 +345,13 @@ One file per concern, named for what it contains.
 
 ### api-routes.ts
 
-Every internal `/api/*` path consumed by a SWR hook is defined here. SWR fetches
-by string key, so a hardcoded path is invisible to TypeScript — rename or delete
-the route and nothing breaks at compile time, just a silent runtime 404. Defining
-paths as named constants gives you one place to update when a route changes rather
+Every internal `/api/*` path consumed by an SWR hook is defined here.
+Defining paths as named constants gives you one place to update when a route changes rather
 than hunting for string literals across the codebase.
 
 <Callout type='warn'>
-  Before removing a route, grep `API_ROUTES` to check whether a hook depends on
-  it. The compiler won't catch a dangling constant — that check is on you.
+  Before removing a route, check this file first! If it appears here, a hook
+  depends on it.
 </Callout>
 
 Use a plain string for flat routes, a builder function for parameterised ones:
