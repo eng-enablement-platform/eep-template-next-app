@@ -1,4 +1,6 @@
-![EEP](public/eep-logo-full.svg)
+<p align="center">
+  <img src="public/eep-logo-full.svg" alt="EEP" width="360" />
+</p>
 
 # Next.js Template
 
