@@ -7,11 +7,11 @@ import { DEMO_TIMEZONES, useTimezoneStore } from '@/store/timezone-store';
 /**
  * Dev-only timezone selector for the date timezone demo.
  *
- * Renders only in development — invisible in production builds. Shows today's
+ * Renders only in development - invisible in production builds. Shows today's
  * date formatted in the selected timezone alongside the selector. Switching
  * timezone causes the date to re-render live, making it immediately obvious
  * how the same moment-in-time displays as a different calendar date across
- * timezones — particularly near day boundaries.
+ * timezones - particularly near day boundaries.
  *
  * @example
  * ```tsx

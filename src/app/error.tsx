@@ -8,7 +8,7 @@ type ErrorProps = {
 };
 
 /**
- * Next.js segment error boundary (reserved filename). Thin shell only — the UI
+ * Next.js segment error boundary (reserved filename). Thin shell only - the UI
  * lives in `components/common/error-display` (shared with our client
  * `ErrorBoundary`); this just forwards the framework's error message to it.
  *

@@ -67,7 +67,7 @@ export async function createExampleItem(
   } catch (error) {
     /*
      * The write boundary owns the decision about what a failed mutation means,
-     * so it is the one place we log it — the service rethrows without logging to
+     * so it is the one place we log it - the service rethrows without logging to
      * avoid double-logging the same failure under two sources.
      */
     logger.error({

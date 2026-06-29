@@ -1,4 +1,4 @@
-# Optional OTel stack for local development — Jaeger + OpenTelemetry Collector.
+# Optional OTel stack for local development - Jaeger + OpenTelemetry Collector.
 #
 # Run standalone (OTel only) or combined with the base file:
 #
@@ -7,7 +7,7 @@
 # Then set in .env.local:
 #
 #   OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318
-#   NEXT_OTEL_VERBOSE=1           # optional — surfaces more internal spans
+#   NEXT_OTEL_VERBOSE=1           # optional - surfaces more internal spans
 #
 # Jaeger UI → http://localhost:16686
 # Hit some routes in the app, then select "next-template" in the Service

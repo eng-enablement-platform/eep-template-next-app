@@ -2,7 +2,7 @@ import { defineConfig } from 'vitest/config';
 
 /*
  * Vitest config for contract tests. Uses `node` environment so fetch is
- * available natively (Node 18+). Scoped to src/contract-tests/ only — these
+ * available natively (Node 18+). Scoped to src/contract-tests/ only - these
  * make real network calls and are intentionally excluded from the standard
  * test suite to keep fast feedback loops fast.
  *
@@ -16,7 +16,7 @@ export default defineConfig({
     globals: true,
     environment: 'node',
     include: ['contract-tests/**/*.contract.test.ts'],
-    // Generous timeout — live network calls can be slow.
+    // Generous timeout - live network calls can be slow.
     testTimeout: 15_000,
   },
 });

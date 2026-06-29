@@ -7,21 +7,21 @@ import { JSONPLACEHOLDER_BASE_URL } from '../src/config/constants/external-urls'
  * EXAMPLE CONTRACT TEST
  *
  * Verifies that the JSONPlaceholder API still returns the shape our code
- * depends on. This is a live network call — it runs outside the standard
+ * depends on. This is a live network call - it runs outside the standard
  * test suite (`pnpm test`) to avoid blocking fast feedback loops.
  *
  * Run manually: `pnpm test:contract`
  *
  * When to add a contract test: any time you depend on a third-party API
  * response shape that you don't control. The test fails if the provider
- * changes a field name, type, or removes a required property — giving you
+ * changes a field name, type, or removes a required property - giving you
  * early warning before the breakage reaches production.
  *
  * @see https://jsonplaceholder.typicode.com
  */
 
 /*
- * Mirrors src/types/post.ts — the contract test owns its own schema so it
+ * Mirrors src/types/post.ts - the contract test owns its own schema so it
  * catches drift between the live API and our local type definition.
  */
 const PostSchema = z.object({
@@ -45,7 +45,7 @@ describe('JSONPlaceholder API contract', () => {
 
     expect(
       result.success,
-      `The JSONPlaceholder API response no longer matches our Post schema — ` +
+      `The JSONPlaceholder API response no longer matches our Post schema - ` +
         `the provider may have changed their contract. ` +
         `Check https://jsonplaceholder.typicode.com/posts and update src/types/post.ts if needed.\n` +
         `${result.success ? '' : result.error.message}`,
@@ -62,7 +62,7 @@ describe('JSONPlaceholder API contract', () => {
 
     expect(
       result.success,
-      `The JSONPlaceholder API response no longer matches our Post schema — ` +
+      `The JSONPlaceholder API response no longer matches our Post schema - ` +
         `the provider may have changed their contract. ` +
         `Check https://jsonplaceholder.typicode.com/posts and update src/types/post.ts if needed.\n` +
         `${result.success ? '' : result.error.message}`,

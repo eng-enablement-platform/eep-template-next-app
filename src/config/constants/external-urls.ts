@@ -17,7 +17,7 @@ export const JSONPLACEHOLDER_BASE_URL =
 
 /**
  * SWR cache key and fetch URL for the posts demo list.
- * The `_limit=3` cap keeps the demo lightweight — adjust here if you need more.
+ * The `_limit=3` cap keeps the demo lightweight - adjust here if you need more.
  */
 export const JSONPLACEHOLDER_POSTS_KEY =
   `${JSONPLACEHOLDER_BASE_URL}/posts?_limit=3` as const;

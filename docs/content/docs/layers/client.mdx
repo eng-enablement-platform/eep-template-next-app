@@ -18,7 +18,7 @@ Components are purely presentational. They don't fetch, they don't mutate, and t
 business logic:
 
 ```tsx
-// ✅ UI logic — deciding what to render based on state. Fine.
+// ✅ UI logic - deciding what to render based on state. Fine.
 function InvoiceRow({ invoice }: InvoiceRowProps) {
   const isOverdue = invoice.dueDate < new Date();
 
@@ -33,7 +33,7 @@ function InvoiceRow({ invoice }: InvoiceRowProps) {
 
 ```tsx
 /**
- * ❌ Business logic — calculating whether an invoice is overdue belongs in the service layer
+ * ❌ Business logic - calculating whether an invoice is overdue belongs in the service layer
  * not the component. The component shouldn't know the business rule,
  * only how to display the result of it.
  */
@@ -60,25 +60,25 @@ function InvoiceRow({ invoice }: InvoiceRowProps) {
   <Files>
     <File
       name='theme-toggle.tsx'
-      description='// flat — single file, no sub-parts'
+      description='// flat - single file, no sub-parts'
     />
     <Folder name='sidebar' defaultOpen>
       <File
         name='index.tsx'
-        description='// entry point — composes all sub-components'
+        description='// entry point - composes all sub-components'
       />
       <Folder name='components' defaultOpen>
         <File
           name='nav-main.tsx'
-          description='// sub-component — main nav links'
+          description='// sub-component - main nav links'
         />
         <File
           name='nav-user.tsx'
-          description='// sub-component — user avatar + menu'
+          description='// sub-component - user avatar + menu'
         />
         <File
           name='settings-items.tsx'
-          description='// sub-component — settings links'
+          description='// sub-component - settings links'
         />
       </Folder>
       <Folder name='config' />
@@ -86,8 +86,8 @@ function InvoiceRow({ invoice }: InvoiceRowProps) {
     </Folder>
   </Files>
 
-- `components/ui/` — [shadcn](https://ui.shadcn.com/docs) primitives
-- `components/common/` — shared across features (layout, error states, auth):
+- `components/ui/` - [shadcn](https://ui.shadcn.com/docs) primitives
+- `components/common/` - shared across features (layout, error states, auth):
 
   <Files>
     <File name='theme-toggle.tsx' />
@@ -95,15 +95,15 @@ function InvoiceRow({ invoice }: InvoiceRowProps) {
     <File name='error-display.tsx' />
   </Files>
 
-- `components/features/` — domain-coupled components that only make sense within a specific feature:
+- `components/features/` - domain-coupled components that only make sense within a specific feature:
 
   <Files>
-    <File name='counter.tsx' description='// flat — small, no sub-parts' />
-    <File name='posts.tsx' description='// flat — small, no sub-parts' />
+    <File name='counter.tsx' description='// flat - small, no sub-parts' />
+    <File name='posts.tsx' description='// flat - small, no sub-parts' />
     <Folder name='example-items' defaultOpen>
       <File
         name='index.tsx'
-        description='// public entry point — ExampleItems'
+        description='// public entry point - ExampleItems'
       />
       <File
         name='form.tsx'
@@ -117,7 +117,7 @@ function InvoiceRow({ invoice }: InvoiceRowProps) {
   `example-items` earned a folder here because it grew three distinct concerns:
   shared form fields and types, the create form mutation, and the list/row
   display with inline edit mode. `counter.tsx` and `posts.tsx` remain flat files
-  — they have no sub-parts to organise. The rule is the same as for utilities:
+  - they have no sub-parts to organise. The rule is the same as for utilities:
   promote to a folder only when there are real files to put inside it, not
   speculatively.
 </Callout>
@@ -131,7 +131,7 @@ out of the box. All client-side fetching goes through
 SWR hooks in `hooks/`, one hook per data domain.
 
 <Callout type='warn'>
-  SWR types `error` as `any` — always narrow it to `Error` before returning.
+  SWR types `error` as `any` - always narrow it to `Error` before returning.
 </Callout>
 
 ```ts
@@ -143,7 +143,7 @@ export function useExampleItems(): UseExampleItemsReturn {
   return {
     items: data?.exampleItems,
     isLoading,
-    // SWR types error as `any` — narrow to Error so callers get a stable shape.
+    // SWR types error as `any` - narrow to Error so callers get a stable shape.
     error: error instanceof Error ? error : undefined,
     mutate,
   };
@@ -159,7 +159,7 @@ The alternative to using SWR (`useEffect` + `useState`) means
 writing a dedicated version of it yourself, which is much more convoluted:
 
 ```ts
-// Without SWR — ~50 lines to fetch one resource
+// Without SWR - ~50 lines to fetch one resource
 export function useItem(id: string) {
   const [isLoading, setIsLoading] = useState(true);
   const [item, setItem] = useState<Item | null>(null);
@@ -232,7 +232,7 @@ export const useCounterStore = create<CounterStore>()((set) => ({
   ...defaultCounterState,
   increment: () => set((state) => ({ count: state.count + 1 })),
   decrement: () => set((state) => ({ count: state.count - 1 })),
-  // Safe reset — only resets state fields, never touches actions.
+  // Safe reset - only resets state fields, never touches actions.
   reset: () => set(defaultCounterState),
 }));
 ```
@@ -243,11 +243,11 @@ export const useCounterStore = create<CounterStore>()((set) => ({
 </Callout>
 
 ```tsx
-// Correct — subscribe to individual slices
+// Correct - subscribe to individual slices
 const count = useCounterStore((state) => state.count);
 const increment = useCounterStore((state) => state.increment);
 
-// Wrong — subscribes to the whole store, re-renders on any change
+// Wrong - subscribes to the whole store, re-renders on any change
 const store = useCounterStore();
 ```
 
@@ -269,7 +269,7 @@ merged type, `defaultCounterState` has to be typed as `Partial<CounterStore>`
 you'd have to manually list the fields to reset:
 
 ```ts
-// Brittle — easy to forget a field when state grows
+// Brittle - easy to forget a field when state grows
 reset: () => set({ count: 0, someNewField: '' }),
 ```
 

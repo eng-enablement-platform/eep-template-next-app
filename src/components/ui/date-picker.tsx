@@ -26,7 +26,7 @@ type DatePickerProps = {
  *
  * Accepts and emits dates as YYYY-MM-DD strings so the form layer never
  * handles raw Date objects. Uses `parseDateSafe` internally to avoid the
- * JS UTC-midnight gotcha — the displayed date always matches the stored string
+ * JS UTC-midnight gotcha - the displayed date always matches the stored string
  * regardless of the user's timezone.
  *
  * @param value - Selected date as YYYY-MM-DD, or undefined when unset.

@@ -7,10 +7,10 @@ description: Where things live, how they interact and the "three-layer system"
 
 ## Where things live
 
-### `src/` — application code
+### `src/` - application code
 
 <Callout>
-  Tests live in a `__tests__/` subfolder co-located with the code they test —
+  Tests live in a `__tests__/` subfolder co-located with the code they test -
   this applies across `components/`, `hooks/`, `store/`, `utils/`, and
   `validation/`. See [Testing](/docs/conventions/testing) for the full
   convention.
@@ -18,35 +18,35 @@ description: Where things live, how they interact and the "three-layer system"
 
 | Location                     | What lives here                      | Rule                                                                                                                                                              |
 | ---------------------------- | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `app/`                       | Next.js file-convention files only   | `page.tsx`, `layout.tsx`, `error.tsx`, `not-found.tsx` etc. — thin shells that delegate to `components/` and `classes/`. No business logic.                       |
+| `app/`                       | Next.js file-convention files only   | `page.tsx`, `layout.tsx`, `error.tsx`, `not-found.tsx` etc. - thin shells that delegate to `components/` and `classes/`. No business logic.                       |
 | `app/(app)/`                 | Authenticated app pages              | All pages that require a signed-in user. Layout mounts the auth gate and navbar automatically.                                                                    |
-| `app/(auth)/`                | Auth pages                           | Sign-in and sign-up. Bare layout — no navbar, no auth gate.                                                                                                       |
+| `app/(auth)/`                | Auth pages                           | Sign-in and sign-up. Bare layout - no navbar, no auth gate.                                                                                                       |
 | `app/api/`                   | Route handlers                       | Reads + external writes; Zod-validated at the boundary                                                                                                            |
 | `actions/`                   | Server actions                       | UI writes; share the same Zod schema as the route                                                                                                                 |
-| `components/ui/`             | shadcn primitives                    | Owned by you — edit freely to match your design system                                                                                                            |
+| `components/ui/`             | shadcn primitives                    | Owned by you - edit freely to match your design system                                                                                                            |
 | `components/common/`         | Shared UI components                 | Reusable across features; never import from `classes/`                                                                                                            |
 | `components/features/`       | Feature-specific components          | Scoped to one feature; never import from `classes/`                                                                                                               |
 | `components/providers/`      | Client-side React context providers  | Wrappers that make a service available to the whole component tree via React context (e.g. SWR config, theme). Composed here, mounted once in `layout-client.tsx` |
 | `hooks/`                     | SWR data-fetching hooks              | One file per resource (`use-*.ts`); no `useEffect` fetching                                                                                                       |
 | `store/`                     | Zustand stores                       | One file per domain; co-locate types                                                                                                                              |
 | `classes/services/<domain>/` | Business logic + integrations        | `server-only`; one folder per domain                                                                                                                              |
-| `classes/errors/`            | Shared error types                   | Not server-only — thrown from both layers                                                                                                                         |
-| `classes/loggers/`           | Logger classes                       | `server-only` — Winston writes to the filesystem (Node.js only)                                                                                                   |
+| `classes/errors/`            | Shared error types                   | Not server-only - thrown from both layers                                                                                                                         |
+| `classes/loggers/`           | Logger classes                       | `server-only` - Winston writes to the filesystem (Node.js only)                                                                                                   |
 | `validation/`                | Zod schemas                          | One file per domain; shared between route and action                                                                                                              |
 | `types/`                     | Shared TypeScript types              | Pull up only when consumed across unrelated layers                                                                                                                |
-| `lib/`                       | Third-party instantiation            | Config and init only — no business logic                                                                                                                          |
+| `lib/`                       | Third-party instantiation            | Config and init only - no business logic                                                                                                                          |
 | `config/constants/`          | App-wide constants                   | Only for values shared across multiple modules                                                                                                                    |
 | `utils/`                     | Shared utility functions             | Pure functions                                                                                                                                                    |
 | `db/`                        | Drizzle schema, pool, migrations     | Schema is the source of truth; types inferred from it                                                                                                             |
-| `proxy.ts`                   | Next.js middleware (Clerk auth gate) | Lightweight checks only — redirects and session reads                                                                                                             |
+| `proxy.ts`                   | Next.js middleware (Clerk auth gate) | Lightweight checks only - redirects and session reads                                                                                                             |
 
-### Project root — tooling and infrastructure
+### Project root - tooling and infrastructure
 
 | Location        | What lives here                                                                                  |
 | --------------- | ------------------------------------------------------------------------------------------------ |
 | `scripts/`      | DB seeding, smoke checks, asset copy scripts. Run outside the Next.js context via `tsx`.         |
 | `e2e-tests/`    | Playwright end-to-end tests. One spec per feature.                                               |
-| `drizzle/`      | Generated SQL migrations and Drizzle metadata. Committed — never edit by hand.                   |
+| `drizzle/`      | Generated SQL migrations and Drizzle metadata. Committed - never edit by hand.                   |
 | `docs/`         | This documentation site (Fumadocs). Separate Next.js app, runs on `:3001`.                       |
 | `diagrams/`     | Architecture diagram source (`main.py`). Regenerate with `cd diagrams && uv run python main.py`. |
 | `eslint-rules/` | Custom ESLint rules specific to this project.                                                    |
@@ -57,7 +57,7 @@ description: Where things live, how they interact and the "three-layer system"
 The template is built on three strict layers, which foster clear separation of concerns and code reusability!
 Each layer has one job and one place to house the code. Business logic never bleeds into route handlers, data access never appears in components.
 
-### Client — `components/`, `hooks/`, `store/`
+### Client - `components/`, `hooks/`, `store/`
 
 Everything the browser runs.
 
@@ -66,7 +66,7 @@ Everything the browser runs.
 - Components are purely presentational, they receive
   data and call handlers
 
-### Server — `classes/`
+### Server - `classes/`
 
 All business logic lives here, and only here.
 
@@ -76,7 +76,7 @@ All business logic lives here, and only here.
 - Services own all data-access logic (Drizzle queries, third-party API calls)
 - Services expose a small typed surface to the API layer
 
-### API — `app/api/`, `actions/`
+### API - `app/api/`, `actions/`
 
 The boundary between the browser and the server.
 

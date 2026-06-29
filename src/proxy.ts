@@ -5,8 +5,8 @@ import { NextResponse } from 'next/server';
  * Clerk proxy
  *
  * Gate strategy for the live deployment:
- * - `/sign-in`, `/sign-up`, `/restricted` — public, anyone can reach them.
- * - Everything else — Admin role required.
+ * - `/sign-in`, `/sign-up`, `/restricted` - public, anyone can reach them.
+ * - Everything else - Admin role required.
  *
  * This is intentionally restrictive for the template's live demo deployment.
  * Relax the `isProtectedRoute` matcher or remove the `isAdmin` check when
@@ -26,7 +26,7 @@ const isPublicRoute = createRouteMatcher([
 ]);
 
 export default clerkMiddleware(async (auth, req) => {
-  // Always allow auth routes through — sign-in/up must be reachable.
+  // Always allow auth routes through - sign-in/up must be reachable.
   if (isPublicRoute(req)) return;
 
   const session = await auth();

@@ -33,7 +33,7 @@ const NEXT_DEFAULT_EXPORT_FILES = [
 
 /*
  * Config files at the repo root that are expected to default-export (their
- * loader requires it — `next.config.ts`, `vitest.config.ts`, `eslint.config.ts`,
+ * loader requires it - `next.config.ts`, `vitest.config.ts`, `eslint.config.ts`,
  * `prettier.config.js`, etc.).
  */
 const CONFIG_FILE_DEFAULT_EXPORT_FILES = [
@@ -68,12 +68,12 @@ export default defineConfig([
       parserOptions: {
         /*
          * `projectService` lets typescript-eslint discover the nearest
-         * tsconfig on demand — needed for type-aware rules without
+         * tsconfig on demand - needed for type-aware rules without
          * hand-maintaining a `project` array.
          *
          * ⚠️  Footgun: every file ESLint lints must live inside the tsconfig
          * project. Do NOT add lintable paths under `src/` to
-         * `tsconfig.json`'s `exclude` array — doing so causes ESLint to fail
+         * `tsconfig.json`'s `exclude` array - doing so causes ESLint to fail
          * with "file not found by the project service". If you need a path
          * excluded from tsc but linted by ESLint, configure
          * `projectService.allowDefaultProject` instead.
@@ -129,7 +129,7 @@ export default defineConfig([
 
   /*
    * TSDoc syntax + JSDoc presence enforcement on `.ts` files only.
-   * `.tsx` is handled separately below — components don't need
+   * `.tsx` is handled separately below - components don't need
    * `require-jsdoc`-style enforcement.
    *
    * Why both plugins? They cover non-overlapping concerns:
@@ -138,7 +138,7 @@ export default defineConfig([
    *   - `eslint-plugin-tsdoc`  → syntax only, one rule: `tsdoc/syntax`
    *       (validates that comments which exist follow the TSDoc spec)
    *
-   * Using tsdoc alone gives you nothing on undocumented code — it only
+   * Using tsdoc alone gives you nothing on undocumented code - it only
    * lints comments that already exist. We turn off jsdoc's own syntax
    * checks (`check-tag-names`, `check-param-names`) so they don't fight
    * tsdoc's stricter TSDoc-spec validation.
@@ -180,7 +180,7 @@ export default defineConfig([
   /*
    * Hand-authored `.tsx` conventions:
    *   1. `useState` must carry an explicit type annotation.
-   *   2. No `import * as React from "react"` — use named imports
+   *   2. No `import * as React from "react"` - use named imports
    *      (`import { useState, type ReactNode } from "react"`) so tree-shaking
    *      and `import type` work properly.
    */
@@ -211,7 +211,7 @@ export default defineConfig([
   },
 
   /*
-   * Next.js file conventions require default exports — opt these specific
+   * Next.js file conventions require default exports - opt these specific
    * files out of the global named-export rule.
    */
   {

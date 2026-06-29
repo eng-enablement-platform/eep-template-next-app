@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 
 /*
- * EXAMPLE STORE — demonstrates the Zustand pattern used across this template.
+ * EXAMPLE STORE - demonstrates the Zustand pattern used across this template.
  * Exists for testing and learning, not production use.
  *
  * Type pattern: split the data shape (`CounterState`) from the behaviours
@@ -9,7 +9,7 @@ import { create } from 'zustand';
  * (`CounterStore`). The split lets us derive a fully-typed `defaultCounterState`
  * from the state shape alone, and keeps actions readable in isolation. Types are
  * co-located here rather than in `store/types/` because nothing else consumes
- * them — pull them up to `types/` only once a second module needs them.
+ * them - pull them up to `types/` only once a second module needs them.
  */
 
 type CounterState = {
@@ -34,7 +34,7 @@ export type CounterStore = CounterState & CounterActions;
  * The initial state for the counter store.
  *
  * Derived from `CounterState` alone so the defaults can never drift out of sync
- * with the state shape — adding a state field forces a default for it here.
+ * with the state shape - adding a state field forces a default for it here.
  */
 export const defaultCounterState: CounterState = {
   count: 0,

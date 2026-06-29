@@ -7,7 +7,7 @@ import type { Post } from '@/types/post';
  * EXAMPLE HOOK
  *
  * Demonstrates the SWR hook pattern used across this template.
- * It exists for learning — not intended for production use.
+ * It exists for learning - not intended for production use.
  *
  */
 
@@ -33,7 +33,7 @@ export function usePosts(): UsePostsReturn {
   return {
     posts: data,
     isLoading,
-    // SWR types error as `any` — narrow to Error so callers get a stable shape.
+    // SWR types error as `any` - narrow to Error so callers get a stable shape.
     error: error instanceof Error ? error : undefined,
   };
 }

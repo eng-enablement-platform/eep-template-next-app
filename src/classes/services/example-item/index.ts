@@ -14,7 +14,7 @@ import type {
  * EXAMPLE SERVICE CLASS
  *
  * The reference domain service for the template. All `example_items` business
- * logic lives here behind a small, typed surface — routes and server actions
+ * logic lives here behind a small, typed surface - routes and server actions
  * call these methods rather than touching Drizzle directly, so the data-access
  * pattern is defined in exactly one place.
  *

@@ -1,7 +1,7 @@
 # E2E Tests
 
 Playwright + Chromium against the local dev server. Standard Playwright
-layout — tests live under `tests/`, config in `playwright.config.ts`,
+layout - tests live under `tests/`, config in `playwright.config.ts`,
 no extra scaffolding until something actually needs it.
 
 ## First-time setup
@@ -29,12 +29,12 @@ second terminal makes subsequent runs noticeably faster.
 
 Add scaffolding lazily, not up front:
 
-- **Page Objects** — create `page-objects/` and one file per page when
+- **Page Objects** - create `page-objects/` and one file per page when
   selectors start repeating across tests.
-- **Fixtures** — create `fixtures/` when you need a custom `test` that
+- **Fixtures** - create `fixtures/` when you need a custom `test` that
   layers on auth state, seeded data, or shared setup.
-- **Helpers** — create `helpers/` for non-UI utilities (test-data
+- **Helpers** - create `helpers/` for non-UI utilities (test-data
   factories, custom assertions). Page interactions belong in page objects.
-- **Global setup/teardown** — wire `globalSetup` / `globalTeardown` into
+- **Global setup/teardown** - wire `globalSetup` / `globalTeardown` into
   the config when you have cross-suite bootstrap (e.g. Clerk auth
   storageState via `@clerk/testing/playwright`).

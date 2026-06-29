@@ -7,7 +7,7 @@ can strip what you don't need rather than bolt on what you do.
 
 ## Architecture
 
-Three strict layers — Client (`components/`, `hooks/`, `store/`), API (`app/api/`, `actions/`), and Server (`classes/`) — with Zod schemas as the shared validation surface between them. Auth is handled externally by Clerk; the database is Postgres via Drizzle ORM (Docker locally, Neon in production).
+Three strict layers - Client (`components/`, `hooks/`, `store/`), API (`app/api/`, `actions/`), and Server (`classes/`) - with Zod schemas as the shared validation surface between them. Auth is handled externally by Clerk; the database is Postgres via Drizzle ORM (Docker locally, Neon in production).
 
 See the [Architecture docs](http://localhost:3001/docs/architecture) for the full diagram and layer breakdown.
 
@@ -344,12 +344,12 @@ pnpm dev:all    # app + docs on :3000 and :3001
 - Example code: SWR, Zustand, Hooks, mention for most CRUD apps this server layer is perfect (
   may not be approrpiate form more complex applcitiations etc.
   )
-- docs/conventions: good worked example for the Constants rules — `JSONPLACEHOLDER_BASE_URL`,
+- docs/conventions: good worked example for the Constants rules - `JSONPLACEHOLDER_BASE_URL`,
   `POSTS_LIMIT`, and `POSTS_KEY` in `hooks/use-posts.ts` stay co-located because they have a
   single consumer. They'd only move to `config/constants/` if a second module needed the same
   base URL. Reference this when writing the constants/folder-structure section of the conventions
   docs.
-- docs/conventions: good worked example for the Types rules — `Post` in `src/types/post.ts`
+- docs/conventions: good worked example for the Types rules - `Post` in `src/types/post.ts`
   illustrates when a type earns `src/types/` vs staying inline. Two consumers in unrelated
   layers (`hooks/use-posts.ts` + `components/features/posts.tsx`) + passes the domain smell
   test (type survives deleting the component) = lives in `src/types/`. Reference this when

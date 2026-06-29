@@ -8,7 +8,7 @@ import { clerkSetup } from '@clerk/testing/playwright';
  * can sign in via the Backend API without a password.
  *
  * Requires `CLERK_SECRET_KEY` to be set in `.env.local`.
- * Tests still run if the key is absent — auth tests will fail, smoke tests won't.
+ * Tests still run if the key is absent - auth tests will fail, smoke tests won't.
  *
  * @see https://clerk.com/docs/testing/playwright/overview
  */

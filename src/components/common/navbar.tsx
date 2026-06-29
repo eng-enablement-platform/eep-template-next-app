@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { env } from '@/lib/env';
 
 /**
- * Application navbar — rendered on every authenticated page via `RootLayoutClient`.
+ * Application navbar - rendered on every authenticated page via `RootLayoutClient`.
  *
  * Contains the primary nav links (docs, API docs) and the user profile/theme
  * toggle. Extracted from page.tsx so it doesn't need to be repeated per-page
@@ -41,7 +41,7 @@ export function Navbar() {
             href='/api-docs'
             target='_blank'
             rel='noopener noreferrer'
-            title='Requires the Admin role — others get a 403'
+            title='Requires the Admin role - others get a 403'
           >
             <BookOpen />
             API docs

@@ -31,7 +31,7 @@ export function ThemeToggle({ displayName }: ToggleProps) {
    * next-themes can only resolve the active theme on the client, so the first
    * server render must not commit theme-dependent markup. Flipping `mounted`
    * after mount is the documented guard against the resulting hydration
-   * mismatch — a one-shot mount effect, not a render-driven state sync.
+   * mismatch - a one-shot mount effect, not a render-driven state sync.
    */
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- mount-only hydration guard, see comment above

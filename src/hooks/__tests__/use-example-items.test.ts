@@ -19,7 +19,7 @@ vi.mock('swr', () => ({
 }));
 
 /*
- * Minimal ExampleItem fixtures — only the fields the hook tests actually
+ * Minimal ExampleItem fixtures - only the fields the hook tests actually
  * care about. Keeping fixtures small prevents test brittleness when new
  * DB columns are added.
  */
@@ -79,7 +79,7 @@ describe('useExampleItems', () => {
 
   it('unwraps items from the response envelope once data resolves', () => {
     /*
-     * The API returns { exampleItems: [...] } — the hook unwraps this so
+     * The API returns { exampleItems: [...] } - the hook unwraps this so
      * components receive a flat array, not the envelope object.
      */
     mockUseSWR.mockReturnValue({
@@ -114,7 +114,7 @@ describe('useExampleItems', () => {
 
   it('coerces non-Error rejections to undefined', () => {
     /*
-     * SWR types error as `any` — the hook narrows it; a raw string should not
+     * SWR types error as `any` - the hook narrows it; a raw string should not
      * escape as the error value.
      */
     mockUseSWR.mockReturnValue({

@@ -3,7 +3,7 @@ import { create } from 'zustand';
 /*
  * IANA timezones used by the dev timezone selector. Chosen to cover UTC, a
  * negative-offset zone (Denver UTC-7), a standard US zone (New York UTC-5),
- * and a positive-offset zone (Auckland UTC+12) — enough to demonstrate the
+ * and a positive-offset zone (Auckland UTC+12) - enough to demonstrate the
  * UTC-midnight date shift bug in both directions.
  */
 export const DEMO_TIMEZONES = [
@@ -17,7 +17,7 @@ export type DemoTimezone = (typeof DEMO_TIMEZONES)[number]['value'];
 
 /*
  * Locales shown in the date format preview table. Chosen to cover the three
- * most common conventions: DD Mon YYYY (en-GB), MM/DD/YYYY (en-US — the
+ * most common conventions: DD Mon YYYY (en-GB), MM/DD/YYYY (en-US - the
  * inversion that breaks HubSpot/Jira integrations), DD.MM.YYYY (de-DE), and
  * DD/MM/YYYY (fr-FR).
  */
@@ -57,7 +57,7 @@ export const defaultTimezoneState: TimezoneState = {
  * in the navbar writes here; date rendering in the item list reads from here
  * and re-renders reactively when the timezone changes.
  *
- * Dev-only concern — not used in production features.
+ * Dev-only concern - not used in production features.
  *
  * @example
  * ```tsx

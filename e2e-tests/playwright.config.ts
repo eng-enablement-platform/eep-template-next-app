@@ -18,7 +18,7 @@ export default defineConfig({
   reporter: [['html', { outputFolder: './playwright-report' }]],
   /*
    * Single worker, sequential. Parallel workers all hit `next dev` cold at
-   * the same time and trigger a thundering herd of route + font compiles —
+   * the same time and trigger a thundering herd of route + font compiles -
    * sustained 200%+ CPU on the dev server and macOS thermal throttling on
    * laptops. Dial workers back up once the suite is large enough that
    * wall-clock time hurts, and ideally only after switching the e2e target
@@ -31,7 +31,7 @@ export default defineConfig({
 
   use: {
     baseURL,
-    /* Keep the full trace only on failure — view via `pnpm e2e:report`. */
+    /* Keep the full trace only on failure - view via `pnpm e2e:report`. */
     trace: 'retain-on-failure',
   },
 
@@ -44,7 +44,7 @@ export default defineConfig({
     url: baseURL,
     reuseExistingServer: !process.env.CI,
     /*
-     * Generous timeout — cold `next dev` boots can be slow on a thermally
+     * Generous timeout - cold `next dev` boots can be slow on a thermally
      * throttled laptop (kernel_task steals CPU after sustained load) and the
      * first-request compile pulls down + subsets the three Google Fonts in
      * the root layout. Default 60s is not enough in those conditions.

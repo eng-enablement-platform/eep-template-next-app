@@ -21,7 +21,7 @@ Permanent utilities that support the development workflow. They live in
 | `seed.ts`            | `pnpm db:seed`                 | Clears and re-populates `example_items` with deterministic test data                                           |
 | `db-smoke-check.ts`  | `pnpm db:check`                | Verifies the DB connection and migration state                                                                 |
 | `copy-swagger-ui.ts` | `pnpm docs:assets` (pre-build) | Vendors Swagger UI assets into `public/`                                                                       |
-| `lint-probe.sh`      | `pnpm lint:probe`              | Regression-tests `eslint.config.ts` — probes each rule to confirm it fires (and doesn't) on synthetic snippets |
+| `lint-probe.sh`      | `pnpm lint:probe`              | Regression-tests `eslint.config.ts` - probes each rule to confirm it fires (and doesn't) on synthetic snippets |
 
 <Callout>
   These are committed, documented, and expected to stay working.
@@ -72,11 +72,11 @@ NODE_OPTIONS='--conditions=react-server' pnpm exec tsx scripts/explore-hubspot-c
 
 Services in `src/classes/services/` import `server-only` at the top of the
 file. This is a compile-time guard that prevents them from being bundled into
-the client — but it also means plain `tsx` throws an error if you try to import
+the client - but it also means plain `tsx` throws an error if you try to import
 them directly:
 
 ```bash
-# ❌ fails — server-only guard throws
+# ❌ fails - server-only guard throws
 pnpm exec tsx scripts/explore-example.ts
 
 # Error: This module cannot be imported from a Client Component module.
@@ -84,11 +84,11 @@ pnpm exec tsx scripts/explore-example.ts
 
 The fix is the `--conditions=react-server` Node flag. It tells the module
 resolver to use the `react-server` export condition, which is how Next.js
-signals "we are running in a server context" — `server-only` sees this condition
+signals "we are running in a server context" - `server-only` sees this condition
 and allows the import:
 
 ```bash
-# ✅ works — server context satisfied
+# ✅ works - server context satisfied
 NODE_OPTIONS='--conditions=react-server' pnpm exec tsx scripts/explore-example.ts
 ```
 
@@ -109,7 +109,7 @@ For scripts that import from `src/classes/services/`, wire this into
 import { config } from 'dotenv';
 
 /*
- * Load .env.local before any src/ imports — env vars must be present
+ * Load .env.local before any src/ imports - env vars must be present
  * before service constructors run (DB connection strings, API keys etc.).
  */
 config({ path: '.env.local' });
@@ -126,8 +126,8 @@ main().catch(console.error);
 
 Two rules:
 
-1. **`config()` must be called before any `src/` import** — Service constructors read env vars at instantiation time.
-2. **Wrap everything in an `async function main()`** — Top-level await is not supported in CJS output.
+1. **`config()` must be called before any `src/` import** - Service constructors read env vars at instantiation time.
+2. **Wrap everything in an `async function main()`** - Top-level await is not supported in CJS output.
 
 ---
 

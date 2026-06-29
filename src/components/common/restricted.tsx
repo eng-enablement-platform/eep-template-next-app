@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
  * Access restricted screen for signed-in users without the Admin role.
  *
  * Shown after `proxy.ts` has confirmed the user is authenticated but not an
- * admin — this deployment is a private testing environment, not a public
+ * admin - this deployment is a private testing environment, not a public
  * product. Provides a sign-out action to clear the session cleanly.
  *
  * @example
@@ -28,7 +28,7 @@ export function Restricted() {
         Access restricted
       </h2>
       <p className='text-muted-foreground mb-6 max-w-prose leading-7'>
-        Thanks for signing in — but this is a private testing deployment of the
+        Thanks for signing in - but this is a private testing deployment of the
         EEP Next.js template and isn&apos;t open for general access. If you
         think you should have access, get in touch with the owner.
       </p>

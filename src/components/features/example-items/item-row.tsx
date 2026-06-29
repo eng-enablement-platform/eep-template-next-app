@@ -31,7 +31,7 @@ import { createResolver, ItemFormFields } from './form';
 type MutateFn = ReturnType<typeof useExampleItems>['mutate'];
 
 /*
- * Item list — renders loading skeletons, error state, empty state, or the
+ * Item list - renders loading skeletons, error state, empty state, or the
  * list of item rows.
  */
 
@@ -67,7 +67,7 @@ export function ItemList({ items, isLoading, error, mutate }: ItemListProps) {
   if (!items?.length) {
     return (
       <p className='text-muted-foreground text-sm'>
-        No items yet — add one above.
+        No items yet - add one above.
       </p>
     );
   }
@@ -82,7 +82,7 @@ export function ItemList({ items, isLoading, error, mutate }: ItemListProps) {
 }
 
 /*
- * Individual item row — switches between view and inline edit mode.
+ * Individual item row - switches between view and inline edit mode.
  */
 
 type ItemRowProps = { item: ExampleItem; mutate: MutateFn };
@@ -102,7 +102,7 @@ function ItemRow({ item, mutate }: ItemRowProps) {
 }
 
 /*
- * View mode — displays item details with edit and delete actions.
+ * View mode - displays item details with edit and delete actions.
  * Delete opens a confirmation dialog before executing the mutation.
  */
 
@@ -228,7 +228,7 @@ function ViewRow({ item, mutate, onEdit }: ViewRowProps) {
 }
 
 /*
- * Edit mode — inline edit form with optimistic SWR update and rollback.
+ * Edit mode - inline edit form with optimistic SWR update and rollback.
  */
 
 type EditRowProps = {

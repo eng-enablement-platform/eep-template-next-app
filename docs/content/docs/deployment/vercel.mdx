@@ -8,7 +8,7 @@ The full deployment stack is **Cloudflare** (domain + DNS) → **Vercel** (hosti
 <Callout type='idea'>
   **What is [DNS](https://www.cloudflare.com/learning/dns/what-is-dns/) (Domain Name System) and what is a [CNAME?](https://www.cloudflare.com/learning/dns/dns-records/dns-cname-record/)**
 
-DNS is the internet's address book — it maps human-readable
+DNS is the internet's address book - it maps human-readable
 names like `yourproject.dev` to the servers that handle requests for them. A
 **CNAME** record says "this subdomain is an alias for another domain". This
 guide uses CNAMEs in two places: Vercel uses them to route `www.yourproject.dev`
@@ -19,13 +19,13 @@ without you hosting anything yourself.
 
 </Callout>
 
-![Deployment diagram — Cloudflare DNS, Vercel, Clerk, and GitHub CI/CD](/code/deployment.png)
+![Deployment diagram - Cloudflare DNS, Vercel, Clerk, and GitHub CI/CD](/code/deployment.png)
 
 ---
 
 <Callout type='warn'>
   **Clerk production instances require a custom domain you own.** `*.vercel.app`
-  URLs are not supported — Clerk needs to set DNS records on your domain, which
+  URLs are not supported - Clerk needs to set DNS records on your domain, which
   isn't possible on a domain Vercel owns. If you don't have a domain yet, you
   can use the Clerk dev keys but there are limitations and this is not advised
   for a production app
@@ -46,7 +46,7 @@ Limitations of dev keys:
 
 ---
 
-## Step 1 — Buy a domain
+## Step 1 - Buy a domain
 
 [Cloudflare Registrar](https://www.cloudflare.com/products/registrar/) sells domains
 at cost with free DNS management.
@@ -64,12 +64,12 @@ Select your domain and proceed to purchase
 
 ![Cloudflare domain purchase form](/cloudflare/cloudflare-purchase-domain.png)
 
-Complete the purchase — Cloudflare confirms and activates the domain
+Complete the purchase - Cloudflare confirms and activates the domain
 
 ![Cloudflare domain confirmation](/cloudflare/cloudflare-domain-confirmation.png)
 
 <Callout type='idea'>
-  `.dev` is a good fit for developer tools — Google-owned, HTTPS enforced by the
+  `.dev` is a good fit for developer tools - Google-owned, HTTPS enforced by the
   registry (browsers won't load `.dev` without SSL)
 </Callout>
 
@@ -81,7 +81,7 @@ Once purchased, Cloudflare is automatically your DNS provider.
 
 ---
 
-## Step 2 — Deploy to Vercel
+## Step 2 - Deploy to Vercel
 
 <Callout type='warn'>
   The Clerk sign-in won't appear until Step 3 is complete. Once deployed you'll
@@ -109,7 +109,7 @@ Vercel needs the **GitHub App** installed to access your repositories. Click
 ![Vercel GitHub App install prompt](/vercel/vercel-github-install.png)
 
 GitHub asks which account and repositories to grant access to. Install for
-the account that owns your repo — you can scope it to specific repos or all
+the account that owns your repo - you can scope it to specific repos or all
 repos.
 
 ![GitHub App repository access screen](/vercel/vercel-install-app.png)
@@ -128,7 +128,7 @@ Vercel detects Next.js automatically and pre-fills the build settings.
 
 ![Vercel repo import selection](/vercel/vercel-import-repo.png)
 
-Before deploying, check the **Root Directory** — leave it empty for the main
+Before deploying, check the **Root Directory** - leave it empty for the main
 app. If you're also deploying the docs site, import the same repo a second
 time and set this to `docs/`.
 
@@ -157,12 +157,12 @@ On the same screen, add your environment variables before hitting **Deploy**:
 
 <Callout type='warn'>
   `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` is inlined into the client bundle at build
-  time — changing it later requires a full redeploy. You'll get the production
+  time - changing it later requires a full redeploy. You'll get the production
   keys (`pk_live_` / `sk_live_`) from Clerk in Step 3. Set placeholder values
   for now if needed and update them before your first real deploy.
 </Callout>
 
-Hit **Deploy**. Once the build completes your app will be live — but the sign-in
+Hit **Deploy**. Once the build completes your app will be live - but the sign-in
 modal won't appear yet. You'll see the page with your app heading but Clerk won't
 load until Step 3 (production Clerk instance + DNS) is complete. That's expected.
 
@@ -181,7 +181,7 @@ them manually in Cloudflare: **DNS** → **Records** → **Add record**.
 ![Cloudflare DNS records for Vercel](/cloudflare/cloudflare-vercel-domains.png)
 
 <Callout>
-  Vercel needs two DNS records — one for the apex domain (`yourproject.dev`) and
+  Vercel needs two DNS records - one for the apex domain (`yourproject.dev`) and
   one for `www.yourproject.dev`. They're separate because as far as DNS is
   concerned, they're two different hostnames. Without both, anyone who types the
   other variant gets nothing. Vercel sets `www` to redirect to the apex so
@@ -195,7 +195,7 @@ them manually in Cloudflare: **DNS** → **Records** → **Add record**.
 
 <Callout type='warn'>
   Ensure both records are set to **DNS only** (grey cloud, not orange) in
-  Cloudflare — the proxy breaks Vercel's SSL certificate provisioning.
+  Cloudflare - the proxy breaks Vercel's SSL certificate provisioning.
 </Callout>
 
 DNS propagates in a few minutes. Vercel shows a green checkmark once it detects
@@ -231,7 +231,7 @@ If you're deploying the docs site as a separate Vercel project:
 
 ---
 
-## Step 3 — Set up a production Clerk instance
+## Step 3 - Set up a production Clerk instance
 
 Now that your domain is live, create the Clerk production instance pointed at it.
 
@@ -244,7 +244,7 @@ set the environment to **Production**.
 
 ![Clerk production instance setup](/clerk/clerk-setup-prod-instance.png)
 
-Clerk offers the option to clone settings from your dev instance — this copies
+Clerk offers the option to clone settings from your dev instance - this copies
 your sign-in method configuration so you don't have to set it up twice.
 
 ![Clerk clone dev instance option](/clerk/clerk-clone-dev-instance.png)
@@ -299,12 +299,12 @@ Cloudflare propagates almost instantly.
   If you cloned settings from your dev instance, this session claim is already
   configured and you can skip this step. You will still need to manually add the
   Admin role to your user in the production Clerk dashboard before you can
-  access the full app — see [Granting Admin
+  access the full app - see [Granting Admin
   access](/docs/dev-environment/authentication#granting-admin-access) for the
   steps.
 </Callout>
 
-Do this once per Clerk instance — required for role-based access to work.
+Do this once per Clerk instance - required for role-based access to work.
 
 Clerk Dashboard → **Configure** → **Sessions** → **Customize session token** → Edit:
 
@@ -319,7 +319,7 @@ Clerk Dashboard → **Configure** → **Sessions** → **Customize session token
 ### Google SSO (optional)
 
 <Callout type='info'>
-  On a Clerk **dev instance**, Google SSO works locally with zero GCP setup —
+  On a Clerk **dev instance**, Google SSO works locally with zero GCP setup -
   Clerk uses shared credentials under the hood. You only need your own GCP OAuth
   client for a **production instance**.
 </Callout>
@@ -367,7 +367,7 @@ Paste your **Client ID** and **Client Secret** → Save.
 
 ---
 
-## Step 4 — Run production migrations
+## Step 4 - Run production migrations
 
 Vercel does not run migrations automatically. After the first deploy:
 
@@ -382,7 +382,7 @@ DATABASE_URL=postgresql://... pnpm db:migrate
 
 ---
 
-## Step 5 — Verify
+## Step 5 - Verify
 
 Trigger a fresh Vercel deployment (push a commit, or redeploy from the dashboard)
 to pick up the Clerk production env vars, then confirm:
@@ -438,7 +438,7 @@ The Clerk JS bundle loads via the `clerk` CNAME (`clerk.yourdomain.dev` →
 propagated yet or wasn't added.
 
 - Confirm the `clerk` CNAME is in Cloudflare DNS set to **DNS only** (grey cloud)
-- Even after Clerk shows DNS as verified, **redeploy on Vercel** — the running
+- Even after Clerk shows DNS as verified, **redeploy on Vercel** - the running
   build needs to pick up the verified domain configuration
 - Try a fresh incognito window after redeploying to avoid browser DNS cache
 
@@ -450,9 +450,9 @@ the production Clerk instance, or the instance hasn't fully activated yet.
 - Confirm `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` starts with `pk_live_` (not
   `pk_test_`) in Vercel → Settings → Environment Variables
 - Make sure it's set for the **Production** environment, not just Development
-- After updating the key, **redeploy** — this var is baked into the bundle at
+- After updating the key, **redeploy** - this var is baked into the bundle at
   build time so updating it without redeploying has no effect
-- If the key is correct and the error persists, **wait a few minutes** — Clerk's
+- If the key is correct and the error persists, **wait a few minutes** - Clerk's
   production instance takes time to fully activate after DNS verification.
   This is normal and will resolve on its own
 

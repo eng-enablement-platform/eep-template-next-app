@@ -3,7 +3,7 @@ import { expect, test } from '@playwright/test';
 /*
  * EXAMPLE E2E TEST
  *
- * Smoke check — verifies the app is running and Clerk's auth gate is active.
+ * Smoke check - verifies the app is running and Clerk's auth gate is active.
  * No credentials required; runs without the auth fixture.
  */
 

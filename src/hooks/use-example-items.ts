@@ -12,7 +12,7 @@ type UseExampleItemsReturn = {
   error: Error | undefined;
   /**
    * SWR mutator for the example items cache. Use this to apply optimistic
-   * updates before the server confirms a mutation — pass `{ optimisticData }`
+   * updates before the server confirms a mutation - pass `{ optimisticData }`
    * with `rollbackOnError: true` so SWR reverts automatically on failure.
    */
   mutate: KeyedMutator<ExampleItemsResponse>;
@@ -26,7 +26,7 @@ type UseExampleItemsReturn = {
  * loading and error state handled here so components stay clean.
  *
  * Exposes `mutate` so callers can apply optimistic updates before the server
- * confirms a mutation — pass `{ optimisticData, rollbackOnError: true }`.
+ * confirms a mutation - pass `{ optimisticData, rollbackOnError: true }`.
  *
  * @returns `items` (undefined while loading), `isLoading`, `error`, and `mutate`.
  * @example
@@ -42,7 +42,7 @@ export function useExampleItems(): UseExampleItemsReturn {
   return {
     items: data?.exampleItems,
     isLoading,
-    // SWR types error as `any` — narrow to Error so callers get a stable shape.
+    // SWR types error as `any` - narrow to Error so callers get a stable shape.
     error: error instanceof Error ? error : undefined,
     mutate,
   };

@@ -5,7 +5,7 @@ description: Creating a Clerk application, getting your API keys, and configurin
 
 [Clerk](https://clerk.com) is the managed authentication provider used by this template.
 It handles sign-up, sign-in, session management, OAuth providers (Google, GitHub, etc.),
-and user profiles — all without you building or maintaining any auth infrastructure.
+and user profiles - all without you building or maintaining any auth infrastructure.
 The free tier covers most early-stage projects.
 
 <Callout>
@@ -45,7 +45,7 @@ and gates admin routes by role.
 <Callout type='warn'>
   The live demo deployment of this template is intentionally locked to Admin
   users only. If you sign up and find yourself on an "Access restricted" page,
-  that's expected — the deployment is a private testing environment, not a
+  that's expected - the deployment is a private testing environment, not a
   public product. When scaffolding a real project from this template, relax the
   gate in `proxy.ts` to allow broader access.
 </Callout>
@@ -54,8 +54,8 @@ and gates admin routes by role.
 
 ## Why the routes use `[[...sign-in]]`
 
-Clerk's prebuilt UI handles multiple authentication methods — email/password, magic links,
-OAuth providers (Google, GitHub, etc.) — and each step in each flow lands on a different
+Clerk's prebuilt UI handles multiple authentication methods - email/password, magic links,
+OAuth providers (Google, GitHub, etc.) - and each step in each flow lands on a different
 URL path:
 
 ```
@@ -73,7 +73,7 @@ Next.js [optional catch-all segments](https://nextjs.org/docs/app/building-your-
 app/(auth)/sign-in/[[...sign-in]]/page.tsx
 ```
 
-The `[[...sign-in]]` segment matches `/sign-in` and any sub-path beneath it — so one
+The `[[...sign-in]]` segment matches `/sign-in` and any sub-path beneath it - so one
 page file covers the entire authentication flow without any additional routing config.
 Clerk's component handles the internal navigation between steps.
 
@@ -82,7 +82,7 @@ Clerk's component handles the internal navigation between steps.
 ## Granting Admin access
 
 Admin-only routes (`/admin/*`, `/api-docs/*`) are gated by a `role` claim in the session
-token. Two steps are required — missing either gives a silent 403.
+token. Two steps are required - missing either gives a silent 403.
 
 <CollapsibleSteps>
 
@@ -96,7 +96,7 @@ This is a one-time instance-level setting. Clerk Dashboard → **Configure** →
 ```
 
 Save. This tells Clerk to include `public_metadata` in every JWT it mints for
-this instance — without it, the `role` claim never reaches your app.
+this instance - without it, the `role` claim never reaches your app.
 
 ![Clerk session token customisation](/clerk/clerk-session-token.png)
 
@@ -118,7 +118,7 @@ Save, then sign out and back in so a fresh token is minted with the new claim.
 
 </CollapsibleSteps>
 
-If you still get a 403 after both steps, the claim is missing from the JWT — check that
+If you still get a 403 after both steps, the claim is missing from the JWT - check that
 step 2 was saved, or that the session isn't stale (sign out and back in).
 
 ---
@@ -126,7 +126,7 @@ step 2 was saved, or that the session isn't stale (sign out and back in).
 ## E2E test user
 
 For Playwright authenticated tests, you need a user in this Clerk instance. The simplest
-approach: just sign in to the running app — that creates your account automatically. Then
+approach: just sign in to the running app - that creates your account automatically. Then
 set their email in `.env.local`:
 
 ```bash

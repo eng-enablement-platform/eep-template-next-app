@@ -1,7 +1,7 @@
 # Local Postgres for development.
 #
 # Brings up a single Postgres instance matching the DATABASE_URL in
-# env.local_template. Production uses a hosted provider (e.g. Neon) — only the
+# env.local_template. Production uses a hosted provider (e.g. Neon) - only the
 # DATABASE_URL changes, the app's node-postgres driver is identical.
 #
 #   docker compose up -d      # start

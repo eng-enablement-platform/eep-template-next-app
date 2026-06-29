@@ -3,7 +3,7 @@
  *
  * Every internal `/api/*` path consumed by a SWR hook is defined here.
  *
- * For parameterised routes, use the builder function — it produces a
+ * For parameterised routes, use the builder function - it produces a
  * fully-resolved path and keeps call sites free of manual string interpolation.
  *
  * @example
@@ -16,7 +16,7 @@
  * ```
  */
 export const API_ROUTES = {
-  /** `GET /api/example-items` — list all example items. */
+  /** `GET /api/example-items` - list all example items. */
   exampleItems: '/api/example-items',
 
   /**

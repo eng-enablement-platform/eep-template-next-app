@@ -39,9 +39,9 @@ In the server layer design patterns are applied deliberately, creating repeatabl
 
 The patterns used / referenced are:
 
-- **Singleton (module-scoped instance)** — The intent is a singleton but Next.js compiles API routes and server actions into separate bundles, so in practice you get one instance per bundle rather than one truly global instance
-- **Factory** — Per-request instantiation when the service needs context baked in
-- **Inheritance vs Composition** — Base clients handle cross-cutting concerns; domain clients extend or compose depending on what they need
+- **Singleton (module-scoped instance)** - The intent is a singleton but Next.js compiles API routes and server actions into separate bundles, so in practice you get one instance per bundle rather than one truly global instance
+- **Factory** - Per-request instantiation when the service needs context baked in
+- **Inheritance vs Composition** - Base clients handle cross-cutting concerns; domain clients extend or compose depending on what they need
 
 ---
 
@@ -56,12 +56,12 @@ in one project and the "just use functions" philosophy doesn't really cut it her
 
 Using a class for each domain service provides a number of benefits:
 
-- **Instantiation control** — A module export is always a singleton by nature,
+- **Instantiation control** - A module export is always a singleton by nature,
   you can't control it. A class lets you make that choice explicitly, which
   matters when some services need per-request instances (see
   [Module-scoped instances vs factory](#module-scoped-instances-vs-factory) below).
 
-- **Code organisation** — A class groups all related methods for a domain in
+- **Code organisation** - A class groups all related methods for a domain in
   one tidy place.
 
   <Files>
@@ -73,7 +73,7 @@ Using a class for each domain service provides a number of benefits:
   </Files>
 
   ```ts
-  // Everything related to example items — in one place, nothing else
+  // Everything related to example items - in one place, nothing else
   class ExampleItemService {
     async getAll(): Promise<ExampleItem[]> { ... }
     async getById(id: number): Promise<ExampleItem | null> { ... }
@@ -83,7 +83,7 @@ Using a class for each domain service provides a number of benefits:
   }
   ```
 
-- **Import ergonomics** — With plain function exports you either import every method individually, which is noisy
+- **Import ergonomics** - With plain function exports you either import every method individually, which is noisy
   or use `import *` to avoid the noise, which then breaks [tree-shaking](https://webpack.js.org/guides/tree-shaking/) and prevents
   `import type` from working cleanly:
 
@@ -165,7 +165,7 @@ From a purely syntactical perspective though the pattern of the code is a single
 The **singleton pattern** (_module-scoped instances_) is the default for service instantiation. There are two forms depending on whether construction
 has side effects:
 
-- **Eager singleton** — The default. `export const x = new X()`. Right for any
+- **Eager singleton** - The default. `export const x = new X()`. Right for any
   stateless service where every caller needs the same thing:
 
   ```ts
@@ -173,7 +173,7 @@ has side effects:
   export const hubspotService = new HubspotService(process.env.HUBSPOT_API_KEY);
   ```
 
-- **Lazy singleton** — Use only when construction has side effects that must be
+- **Lazy singleton** - Use only when construction has side effects that must be
   deferred past import time (creating directories, opening file handles).
   `ApplicationLogger` uses this because its constructor creates Winston file
   transports:
@@ -217,10 +217,10 @@ end up passing `companyId` into every single method call, which is noisy and
 easy to forget:
 
 ```ts
-// Module-scoped instance — companyId has to be threaded through every call
+// Module-scoped instance - companyId has to be threaded through every call
 export const reportService = new ReportService();
 
-// At the call site — easy to forget, no compiler enforcement
+// At the call site - easy to forget, no compiler enforcement
 const reports = await reportService.getReports(companyId);
 const report = await reportService.create(companyId, input);
 const deleted = await reportService.delete(companyId, id);
@@ -233,7 +233,7 @@ class ReportService {
   constructor(private readonly companyId: string) {}
 
   async getReports() {
-    // companyId is always correct — baked in at construction
+    // companyId is always correct - baked in at construction
     return db
       .select()
       .from(reportsTable)
@@ -271,7 +271,7 @@ queuing, retry logic. Individual domain clients then build on top of it.
 
 There are two ways to do this and the choice depends on what the domain client is doing:
 
-- **Inheritance** (_extend the base class_) — Use when the domain client needs to add new operations that
+- **Inheritance** (_extend the base class_) - Use when the domain client needs to add new operations that
   build directly on the base class's internals. The domain client `extends` the
   base and gets direct access to its protected methods:
 
@@ -309,14 +309,14 @@ export class PaymentsClient extends HttpClient {
     super(process.env.PAYMENTS_BASE_URL!);
   }
 
-  // this.post() is available directly via extends — no re-implementation needed
+  // this.post() is available directly via extends - no re-implementation needed
   async createCharge(input: ChargeInput) {
     return this.post('/charges', input);
   }
 }
 ```
 
-- **Composition** (_hold the base class as a private member_) — Use when the domain client is primarily transforming or
+- **Composition** (_hold the base class as a private member_) - Use when the domain client is primarily transforming or
   querying data, not adding new transport-level operations. The base client is a
   private dependency, injected or constructed internally:
 

@@ -13,7 +13,7 @@ import { z } from 'zod';
  * The single source of truth for `example_items` input validation. Both the
  * REST route handlers and the server actions import these schemas, so the read
  * surface and the write surface cannot validate differently. This is the
- * boundary validation the architecture mandates — untrusted input is parsed
+ * boundary validation the architecture mandates - untrusted input is parsed
  * here before it reaches the service layer.
  *
  * The `.meta()` annotations make these schemas double as the OpenAPI contract:
@@ -33,7 +33,7 @@ export const exampleItemStatusValues = ['draft', 'active', 'archived'] as const;
  * This is the shared base both the create and update schemas are built from.
  * Keeping it default-free is deliberate: the update (PATCH) schema is
  * `.partial()` of this base, and in Zod a `.default()` still fills an *absent*
- * key on parse — so a default on the base would silently reappear on a partial
+ * key on parse - so a default on the base would silently reappear on a partial
  * update (e.g. `PATCH { status }` would reset `quantity` to 0). Defaults are
  * layered back on only for the create schema below, where filling an omitted
  * field is the desired behaviour.
@@ -65,7 +65,7 @@ const exampleItemFields = z.object({
     .optional()
     .meta({
       description:
-        'Optional expiry date in YYYY-MM-DD format. Stored as a plain calendar date — no timezone conversion applied.',
+        'Optional expiry date in YYYY-MM-DD format. Stored as a plain calendar date - no timezone conversion applied.',
       example: '2027-12-29',
     }),
 });
@@ -96,13 +96,13 @@ export const exampleItemSchema = exampleItemFields
  */
 export const exampleItemUpdateSchema = exampleItemFields.partial().meta({
   id: 'ExampleItemUpdateInput',
-  description: 'Body for a partial update — send only the fields that changed.',
+  description: 'Body for a partial update - send only the fields that changed.',
 });
 
 /**
  * The full, materialised `example_items` row as returned by the API, including
  * the database-generated `id` and `createdAt`. This is the API's output
- * contract — kept here so the request schemas (above) and the response schema
+ * contract - kept here so the request schemas (above) and the response schema
  * share one home and one OpenAPI registration.
  */
 export const exampleItemEntitySchema = z

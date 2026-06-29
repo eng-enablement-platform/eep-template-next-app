@@ -8,7 +8,7 @@
  * swr.tsx), so hooks don't need to pass it explicitly:
  *
  *
- * Only import this directly if you need to bypass `SWRConfig` — e.g. in a
+ * Only import this directly if you need to bypass `SWRConfig` - e.g. in a
  * one-off `useSWR(key, customFetcher)` call or outside the React tree.
  *
  * @param input - URL or Request passed straight to `fetch`.

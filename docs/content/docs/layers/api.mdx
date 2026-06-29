@@ -20,11 +20,11 @@ button calls a typed function directly, no `fetch`, no endpoint URL, no JSON ser
 
 Compared to a route handler, actions give you:
 
-- **No fetch glue** — Call the function directly from a component or form. No API client to maintain.
-- **Type-safe arguments** — TypeScript enforces the call signature end-to-end. A route handler's `request.json()` is `unknown` until you parse it.
-- **`revalidatePath` / `revalidateTag`** — Actions can purge the Next.js cache inline, so the UI updates immediately after a mutation without a manual refetch.
-- **Progressive enhancement** — Forms with an `action=` attribute work without JavaScript. Route handlers don't give you this.
-- **Simpler error handling** — Return a discriminated result (`{ ok: true, data }` / `{ ok: false, error }`); the component branches on it. No HTTP status codes to map back into UI state.
+- **No fetch glue** - Call the function directly from a component or form. No API client to maintain.
+- **Type-safe arguments** - TypeScript enforces the call signature end-to-end. A route handler's `request.json()` is `unknown` until you parse it.
+- **`revalidatePath` / `revalidateTag`** - Actions can purge the Next.js cache inline, so the UI updates immediately after a mutation without a manual refetch.
+- **Progressive enhancement** - Forms with an `action=` attribute work without JavaScript. Route handlers don't give you this.
+- **Simpler error handling** - Return a discriminated result (`{ ok: true, data }` / `{ ok: false, error }`); the component branches on it. No HTTP status codes to map back into UI state.
 
 <Callout>
   The moment an external caller needs to write (a Slack webhook, a cron job, a
@@ -102,14 +102,14 @@ Shape the response
 // app/api/example-items/route.ts
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
-    // 1. Validate at the boundary — parse untrusted input before it reaches the service
+    // 1. Validate at the boundary - parse untrusted input before it reaches the service
     const parsed = exampleItemSchema.safeParse(await request.json());
 
     if (!parsed.success) {
       return validationErrorResponse(parsed.error); // 400
     }
 
-    // 2. Call the service — business logic lives here, not in the handler
+    // 2. Call the service - business logic lives here, not in the handler
     const exampleItem = await exampleItemService.create(parsed.data);
     logger.info({ message: 'Example item created', id: exampleItem.id });
 
@@ -126,7 +126,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 - Named exports for each HTTP method (`GET`, `POST`, `PATCH`, `DELETE`)
 - Every handler is typed: `(request: NextRequest): Promise<NextResponse>`.
 - Zod `safeParse` at the boundary before anything reaches the service.
-- `validationErrorResponse` for 400, `routeErrorHandler` for 500 — both from `app/api/utils/`.
+- `validationErrorResponse` for 400, `routeErrorHandler` for 500 - both from `app/api/utils/`.
   Consistent error shapes across every route.
 - Log mutations at the handler. Creates, updates, and deletes are worth a log line because they give you a quick audit trail ("item X was created", "item Y was deleted"). Don't log every read, that's just noise.
 - The service layer rethrows rather than logging, so a failure is never recorded twice under two sources.
@@ -169,7 +169,7 @@ service.
 
 ---
 
-## `force-dynamic` — when and why
+## `force-dynamic` - when and why
 
 Next.js statically analyses route handlers at build time and may cache GET
 responses that have no dynamic inputs (no headers, cookies, or search params).
@@ -177,7 +177,7 @@ If your handler reads from a DB or calls an external API, you need to opt out of
 that caching:
 
 ```ts
-// Opt out of static caching — this route must run on every request.
+// Opt out of static caching - this route must run on every request.
 export const dynamic = 'force-dynamic';
 
 export async function GET(): Promise<NextResponse> {
@@ -188,7 +188,7 @@ export async function GET(): Promise<NextResponse> {
 
 **When to add it:** any GET route whose response can change between requests
 (DB reads, external API calls, authenticated data). Routes that already read
-cookies or headers are implicitly dynamic — Next.js detects this. `force-dynamic`
+cookies or headers are implicitly dynamic - Next.js detects this. `force-dynamic`
 is only needed when Next.js can't infer it.
 
 <Callout>
@@ -204,7 +204,7 @@ is only needed when Next.js can't infer it.
 
 <Callout type='idea'>
   Like everything in this template, this is pick-and-choose. Keep the docs up to
-  date as you go, or ignore them entirely — the routes work either way.
+  date as you go, or ignore them entirely - the routes work either way.
 </Callout>
 
 Swagger isn't a common pattern in Next.js projects and there's no straightforward
@@ -214,21 +214,21 @@ from the same Zod schemas the routes already validate with. It's a small amount
 of config per route, but it's manual.
 
 The upside is that the request bodies, response shapes, and validators all come
-from one place — the docs cannot drift from what the API actually accepts.
+from one place - the docs cannot drift from what the API actually accepts.
 
 ### How it works
 
 The spec lives in `src/lib/openapi/index.ts` and is assembled from three things:
 
-- **Zod schemas** annotated with `.meta()` — these become the request/response shapes in the docs
-- **`paths` entries** — one per route operation, wiring schemas to HTTP methods and status codes
-- **`createDocument`** from `zod-openapi` — combines everything into an OpenAPI 3.1 document
+- **Zod schemas** annotated with `.meta()` - these become the request/response shapes in the docs
+- **`paths` entries** - one per route operation, wiring schemas to HTTP methods and status codes
+- **`createDocument`** from `zod-openapi` - combines everything into an OpenAPI 3.1 document
 
 The `/api/openapi` route serves the document as JSON. The `/api-docs` route serves a Swagger UI shell that points at it.
 
 ### Adding a new route to the docs
 
-Say you add `POST /api/widgets`. The route itself works without any of the steps below — they only affect the docs.
+Say you add `POST /api/widgets`. The route itself works without any of the steps below - they only affect the docs.
 
 <CollapsibleSteps>
 <CollapsibleStep title="Annotate the Zod schema with .meta()" defaultOpen={false}>
@@ -257,7 +257,7 @@ export const widgetSchema = z
   .meta({ id: 'WidgetInput', description: 'Body for creating a widget.' });
 
 /* The entity schema is the full row the API returns, including generated fields.
-   This is the response contract — keep it here alongside the input schemas. */
+   This is the response contract - keep it here alongside the input schemas. */
 export const widgetEntitySchema = z
   .object({
     id: z.number().int().meta({ example: 1 }),
@@ -301,7 +301,7 @@ paths: {
 ```
 
 The shared `validationErrorResponse` and `notFoundResponse` constants are already
-defined at the top of the file — reuse them for consistent 400/404 shapes across
+defined at the top of the file - reuse them for consistent 400/404 shapes across
 every route.
 
 </CollapsibleStep>

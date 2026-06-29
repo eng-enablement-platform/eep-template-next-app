@@ -1,6 +1,6 @@
 ---
 title: Observability
-description: Structured logging with Winston and distributed tracing with OpenTelemetry — two complementary signals, how they fit together, and how to see traces locally.
+description: Structured logging with Winston and distributed tracing with OpenTelemetry - two complementary signals, how they fit together, and how to see traces locally.
 ---
 
 ## Two signals, one picture
@@ -16,8 +16,8 @@ replace each other:
 Logs answer _"what happened?"_. Traces answer _"where did the time go?"_. Both
 are useful; neither replaces the other.
 
-For the full logging reference — `logSource` vs `scope`, verbosity knobs, the
-DB query diagnostic — see [Logging](/docs/conventions/logging).
+For the full logging reference - `logSource` vs `scope`, verbosity knobs, the
+DB query diagnostic - see [Logging](/docs/conventions/logging).
 
 ---
 
@@ -29,7 +29,7 @@ additional code:
 
 | Span                                     | When it appears                                                                |
 | ---------------------------------------- | ------------------------------------------------------------------------------ |
-| `[http.method] [next.route]`             | Root span for every incoming request — HTTP method, route pattern, status code |
+| `[http.method] [next.route]`             | Root span for every incoming request - HTTP method, route pattern, status code |
 | `render route (app) [next.route]`        | App Router route rendering                                                     |
 | `fetch [http.method] [http.url]`         | Every `fetch()` call made from server components, actions, or route handlers   |
 | `executing api route (app) [next.route]` | API route handler execution                                                    |
@@ -59,7 +59,7 @@ OTel Collector :4318   ← OTEL_EXPORTER_OTLP_ENDPOINT points here
 Jaeger :16686          ← open this in a browser
 ```
 
-`:4318` is a data ingestion endpoint — not a UI. The collector receives spans
+`:4318` is a data ingestion endpoint - not a UI. The collector receives spans
 from Next.js, batches them, and pipes them into [Jaeger](https://www.jaegertracing.io/). `:16686` is the Jaeger
 web UI where you actually view traces. The collector exists so you can swap
 the backend (Jaeger → Grafana → Honeycomb) without changing the app.
@@ -81,7 +81,7 @@ This brings up:
 docker compose -f docker-compose.otel.yml down
 ```
 
-Trace data is not persisted — Jaeger stores everything in memory so it clears
+Trace data is not persisted - Jaeger stores everything in memory so it clears
 on each restart.
 
 ### Point Next.js at the collector
@@ -100,22 +100,22 @@ Restart the dev server after setting these.
 Generate some traces by browsing a few pages in the app,
 
 Open [http://localhost:16686](http://localhost:16686). Traces don't appear
-automatically — you need to search for them:
+automatically - you need to search for them:
 
 1. Select **next-template** from the **Service** dropdown
 2. Click **Find Traces**
 
-![Jaeger find traces — select service and click Find Traces](/jaeger/jaeger-find-traces.png)
+![Jaeger find traces - select service and click Find Traces](/jaeger/jaeger-find-traces.png)
 
 You'll see a list of recent traces, one per request. Click any trace to open
-the waterfall — root span at the top, nested child spans beneath it showing
+the waterfall - root span at the top, nested child spans beneath it showing
 rendering, fetch calls, and route handler execution with millisecond timings.
 
-![Jaeger trace waterfall — nested spans with timing](/jaeger/jaeger-traces.png)
+![Jaeger trace waterfall - nested spans with timing](/jaeger/jaeger-traces.png)
 
 <Callout>
   No traces appearing? Make sure `OTEL_EXPORTER_OTLP_ENDPOINT` is set and the
-  dev server was **restarted** after adding it — Next.js reads env vars at
+  dev server was **restarted** after adding it - Next.js reads env vars at
   startup, not at request time. Check the collector is receiving data with:
   `docker logs next-template-otel-collector --tail 20`.
 </Callout>
@@ -124,10 +124,10 @@ rendering, fetch calls, and route handler execution with millisecond timings.
 
 ## How it's wired
 
-**`src/instrumentation.ts`** — Next.js calls this file's `register()` export
+**`src/instrumentation.ts`** - Next.js calls this file's `register()` export
 once before the app starts in each runtime (Node.js and Edge). It registers the
 `@vercel/otel` SDK with the service name `next-template`. No other files need
-to change — Next.js picks up the instrumentation hook automatically.
+to change - Next.js picks up the instrumentation hook automatically.
 
 ```ts
 import { registerOTel } from '@vercel/otel';
@@ -173,26 +173,26 @@ time, so it shows up in Jaeger under the right request.
 
 ### Deploying to Vercel
 
-If you deploy to Vercel, `instrumentation.ts` is all you need — no extra
+If you deploy to Vercel, `instrumentation.ts` is all you need - no extra
 configuration required. Vercel automatically picks it up and gives you two
 things for free:
 
-**Session Tracing** — in the Vercel dashboard, open the toolbar on any preview
+**Session Tracing** - in the Vercel dashboard, open the toolbar on any preview
 or production deployment and enable Session Tracing. Vercel captures
 infrastructure, rendering, and fetch spans for every request you make during
 that session and surfaces them in Logs → Traces. Good for ad-hoc debugging
 without a vendor account.
 
-**Trace Drains** — when you want traces in a persistent backend (Datadog,
+**Trace Drains** - when you want traces in a persistent backend (Datadog,
 Grafana, Honeycomb), install the integration from the Vercel Marketplace. All
-routing happens on the Vercel side — no env vars or code changes needed in the
+routing happens on the Vercel side - no env vars or code changes needed in the
 app itself.
 
 <Callout>
   Session Tracing and Trace Drains only work when you use `@vercel/otel`. If you
   swap to the manual OpenTelemetry SDK, you lose both. This is why the template
   uses `@vercel/otel` rather than configuring the SDK directly. You do **not**
-  need to switch away from `@vercel/otel` to use your own observability vendor —
+  need to switch away from `@vercel/otel` to use your own observability vendor -
   it sends to any OTLP-compatible endpoint via `OTEL_EXPORTER_OTLP_ENDPOINT`.
   Only switch to the manual SDK if you hit a specific config wall (custom
   sampler, multiple exporters, non-OTLP protocol).
@@ -201,7 +201,7 @@ app itself.
 ### Self-hosting or a custom vendor
 
 Point `OTEL_EXPORTER_OTLP_ENDPOINT` at your collector or vendor's OTLP
-endpoint. No code changes needed — the same `instrumentation.ts` works
+endpoint. No code changes needed - the same `instrumentation.ts` works
 everywhere:
 
 | Vendor                | Endpoint                                                    |
@@ -219,4 +219,5 @@ OTEL_EXPORTER_OTLP_HEADERS=x-honeycomb-team=your-api-key
 
 Set these in Vercel Project Settings → Environment Variables, or in your
 platform's equivalent. Next.js 15+ detects `instrumentation.ts` automatically
-— no other configuration needed.
+
+- no other configuration needed.

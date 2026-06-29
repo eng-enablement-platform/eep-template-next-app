@@ -1,4 +1,4 @@
-// Validate env vars at build time — fails fast with a clear error if anything is missing.
+// Validate env vars at build time - fails fast with a clear error if anything is missing.
 import './src/lib/env';
 
 import type { NextConfig } from 'next';

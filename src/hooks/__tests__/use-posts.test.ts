@@ -80,7 +80,7 @@ describe('usePosts', () => {
 
   it('coerces non-Error rejections to undefined', () => {
     /*
-     * SWR types error as `any` — the hook narrows it; a raw string should not
+     * SWR types error as `any` - the hook narrows it; a raw string should not
      * escape as the error value.
      */
     mockUseSWR.mockReturnValue({

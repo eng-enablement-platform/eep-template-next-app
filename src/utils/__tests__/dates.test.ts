@@ -10,7 +10,7 @@ import { formatDate, parseDateSafe } from '@/utils/dates';
  *
  * The core invariant: a date-only ISO string (YYYY-MM-DD) must parse to the
  * same calendar date regardless of the host timezone. Native `new Date('2027-12-29')`
- * fails this — it parses as UTC midnight, which rolls back to Dec 28 in any
+ * fails this - it parses as UTC midnight, which rolls back to Dec 28 in any
  * negative-offset timezone. parseDateSafe() must parse as local midnight instead.
  */
 
@@ -21,7 +21,7 @@ describe('parseDateSafe', () => {
 
       expect(result).not.toBeNull();
       /*
-       * These assertions use local date methods intentionally — the whole point
+       * These assertions use local date methods intentionally - the whole point
        * is that the parsed date reflects the correct calendar date in local time.
        */
       expect(result!.getFullYear()).toBe(2027);
@@ -43,7 +43,7 @@ describe('parseDateSafe', () => {
       const result = parseDateSafe('2027-12-29T10:30:00Z');
 
       expect(result).not.toBeNull();
-      // Full datetime strings include time and timezone — native parsing is correct here
+      // Full datetime strings include time and timezone - native parsing is correct here
       expect(result).toBeInstanceOf(Date);
     });
   });

@@ -27,9 +27,9 @@ export const env = createEnv({
       .default('development'),
     DATABASE_URL: z.url('DATABASE_URL must be a valid connection string URL'),
     CLERK_SECRET_KEY: z.string().min(1, 'CLERK_SECRET_KEY is required'),
-    // Optional — controls Winston verbosity floor. Defaults per NODE_ENV when unset.
+    // Optional - controls Winston verbosity floor. Defaults per NODE_ENV when unset.
     LOG_LEVEL: z.enum(['error', 'warn', 'info', 'http', 'debug']).optional(),
-    // Optional — set to '1' to stream raw Drizzle SQL to the console in dev.
+    // Optional - set to '1' to stream raw Drizzle SQL to the console in dev.
     DB_QUERY_LOG: z.string().optional(),
   },
   client: {
@@ -40,7 +40,7 @@ export const env = createEnv({
     NEXT_PUBLIC_CLERK_SIGN_UP_URL: z.string().default('/sign-up'),
     NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL: z.string().default('/'),
     NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL: z.string().default('/'),
-    // Optional — when set, a "Docs" link appears in the homepage navbar.
+    // Optional - when set, a "Docs" link appears in the homepage navbar.
     NEXT_PUBLIC_DOCS_URL: z.url().optional(),
   },
   runtimeEnv: {

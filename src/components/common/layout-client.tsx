@@ -14,7 +14,7 @@ type RootLayoutClientProps = {
 /*
  * Client shell that owns auth gating for authenticated routes.
  *
- * Auth routes (/sign-in, /sign-up) never reach this component — they live in
+ * Auth routes (/sign-in, /sign-up) never reach this component - they live in
  * the (auth) route group which has its own bare layout. So this component can
  * assume every visitor should be signed in and gate unconditionally.
  *

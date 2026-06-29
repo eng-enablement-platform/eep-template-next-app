@@ -59,7 +59,7 @@ pnpm db:check
 ```
 
 A fast, read-only probe of the full `DATABASE_URL → pg.Pool → Drizzle → example_items`
-path. Useful after a fresh clone or when the DB is misbehaving — it confirms the
+path. Useful after a fresh clone or when the DB is misbehaving - it confirms the
 connection, driver, and schema are all wired correctly without mutating any data.
 
 ---
@@ -70,7 +70,7 @@ connection, driver, and schema are all wired correctly without mutating any data
 pnpm db:studio
 ```
 
-Opens [Drizzle Studio](https://orm.drizzle.team/drizzle-studio/overview) — a browser-based
+Opens [Drizzle Studio](https://orm.drizzle.team/drizzle-studio/overview) - a browser-based
 table viewer and editor. Useful for inspecting data during development.
 
 ---
@@ -78,7 +78,7 @@ table viewer and editor. Useful for inspecting data during development.
 ## Production
 
 For production, replace `DATABASE_URL` with your hosted provider's connection string.
-[Neon](https://neon.tech) is the recommended option — see [Neon Setup](/docs/dev-environment/neon)
+[Neon](https://neon.tech) is the recommended option - see [Neon Setup](/docs/dev-environment/neon)
 for the setup steps. No code changes are needed; only the env var changes.
 
 ---
@@ -86,7 +86,7 @@ for the setup steps. No code changes are needed; only the env var changes.
 ## Extending with caching
 
 This template uses Postgres for all persistence. As your app grows you may reach a point
-where certain workloads benefit from a cache layer — common triggers are:
+where certain workloads benefit from a cache layer - common triggers are:
 
 - **Rate limiting** API routes (the most common early need)
 - **Caching expensive queries** to avoid redundant DB round-trips across serverless invocations
@@ -98,7 +98,7 @@ serverless environment, and has a native Vercel integration that injects env var
 The setup mirrors Neon: create a database, add two env vars
 (`UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN`), and you're connected.
 
-When you add it, follow the same service pattern as everything else in `classes/` — a
+When you add it, follow the same service pattern as everything else in `classes/` - a
 `classes/services/cache/` singleton wrapping `@upstash/redis`. Rate limiting drops into
 `proxy.ts` via `@upstash/ratelimit` without touching any other layer.
 

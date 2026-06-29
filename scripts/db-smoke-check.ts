@@ -38,7 +38,7 @@ async function smokeCheck(): Promise<void> {
   const isLocal =
     host === 'localhost' || host === '127.0.0.1' || host === 'postgres';
   console.log(
-    `Connecting to: ${host} ${isLocal ? '(local)' : '(remote — make sure this is intentional)'}`,
+    `Connecting to: ${host} ${isLocal ? '(local)' : '(remote - make sure this is intentional)'}`,
   );
 
   const pool = buildPool();
@@ -49,7 +49,7 @@ async function smokeCheck(): Promise<void> {
     console.log(`Row count: ${all.length}`);
 
     if (all.length === 0) {
-      throw new Error('No rows found — did you run `pnpm db:seed`?');
+      throw new Error('No rows found - did you run `pnpm db:seed`?');
     }
 
     // Confirm a filtered single-row read returns the row we asked for.

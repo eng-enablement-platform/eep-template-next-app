@@ -126,7 +126,7 @@ class ApplicationLogger {
  * This logger is designed to be used for any backend service.
  *
  * @param logSource - The architectural layer the log came from. Constrained to
- * the {@link LOG_SOURCE} set so casing and the source list can't drift — pass a
+ * the {@link LOG_SOURCE} set so casing and the source list can't drift - pass a
  * `scope` field on the log call for the specific module/concern.
  * @returns - Logger instance
  *

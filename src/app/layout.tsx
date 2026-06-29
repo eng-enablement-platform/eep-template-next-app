@@ -11,10 +11,10 @@ import { cn } from '@/utils/tailwind-merge';
 
 /*
  * Clerk reads the publishable key from `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
- * automatically — we never pass it explicitly.
+ * automatically - we never pass it explicitly.
  *
  * ─────────────────────────────────────────────────────────────────────────
- * SELF-HOSTING / DOCKER CAVEAT — read before changing how the key is supplied
+ * SELF-HOSTING / DOCKER CAVEAT - read before changing how the key is supplied
  * ─────────────────────────────────────────────────────────────────────────
  * `NEXT_PUBLIC_*` vars are INLINED INTO THE CLIENT BUNDLE AT BUILD TIME, not
  * read at runtime. On Vercel this is fine: each environment is built with its
@@ -23,7 +23,7 @@ import { cn } from '@/utils/tailwind-merge';
  * It breaks when you build ONE Docker image and promote it across environments
  * (or inject env only at `docker run` / k8s deploy time). The key is fixed at
  * `next build`, so a runtime-provided `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` never
- * reaches the bundle — the client ends up with whatever value (often empty)
+ * reaches the bundle - the client ends up with whatever value (often empty)
  * existed during the build.
  *
  * If you hit that, make the key a RUNTIME value instead:

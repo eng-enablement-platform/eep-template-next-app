@@ -68,7 +68,7 @@ function useFormField() {
  * ---------------------------------------------------------------------------
  */
 
-/** Root form context provider — wrap your `<form>` with this. */
+/** Root form context provider - wrap your `<form>` with this. */
 const Form = FormProvider;
 
 /**
@@ -88,7 +88,7 @@ function FormField<
 }
 
 /**
- * Container for a single form field — provides the item `id` used by label,
+ * Container for a single form field - provides the item `id` used by label,
  * input, description, and message to build matching `htmlFor` / `aria-*`
  * attribute chains.
  */
@@ -167,7 +167,7 @@ function FormDescription({ className, ...props }: React.ComponentProps<'p'>) {
 
 /**
  * Validation error message for the field. Renders nothing when the field is
- * valid — no need to conditionally render it yourself.
+ * valid - no need to conditionally render it yourself.
  */
 function FormMessage({ className, ...props }: React.ComponentProps<'p'>) {
   const { error, formMessageId } = useFormField();

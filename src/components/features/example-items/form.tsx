@@ -28,7 +28,7 @@ import {
 } from '@/validation/example-item';
 
 /*
- * Both forms share the same field shape — the create and update Zod schemas
+ * Both forms share the same field shape - the create and update Zod schemas
  * differ only in which fields are required vs optional, not in field names or
  * types. A single form values type covers both, and the resolver cast is
  * applied once via the helper below.
@@ -36,7 +36,7 @@ import {
  * The `quantity` override exists because z.coerce.number() is typed as
  * `unknown` input in Zod 4, which confuses react-hook-form's type inference.
  * The browser already gives us a real number via `valueAsNumber` before Zod
- * runs, so this is a type-level fix only — no runtime impact.
+ * runs, so this is a type-level fix only - no runtime impact.
  */
 export type ItemFormValues = {
   name: string;
@@ -61,7 +61,7 @@ export const createResolver = (
 
 type ItemFormFieldsProps = {
   control: Control<ItemFormValues>;
-  /** Shows labels — omitted in the compact edit row where labels add noise. */
+  /** Shows labels - omitted in the compact edit row where labels add noise. */
   showLabels?: boolean;
 };
 
@@ -148,7 +148,7 @@ export function ItemFormFields({
           /*
            * Build a noon-UTC Date so the hint shows locale/format differences
            * rather than the midnight rollback. The rollback demo lives in the
-           * item list — here we want to demonstrate formatting conventions only.
+           * item list - here we want to demonstrate formatting conventions only.
            */
           const noonUtc = field.value
             ? new Date(`${field.value}T12:00:00Z`)
@@ -228,7 +228,7 @@ export function ItemFormFields({
                       </tbody>
                     </table>
                     <p className='text-muted-foreground/60 mt-2 leading-relaxed'>
-                      ⚠ en-US swaps day and month — sending a date string to an
+                      ⚠ en-US swaps day and month - sending a date string to an
                       external API without normalising to YYYY-MM-DD first is
                       how invalid dates silently corrupt data.
                     </p>
@@ -244,7 +244,7 @@ export function ItemFormFields({
 }
 
 /*
- * Create form — handles the add-item mutation with optimistic SWR update.
+ * Create form - handles the add-item mutation with optimistic SWR update.
  */
 
 type MutateFn = ReturnType<typeof useExampleItems>['mutate'];

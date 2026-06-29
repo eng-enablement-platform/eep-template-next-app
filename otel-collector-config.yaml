@@ -2,7 +2,7 @@
 #
 # Pipeline: Next.js app → collector (OTLP/HTTP on :4318) → Jaeger UI (:16686)
 #
-# Used by docker-compose.otel.yml. Not needed in production — point
+# Used by docker-compose.otel.yml. Not needed in production - point
 # OTEL_EXPORTER_OTLP_ENDPOINT at your hosted collector or vendor endpoint
 # instead (e.g. Grafana Cloud, Honeycomb, Datadog).
 

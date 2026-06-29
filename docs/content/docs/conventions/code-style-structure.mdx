@@ -12,23 +12,23 @@ the codebase but don't become infatuated with it!
 
 Three principles drive every rule in this doc:
 
-- [**Readable**](https://www.alexmolas.com/2024/06/06/good-code.html) — If it's hard to read, it's wrong. Clarity beats cleverness every time.
-- [**DRY**](https://www.boot.dev/blog/computer-science/dry-code) — Don't repeat yourself. Duplication is a maintenance debt that compounds.
-- [**Boring**](https://www.jakeworth.com/posts/write-boring-code) — When in doubt, reach for the obvious solution. Boring code is predictable, debuggable, and easy to hand off.
+- [**Readable**](https://www.alexmolas.com/2024/06/06/good-code.html) - If it's hard to read, it's wrong. Clarity beats cleverness every time.
+- [**DRY**](https://www.boot.dev/blog/computer-science/dry-code) - Don't repeat yourself. Duplication is a maintenance debt that compounds.
+- [**Boring**](https://www.jakeworth.com/posts/write-boring-code) - When in doubt, reach for the obvious solution. Boring code is predictable, debuggable, and easy to hand off.
 
 ## Naming
 
-**Files and folders** — `kebab-case`.
+**Files and folders** - `kebab-case`.
 
-**Variables and functions** — Full descriptive names, `formatErrorMessage` not `fmtErr`.
+**Variables and functions** - Full descriptive names, `formatErrorMessage` not `fmtErr`.
 
-**Components** — `PascalCase`, matching the filename: `theme-toggle.tsx` exports
+**Components** - `PascalCase`, matching the filename: `theme-toggle.tsx` exports
 `ThemeToggle`.
 
-**Types** — `PascalCase`. Default to `type`; reach for `interface` only when
+**Types** - `PascalCase`. Default to `type`; reach for `interface` only when
 you need declaration merging.
 
-**Constants** — `SCREAMING_SNAKE_CASE` for module-level values that are fixed
+**Constants** - `SCREAMING_SNAKE_CASE` for module-level values that are fixed
 at build time and semantically "never change"
 
 ```ts
@@ -36,11 +36,12 @@ const ASYNC_INCREMENT_DELAY_MS = 300;
 const LOG_LEVEL_DEFAULT = 'info';
 ```
 
-**Tests** — co-located in a `__tests__/` subfolder at the same directory level
+**Tests** - co-located in a `__tests__/` subfolder at the same directory level
 as the file under test. `components/common/theme-toggle.tsx` →
 `components/common/__tests__/theme-toggle.test.tsx`. e2e tests are the exception
-— they live in `e2e-tests/tests/` at the project root. See
-[Testing](/docs/conventions/testing) for the full picture.
+
+- they live in `e2e-tests/tests/` at the project root. See
+  [Testing](/docs/conventions/testing) for the full picture.
 
 ---
 
@@ -66,7 +67,7 @@ export function ThemeToggle({ displayName }: ToggleProps) {
   ...
 }
 
-// ❌ const arrow — breaks the rule
+// ❌ const arrow - breaks the rule
 export const ThemeToggle = ({ displayName }: ToggleProps) => {
   ...
 };
@@ -113,12 +114,12 @@ type ActionResult<T> = { ok: true; data: T } | { ok: false; error: string };
 // ✅ type for intersections (e.g. Zustand store pattern)
 type CounterStore = CounterState & CounterActions;
 
-// ❌ interface — adds nothing here, and locks you out of unions later
+// ❌ interface - adds nothing here, and locks you out of unions later
 interface ToggleProps {
   displayName?: string;
 }
 
-// ✅ interface — declaration merging is the only valid reason
+// ✅ interface - declaration merging is the only valid reason
 declare module 'next-auth' {
   interface Session {
     userId: string;
@@ -144,12 +145,12 @@ file has **~3+ type declarations**, a single type is **large** (>15 lines), or
 type declarations are visually drowning the component logic.
 
 ```ts
-// ✅ inline — one consumer, small
+// ✅ inline - one consumer, small
 type ToggleProps = {
   displayName?: string;
 };
 
-// ✅ sibling types.ts — single consumer but file is getting crowded
+// ✅ sibling types.ts - single consumer but file is getting crowded
 // components/features/invoice/types.ts
 export type InvoiceRow = { ... };
 export type InvoiceFormState = { ... };
@@ -168,18 +169,18 @@ export type InvoiceFilterParams = { ... };
 `boolean` from `false`, but relying on inference here can be fragile.
 
 ```tsx
-// ✅ explicit — intention is clear, correct type regardless of initial value
+// ✅ explicit - intention is clear, correct type regardless of initial value
 const [editing, setEditing] = useState<boolean>(false);
 const [item, setItem] = useState<Item | null>(null);
 const [count, setCount] = useState<number>(0);
 
-// ❌ implicit — infers boolean from false, but null infers as just null
+// ❌ implicit - infers boolean from false, but null infers as just null
 const [editing, setEditing] = useState(false);
 const [item, setItem] = useState(null);
 ```
 
 <Callout type='warn'>
-  This is enforced by a custom ESLint rule — omitting the type annotation is a
+  This is enforced by a custom ESLint rule - omitting the type annotation is a
   lint error that will block your commit.
 </Callout>
 
@@ -199,7 +200,7 @@ import type { ExampleItem } from '@/db/types';
 import { exampleItemService, type ExampleItem } from '...';
 ```
 
-Always use `@/` path aliases — never relative paths. `import type { Foo } from
+Always use `@/` path aliases - never relative paths. `import type { Foo } from
 '../../types'` is a maintenance hazard that silently breaks when files move.
 `import type { Foo } from '@/types/foo'` always resolves from the project root.
 
@@ -242,10 +243,11 @@ Next.js file conventions that require a default export:
 ### Barrel exports
 
 A barrel is just the `index.ts` that appears when a folder grows multiple files
-— it's the same pattern as the component folder grouping. Once a `sidebar/`
-folder has `header.tsx`, `nav.tsx`, and `footer.tsx` inside it, an `index.ts`
-lets callers import from `@/components/features/sidebar` without knowing the
-internal file names. The barrel controls what the outside world sees.
+
+- it's the same pattern as the component folder grouping. Once a `sidebar/`
+  folder has `header.tsx`, `nav.tsx`, and `footer.tsx` inside it, an `index.ts`
+  lets callers import from `@/components/features/sidebar` without knowing the
+  internal file names. The barrel controls what the outside world sees.
 
 ```ts
 // components/features/sidebar/index.ts
@@ -261,8 +263,8 @@ The rules around when to use one:
 
 - ✅ A feature folder with multiple files (`components/features/sidebar/`)
 - ✅ A split utility or domain folder (`utils/formatting/`, `classes/services/hubspot/`)
-- ❌ A top-level catch-all — never `components/index.ts` or `hooks/index.ts`
-- ❌ A folder wrapping a single file — the barrel adds nothing until there are multiple files to organise
+- ❌ A top-level catch-all - never `components/index.ts` or `hooks/index.ts`
+- ❌ A folder wrapping a single file - the barrel adds nothing until there are multiple files to organise
 
 <Callout type='warn'>
   One important constraint: **never mix server and client exports in the same
@@ -285,12 +287,12 @@ Utility functions live in `src/utils/`.
 ### File structure
 
 The unit is the **concern**, not the function. A concern is a cohesive group of
-related helpers — all date formatting, all HTTP response shaping, all currency
+related helpers - all date formatting, all HTTP response shaping, all currency
 utilities.
 
 How you package a concern depends on its size:
 
-- **Small concern** — A single kebab-case file:
+- **Small concern** - A single kebab-case file:
 
 <Files>
   <Folder name='utils' defaultOpen>
@@ -300,7 +302,7 @@ How you package a concern depends on its size:
   </Folder>
 </Files>
 
-- **Large concern** — A subfolder with an `index.ts` barrel exporting the public
+- **Large concern** - A subfolder with an `index.ts` barrel exporting the public
   surface, and per-topic files inside:
 
 <Files>
@@ -358,7 +360,7 @@ Use a plain string for flat routes, a builder function for parameterised ones:
 
 ```ts
 export const API_ROUTES = {
-  /** `GET /api/example-items` — list all example items. */
+  /** `GET /api/example-items` - list all example items. */
   exampleItems: '/api/example-items',
 
   /**
@@ -444,7 +446,7 @@ const rows = await db.select().from(exampleItemsTable).where(eq(...));
 
 A few rules of thumb to follow:
 
-- Default to a **singleton** — Declare the class, then export one instance.
+- Default to a **singleton** - Declare the class, then export one instance.
 
 ```ts
 class ExampleItemService {
@@ -492,11 +494,11 @@ gotcha, a non-obvious constraint. Don't just simply describe _what_ the code doe
 - Multi-line: always a `/* */` starred block
 
 ```ts
-// ❌ documents the what — the code already says this
+// ❌ documents the what - the code already says this
 // Map over items and multiply price by 1.2
 const prices = items.map((item) => item.price * 1.2);
 
-// ✅ documents the why — this is what a reader actually needs
+// ✅ documents the why - this is what a reader actually needs
 /*
  * Prices are stored ex-VAT in the DB; multiply by 1.2 to display
  * the customer-facing figure. VAT rate is fixed by contract until 2026.
@@ -505,7 +507,7 @@ const prices = items.map((item) => item.price * 1.2);
 ```
 
 ```ts
-// ✅ single-liner — always //
+// ✅ single-liner - always //
 // Delay matches the animation duration in the design spec (300ms)
 const TRANSITION_MS = 300;
 
@@ -621,7 +623,7 @@ the first line of its TSDoc:
 ## Linting and formatting
 
 ESLint and Prettier run automatically on every commit via `lint-staged`. You
-shouldn't need to think about formatting — save, commit, let the tools handle it.
+shouldn't need to think about formatting - save, commit, let the tools handle it.
 
 ```bash
 pnpm lint          # ESLint across the project

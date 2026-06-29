@@ -14,4 +14,4 @@ _How should a reviewer test or verify this change? List steps, commands, or scre
 
 _Did you use any AI tools or agents? Briefly describe what you prompted, what it suggested, and any steps you took to verify or adapt the output. `N/A` if none._
 
-_e.g. "I noticed a bug but wasn't sure how to resolve it, so I prompted Claude to take a look — it came up with X, Y, Z. I then did A, B, C to further investigate and verify."_
+_e.g. "I noticed a bug but wasn't sure how to resolve it, so I prompted Claude to take a look - it came up with X, Y, Z. I then did A, B, C to further investigate and verify."_

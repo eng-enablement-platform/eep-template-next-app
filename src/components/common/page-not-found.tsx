@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 
 /**
  * Generic 404 display, rendered by the app-level `not-found.tsx`.
- * Presentational only — keep app-specific chrome out of here.
+ * Presentational only - keep app-specific chrome out of here.
  */
 export function PageNotFound() {
   return (

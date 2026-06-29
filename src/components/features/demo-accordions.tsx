@@ -17,7 +17,7 @@ import {
  *
  * Collapsible accordion wrappers for the landing page demo components.
  *
- * Keeps the page tidy by default — visitors can expand only what they're
+ * Keeps the page tidy by default - visitors can expand only what they're
  * interested in. Each item maps to one of the three scaffold demo features:
  *
  * - Zustand counter

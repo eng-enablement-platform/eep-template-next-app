@@ -27,7 +27,7 @@ Console output is also emitted in all environments except `test`.
 <Callout>
   The logger automatically goes silent during `next build`
   (`NEXT_PHASE=phase-production-build`). This prevents startup noise from
-  polluting build output — the logger returns a no-op instance during that
+  polluting build output - the logger returns a no-op instance during that
   phase.
 </Callout>
 
@@ -61,7 +61,7 @@ open for whatever granularity you need.
 ## Usage
 
 Get a logger by calling `rootLogger` with the appropriate source at the top of
-your file. The logger is a winston child logger — call `info`, `warn`, `error`,
+your file. The logger is a winston child logger - call `info`, `warn`, `error`,
 or `debug` with a structured object:
 
 ```ts
@@ -69,10 +69,10 @@ import { LOG_SOURCE, rootLogger } from '@/classes/loggers/application';
 
 const logger = rootLogger(LOG_SOURCE.ACTION);
 
-// Informational — structured fields alongside the message
+// Informational - structured fields alongside the message
 logger.info({ message: 'Item created', id: data.id });
 
-// Error — include scope and the raw error for stack trace
+// Error - include scope and the raw error for stack trace
 logger.error({
   message: 'Failed to create item',
   scope: 'example-items',
@@ -89,14 +89,14 @@ action.
 
 **Log at the boundary that owns the outcome, not in the service.**
 
-Services are thin wrappers around data calls — they rethrow on failure without
+Services are thin wrappers around data calls - they rethrow on failure without
 logging. The write boundary (a server action or a route handler) is where an
 exception becomes a user-facing result, so that is the one place it's caught
 and logged. Logging in the service and re-logging in the action would record
 the same failure twice under two different sources.
 
 ```ts
-// ✅ Action owns the outcome — log once here
+// ✅ Action owns the outcome - log once here
 try {
   const data = await exampleItemService.create(parsed.data);
   logger.info({ message: 'Item created', id: data.id });
@@ -106,7 +106,7 @@ try {
   return { ok: false, error: 'Something went wrong' };
 }
 
-// ❌ Don't log in the service and rethrow — it double-logs
+// ❌ Don't log in the service and rethrow - it double-logs
 ```
 
 ---
@@ -115,7 +115,7 @@ try {
 
 Two independent knobs control how much you see:
 
-**`LOG_LEVEL`** — the winston level floor for all `rootLogger` output. Defaults
+**`LOG_LEVEL`** - the winston level floor for all `rootLogger` output. Defaults
 per environment when unset:
 
 | Environment   | Default level |
@@ -130,7 +130,7 @@ Override for a single run:
 LOG_LEVEL=debug pnpm dev
 ```
 
-**`DB_QUERY_LOG`** — streams raw Drizzle SQL and params to the console. This is an
+**`DB_QUERY_LOG`** - streams raw Drizzle SQL and params to the console. This is an
 opt-in diagnostic for watching queries live during development.
 
 ```bash
@@ -162,7 +162,7 @@ console.dir(obj, { depth: 3 }); // deep object structure
 ## OpenTelemetry
 
 This page covers structured logs (Winston). The template also ships with
-distributed tracing via OpenTelemetry — spans for every request, render, fetch
+distributed tracing via OpenTelemetry - spans for every request, render, fetch
 call, and route handler, visible locally in Jaeger.
 
 See [Observability](/docs/conventions/observability) for the full setup,

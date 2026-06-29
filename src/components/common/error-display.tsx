@@ -10,13 +10,13 @@ type ErrorDisplayProps = {
 };
 
 /*
- * This is the shared error UI — NOT the Next.js error boundary. There are two
+ * This is the shared error UI - NOT the Next.js error boundary. There are two
  * separate triggers that both render it, which is why this lives apart from
  * `app/error.tsx`:
- *   1. `app/error.tsx` — Next's reserved segment boundary, fired when a routed
+ *   1. `app/error.tsx` - Next's reserved segment boundary, fired when a routed
  *      segment throws during render/hydration. It's a thin shell that just
  *      forwards the framework's error message here.
- *   2. `ErrorBoundary` (./error-boundary) — our client boundary for errors
+ *   2. `ErrorBoundary` (./error-boundary) - our client boundary for errors
  *      thrown AFTER hydration, which Next's boundary misses. Uses this as its
  *      default fallback.
  * Keeping the UI here (rather than inline in app/error.tsx) is what stops those
@@ -24,7 +24,7 @@ type ErrorDisplayProps = {
  */
 
 /**
- * Generic full-screen error display. Presentational only — a message and a way
+ * Generic full-screen error display. Presentational only - a message and a way
  * back home, nothing more.
  *
  * @param errorMessage - Optional detail surfaced to the user. Omit in

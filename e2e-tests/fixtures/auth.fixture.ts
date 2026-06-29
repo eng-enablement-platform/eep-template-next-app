@@ -5,7 +5,7 @@ import { test as base, type Page } from '@playwright/test';
  * Auth fixture for Playwright e2e tests.
  *
  * Extends the base `test` with an `authenticatedPage` fixture that signs in
- * via Clerk's Backend API before yielding the page — no password required,
+ * via Clerk's Backend API before yielding the page - no password required,
  * just `CLERK_SECRET_KEY` and `E2E_CLERK_USER_EMAIL` in `.env.local`.
  *
  * Usage:
@@ -29,7 +29,7 @@ type AuthFixtures = {
 export const test = base.extend<AuthFixtures>({
   authenticatedPage: async ({ page }, use) => {
     /*
-     * Navigate to an unprotected page first — clerk.signIn() requires Clerk
+     * Navigate to an unprotected page first - clerk.signIn() requires Clerk
      * to be loaded in the page before it can run.
      */
     await page.goto('/sign-in');

@@ -5,7 +5,7 @@ import { Toaster, type ToasterProps } from 'sonner';
 
 /**
  * App-wide toast surface (sonner). Mounted once in the root layout; toasts are
- * then triggered from anywhere with `toast(...)` from `sonner` — you never
+ * then triggered from anywhere with `toast(...)` from `sonner` - you never
  * render this component again.
  *
  * Mirrors the active next-themes value so toasts match light/dark/system.

@@ -7,7 +7,7 @@ import { ThemeToggle } from '@/components/common/theme-toggle';
 /*
  * next-themes resolves the theme on the client via context we don't render in
  * tests, so we mock the `useTheme` hook. This lets us (a) drive the component
- * with a known active theme and (b) capture setTheme calls — i.e. assert
+ * with a known active theme and (b) capture setTheme calls - i.e. assert
  * BEHAVIOUR (which icon shows, what a click does) rather than markup.
  */
 const setTheme = vi.fn();

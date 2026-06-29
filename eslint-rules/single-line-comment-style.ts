@@ -2,7 +2,7 @@ import type { Rule } from 'eslint';
 
 /*
  * Directive comment prefixes that must stay as block comments even on a single
- * line — converting `/* eslint-disable-next-line *\/` to `//` would change its
+ * line - converting `/* eslint-disable-next-line *\/` to `//` would change its
  * meaning or position semantics, so they are exempt.
  */
 const DIRECTIVE_PREFIXES = [
@@ -67,7 +67,7 @@ export const singleLineCommentStyle: Rule.RuleModule = {
             continue;
           }
 
-          // Multi-line blocks are owned by `multiline-comment-style` — skip them.
+          // Multi-line blocks are owned by `multiline-comment-style` - skip them.
           if (comment.loc!.start.line !== comment.loc!.end.line) {
             continue;
           }

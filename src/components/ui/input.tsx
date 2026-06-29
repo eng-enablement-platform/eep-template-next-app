@@ -4,7 +4,7 @@ import { cn } from '@/utils/tailwind-merge';
 
 /**
  * Styled text input primitive, consistent with the shadcn/ui design system.
- * Drop-in replacement for a native `<input>` — all standard HTML input props
+ * Drop-in replacement for a native `<input>` - all standard HTML input props
  * are forwarded unchanged.
  *
  * @example

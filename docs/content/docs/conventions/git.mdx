@@ -4,7 +4,7 @@ description: Branching, commits, stacked MRs, and the pre-commit hook.
 ---
 
 <Callout>
-  These are general conventions any team can adopt and adapt — follow them and
+  These are general conventions any team can adopt and adapt - follow them and
   they should set you up for a solid, consistent workflow. They also form the
   basis of how we work on this project itself, so if you're contributing back to
   the template, see
@@ -26,8 +26,8 @@ fix/EEP-456-session-expiry
 
 Types:
 
-- `feat/` — new features
-- `fix/` — bug fixes
+- `feat/` - new features
+- `fix/` - bug fixes
 - Ad-hoc (no issue): `fix/<brief-description>` is fine for small isolated fixes
 
 ---
@@ -114,7 +114,7 @@ The hook itself is a bash script located at `.husky/pre-commit`.
 | All commits                                | lint-staged (ESLint + Prettier on staged files) |
 | No relevant changes                        | Heavy checks skipped automatically              |
 
-**Escape hatch** — for intentional WIP or a TDD red phase only:
+**Escape hatch** - for intentional WIP or a TDD red phase only:
 
 ```bash
 SKIP_CHECKS=1 git commit -m "wip: rough sketch"

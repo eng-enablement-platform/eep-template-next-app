@@ -2,7 +2,7 @@
  * EXAMPLE UTILITY
  *
  * Adds two numbers together. Exists to demonstrate co-located tests,
- * arrow-function utilities, and TSDoc — not a production utility.
+ * arrow-function utilities, and TSDoc - not a production utility.
  *
  * @param a - the first addend
  * @param b - the second addend

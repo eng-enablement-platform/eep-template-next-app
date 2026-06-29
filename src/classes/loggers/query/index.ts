@@ -8,7 +8,7 @@ import { env } from '@/lib/env';
  * Custom logger class for Drizzle ORM queries.
  *
  * This is a developer diagnostic, not part of the structured `logSource`
- * contract — it dumps raw SQL and params to the console so you can watch
+ * contract - it dumps raw SQL and params to the console so you can watch
  * queries and mutations live while building.
  *
  * It is intentionally noisy, so it is off by default and

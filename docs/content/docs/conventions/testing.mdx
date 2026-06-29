@@ -23,17 +23,17 @@ create false confidence without catching real bugs. **The goal isn't to chase co
 ## What earns a test
 
 The one-line filter: **if you can break it by changing a branch, a prop's
-effect, a timer, or state — test it. If the only thing to assert is that markup
+effect, a timer, or state - test it. If the only thing to assert is that markup
 rendered, skip it.**
 
 Three tiers:
 
-**1. Pure logic — always test.**
+**1. Pure logic - always test.**
 Functions, stores, validation, reducers. This is where bugs hide and tests are
 cheap and stable. Covers `utils/`, `store/`, `validation/`.
 
 ```ts
-// ✅ formatErrorMessage has branching logic — worth testing
+// ✅ formatErrorMessage has branching logic - worth testing
 it('returns the message from an Error instance', () => {
   expect(formatErrorMessage(new Error('boom'))).toBe('boom');
 });
@@ -43,8 +43,8 @@ it('falls back to a generic message for an unknown value', () => {
 });
 ```
 
-**2. Components with branches, state, or effects — test the decision.**
-Conditional rendering, event handlers, timers — anything that makes a decision.
+**2. Components with branches, state, or effects - test the decision.**
+Conditional rendering, event handlers, timers - anything that makes a decision.
 Test that the decision is correct, not that the markup rendered.
 
 ```tsx
@@ -71,9 +71,9 @@ it('calls setTheme with the chosen option', async () => {
 See `src/components/common/__tests__/theme-toggle.test.tsx` for the full
 reference shape including the `useTheme` mock pattern.
 
-**3. Pure presentational components — do not test.**
+**3. Pure presentational components - do not test.**
 Takes props, renders markup, no branching. Asserting "the markup rendered" tests
-that React works — it catches no bugs and breaks on every cosmetic change.
+that React works - it catches no bugs and breaks on every cosmetic change.
 `error`, `page-not-found`, `toast`, `auth` get no unit test for this reason.
 
 <Callout type='info'>
@@ -93,7 +93,7 @@ that React works — it catches no bugs and breaks on every cosmetic change.
 ## Test Driven Development (TDD)
 
 [TDD](https://www.ibm.com/think/topics/test-driven-development) can be a contentious topic, some developers apply it to everything, others never touch it.
-The pragmatic middle ground: TDD pays off for small, isolated functions with a clear contract — pure utilities, validation
+The pragmatic middle ground: TDD pays off for small, isolated functions with a clear contract - pure utilities, validation
 schemas, well-defined logic. Write the test first, watch it fail, make it pass.
 
 Where I feel it doesn't really pay off is larger integration work where the spec is still being discovered.
@@ -101,7 +101,7 @@ As the module boundaries and interface shapes evolve, tests written against them
 liable to break for structural reasons rather than logic errors and they often end up being
 rewritten or discarded rather than acting as a safety net.
 
-### Worked example — timezone-safe date parsing
+### Worked example - timezone-safe date parsing
 
 Let's look at an actual practical example in this template that shows the benefits of TDD.
 
@@ -159,7 +159,7 @@ describe('parseDateSafe', () => {
 });
 ```
 
-Run them — they fail (module not found). That's expected. This is the red phase.
+Run them - they fail (module not found). That's expected. This is the red phase.
 
 </CollapsibleStep>
 
@@ -176,7 +176,7 @@ export const parseDateSafe = (value: string): Date | null => {
 
   if (ISO_DATE_ONLY_REGEX.test(value)) {
     /*
-     * parse() from date-fns interprets the string in local time — local
+     * parse() from date-fns interprets the string in local time - local
      * midnight, not UTC midnight. This is the safe path for calendar dates.
      */
     const parsed = parse(value, 'yyyy-MM-dd', new Date());
@@ -209,7 +209,7 @@ TZ=Pacific/Auckland vitest run --config vitest.tz.config.ts
 ```
 
 All three must pass. If the native `new Date('YYYY-MM-DD')` gotcha had slipped
-through, the Denver run would fail — Dec 28 instead of Dec 29.
+through, the Denver run would fail - Dec 28 instead of Dec 29.
 
 </CollapsibleStep>
 
@@ -244,19 +244,19 @@ bottom of the file.
 // public API
 export const exampleItemService = new ExampleItemService();
 
-// test-only — grouped under one export, never imported outside __tests__/
+// test-only - grouped under one export, never imported outside __tests__/
 export const _forTests = { ExampleItemService };
 ```
 
 <Callout type='warn'>
-  Never export internal classes or functions individually — keep the public API
+  Never export internal classes or functions individually - keep the public API
   clean.
 </Callout>
 ---
 
 ## Zustand stores
 
-Stores are module singletons — reset to default state at the start of each test
+Stores are module singletons - reset to default state at the start of each test
 to stay independent of execution order. Use `getState` / `setState` to drive the
 store without rendering a React tree.
 
@@ -285,7 +285,7 @@ describe('useCounterStore', () => {
 
 Mock at the boundary closest to the thing you're testing. For components that
 depend on a hook or context you don't control (e.g. `useTheme` from
-`next-themes`), mock the hook and drive the component with a known value — don't
+`next-themes`), mock the hook and drive the component with a known value - don't
 try to render the full provider tree.
 
 ```ts
@@ -306,7 +306,7 @@ afterEach(() => {
 
 ## End-to-end tests
 
-E2e tests verify user-facing flows against a running app — they're the last line of defence
+E2e tests verify user-facing flows against a running app - they're the last line of defence
 before shipping, not a substitute for unit tests. Use them for critical paths that cross
 multiple layers (routing, server actions, client state) and can't be meaningfully tested
 in isolation.
@@ -320,13 +320,13 @@ in isolation.
 
 **What doesn't:**
 
-- Logic already covered by a unit test — don't duplicate coverage
-- Presentation details — if a unit test already verifies the decision, an e2e test
+- Logic already covered by a unit test - don't duplicate coverage
+- Presentation details - if a unit test already verifies the decision, an e2e test
   asserting the same outcome in the browser adds friction without value
 
 ### Location
 
-E2e tests live in `e2e-tests/tests/` at the project root — they're the one exception to
+E2e tests live in `e2e-tests/tests/` at the project root - they're the one exception to
 the co-location rule, since they run against the compiled app rather than individual
 modules.
 
@@ -339,14 +339,14 @@ pnpm e2e:report # open the HTML report from the last run
 ```
 
 Playwright spins up `next dev` automatically via `webServer` in `playwright.config.ts`
-and reuses an already-running server when one is detected — so if you have `pnpm dev`
+and reuses an already-running server when one is detected - so if you have `pnpm dev`
 running, tests start instantly.
 
 <Callout type='info'>
   The suite runs with a single worker (`workers: 1`). Parallel workers all hit
   the dev server cold simultaneously, causing a CPU spike that throttles the
   server and makes tests flaky. Increase workers once the suite is large enough
-  that wall-clock time becomes a problem — ideally after switching to `next
+  that wall-clock time becomes a problem - ideally after switching to `next
   start` (production build) as the e2e target.
 </Callout>
 
@@ -361,7 +361,7 @@ password flow).
 <CollapsibleStep title="Get a Clerk user for testing" defaultOpen={false}>
 
 You need any user that exists in your Clerk instance. The easiest way is to
-just sign in to the running app (`pnpm dev`) — that creates your account
+just sign in to the running app (`pnpm dev`) - that creates your account
 automatically. Alternatively, go to [dashboard.clerk.com](https://dashboard.clerk.com)
 → your application → Users → Create user.
 
@@ -377,7 +377,7 @@ E2E_CLERK_USER_EMAIL=you@yourdomain.com
 ```
 
 `CLERK_SECRET_KEY` must belong to the same Clerk instance as
-`NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` — the test user must exist in **that** instance.
+`NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` - the test user must exist in **that** instance.
 The SDK uses the secret key to call Clerk's Backend API and sign in without any
 browser interaction, OTP, or password.
 
@@ -387,7 +387,7 @@ browser interaction, OTP, or password.
 
 The `authenticatedPage` fixture in `e2e-tests/fixtures/auth.fixture.ts` signs in
 before each test and signs out after. It uses `CLERK_SECRET_KEY` to call Clerk's
-Backend API directly — no password, no OTP, no browser interaction:
+Backend API directly - no password, no OTP, no browser interaction:
 
 ```ts
 import { test, expect } from '../fixtures/auth.fixture';
@@ -412,8 +412,8 @@ The template ships two specs as reference coverage for the core patterns:
 
 | Spec              | What it covers                                                                        |
 | ----------------- | ------------------------------------------------------------------------------------- |
-| `home.spec.ts`    | Smoke checks — unauthenticated redirect to sign-in, Clerk component renders           |
-| `counter.spec.ts` | Zustand client state (authenticated) — increment, decrement, and reset in the browser |
+| `home.spec.ts`    | Smoke checks - unauthenticated redirect to sign-in, Clerk component renders           |
+| `counter.spec.ts` | Zustand client state (authenticated) - increment, decrement, and reset in the browser |
 
 ---
 
@@ -439,12 +439,12 @@ runs, and isolation that fits your deployment environment.
 
 - Use a separate test database (a local Postgres instance or a Neon branch)
 - Run migrations before the suite and truncate tables between tests, not between files
-- Keep them out of the pre-commit hook — they're slow and require infrastructure
+- Keep them out of the pre-commit hook - they're slow and require infrastructure
 - A dedicated `pnpm test:integration` script keeps them easy to run on demand or in CI
 
 <Callout type='info'>
   The e2e tests in this template provide some integration-level confidence for
-  the example-items feature — they exercise the full stack against a running app
+  the example-items feature - they exercise the full stack against a running app
   with a real database. For many projects that coverage is sufficient; dedicated
   integration tests earn their place when the data flows grow complex enough
   that e2e tests become too slow or brittle to cover every case.
@@ -457,13 +457,13 @@ runs, and isolation that fits your deployment environment.
 [Contract tests](https://medium.com/contract-testing/introduction-to-contract-testing-a02156fb1279) verify
 that a third-party API / service still returns the shape your code depends on.
 They make live network calls against the real provider, so they run separately from the
-standard test suite — on a schedule or before a deploy, not on every commit.
+standard test suite - on a schedule or before a deploy, not on every commit.
 
 **What earns a contract test:** any external API whose response shape you consume directly
 and don't control. If the provider renames a field, changes a type, or removes a required
 property, a contract test catches it before it reaches production.
 
-**What doesn't:** your own API routes — if the shape drifts, your Zod schema drifts with
+**What doesn't:** your own API routes - if the shape drifts, your Zod schema drifts with
 it by definition. Contract tests are for boundaries you don't own.
 
 ### How it works
@@ -507,7 +507,7 @@ with a generous timeout (15s) to accommodate real network latency.
 
 <Callout type='info'>
   Contract tests are excluded from `pnpm test` and the pre-commit hook by
-  design. Run them manually before a deploy or wire them to a scheduled CI job —
+  design. Run them manually before a deploy or wire them to a scheduled CI job -
   not the fast feedback loop.
 </Callout>
 
@@ -524,7 +524,7 @@ with a generous timeout (15s) to accommodate real network latency.
 ```bash
 pnpm test           # vitest run (single pass)
 pnpm test:watch     # vitest watch mode
-pnpm test:contract  # contract tests — live network, run separately
+pnpm test:contract  # contract tests - live network, run separately
 pnpm e2e            # Playwright end-to-end
 pnpm e2e:ui         # Playwright UI mode
 ```
@@ -533,20 +533,20 @@ pnpm e2e:ui         # Playwright UI mode
 
 ## Vitest config files
 
-There are multiple `vitest.*.ts` files at the project root — each exists because
+There are multiple `vitest.*.ts` files at the project root - each exists because
 different test classes need genuinely different runtime environments and can't
 share a single config without compromising correctness or feedback speed.
 
 | File                         | Purpose                                                                                                                                                                      |
 | ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `vitest.config.ts`           | Main unit suite. jsdom environment for component tests, T3 Env stubs, `server-only` alias. Default for `pnpm test`.                                                          |
-| `vitest.tz.config.ts`        | Timezone tests only. Uses `node` environment — jsdom caches the system timezone at startup and ignores runtime `TZ` changes, so timezone-sensitive date tests must run here. |
+| `vitest.tz.config.ts`        | Timezone tests only. Uses `node` environment - jsdom caches the system timezone at startup and ignores runtime `TZ` changes, so timezone-sensitive date tests must run here. |
 | `vitest.contract.config.ts`  | Contract tests. `node` environment with a generous timeout for live network calls. Excluded from the main suite to keep `pnpm test` fast.                                    |
-| `vitest.setup.ts`            | Global setup file — registers jest-dom matchers and runs RTL cleanup after each test. Referenced by `vitest.config.ts`.                                                      |
+| `vitest.setup.ts`            | Global setup file - registers jest-dom matchers and runs RTL cleanup after each test. Referenced by `vitest.config.ts`.                                                      |
 | `vitest.server-only-stub.ts` | Empty module that stubs the `server-only` package. Prevents vitest from throwing when importing server-layer code.                                                           |
 
 <Callout>
   These files live at the project root because Vitest discovers
-  `vitest.config.ts` there by default — moving them to a subfolder would require
+  `vitest.config.ts` there by default - moving them to a subfolder would require
   passing `--config` explicitly to every script.
 </Callout>

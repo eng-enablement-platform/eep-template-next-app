@@ -17,7 +17,7 @@ const logger = rootLogger(LOG_SOURCE.API);
  * documented in one place and is reachable from Swagger and tools like curl.
  *
  * For mutations driven by our own UI, prefer the matching server action in
- * `actions/example-item-actions.ts` — it shares the same Zod schema. Reach for
+ * `actions/example-item-actions.ts` - it shares the same Zod schema. Reach for
  * these POST/PATCH/DELETE handlers when the write comes from an external caller
  * (a webhook, a cron job, a non-browser client). See `src/app/README.md`.
  */

@@ -4,7 +4,7 @@ description: Creating a Neon project, getting your connection string, and pointi
 ---
 
 [Neon](https://neon.tech) is the recommended Postgres provider for production. It's
-serverless, scales to zero when idle, and has a generous free tier — well suited for
+serverless, scales to zero when idle, and has a generous free tier - well suited for
 the early stages of a project.
 
 <Callout>
@@ -26,10 +26,10 @@ the early stages of a project.
 
 In the Neon dashboard, navigate to your project → **Connection Details**.
 
-Select **Pooled connection** (uses PgBouncer — better for serverless environments
+Select **Pooled connection** (uses PgBouncer - better for serverless environments
 where many short-lived connections would otherwise exhaust the connection limit).
 
-Copy the connection string — it looks like:
+Copy the connection string - it looks like:
 
 ```
 postgresql://user:password@ep-xxx.eu-west-2.aws.neon.tech/neondb?sslmode=require
@@ -49,7 +49,7 @@ DATABASE_URL=postgresql://user:password@ep-xxx.eu-west-2.aws.neon.tech/neondb?ss
 
 **Vercel**: add `DATABASE_URL` in the Vercel project settings under Environment Variables.
 
-No code changes needed — the app uses `DATABASE_URL` everywhere and the driver
+No code changes needed - the app uses `DATABASE_URL` everywhere and the driver
 handles the rest.
 
 ---
@@ -62,10 +62,10 @@ Once `DATABASE_URL` points at Neon, the same migration command applies:
 pnpm db:migrate
 ```
 
-This is idempotent — safe to run again after pulling new migrations in future.
+This is idempotent - safe to run again after pulling new migrations in future.
 
 <Callout type='info'>
-  Neon supports database branching — you can create a branch of your production
+  Neon supports database branching - you can create a branch of your production
   database for staging or preview environments. Each branch is an isolated copy
   that can be migrated and tested independently. Worth exploring as your project
   grows.

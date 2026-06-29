@@ -19,7 +19,7 @@ to a route handler in `app/api/`.
 2. The route handler validates the request with a Zod schema
 3. It delegates to a service method in `classes/services/`
 4. The service runs a Drizzle `SELECT` query against Postgres
-5. The result travels back up — service → route handler → SWR
+5. The result travels back up - service → route handler → SWR
 6. SWR caches the response and re-renders the component
 
 SWR handles loading and error states automatically. Components never call
@@ -30,7 +30,7 @@ SWR handles loading and error states automatically. Components never call
 ## The write path
 
 A write starts when a user submits a form. The component calls a server action
-in `actions/` — not a route handler.
+in `actions/` - not a route handler.
 
 1. The component triggers a `POST / mutation` via a server action
 2. The action validates the input with the same Zod schema the route uses
@@ -39,7 +39,7 @@ in `actions/` — not a route handler.
 5. On success, the action calls `revalidatePath()` to invalidate the SWR cache
 6. SWR re-fetches automatically and the component re-renders with fresh data
 
-The key detail is step 5 — `revalidatePath()` is what closes the loop between
+The key detail is step 5 - `revalidatePath()` is what closes the loop between
 a server action and the client cache. Without it, the UI would show stale data
 after a successful mutation.
 

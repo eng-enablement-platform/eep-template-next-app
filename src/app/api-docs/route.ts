@@ -3,13 +3,13 @@
  *
  * Serves a small self-contained HTML page that loads Swagger UI's prebuilt
  * assets (from `/swagger-ui/...`, copied out of the `swagger-ui-dist` package
- * into `public/` by `scripts/copy-swagger-ui.ts` — no third-party CDN) and
+ * into `public/` by `scripts/copy-swagger-ui.ts` - no third-party CDN) and
  * points it at the OpenAPI spec at `/api/openapi`. Visit `/api-docs` in the
  * browser.
  *
  * Swagger UI keeps the live "Try it out" console, so every method can be
  * exercised against the running app (and seeded data) from the page. The spec
- * itself is unchanged — only the renderer differs, so swapping renderers later
+ * itself is unchanged - only the renderer differs, so swapping renderers later
  * is cheap.
  *
  * `url` is relative, so it resolves against whatever origin serves the page

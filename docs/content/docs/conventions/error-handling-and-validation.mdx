@@ -1,6 +1,6 @@
 ---
 title: Error Handling & Validation
-description: How errors are typed, thrown, caught, and surfaced across the stack — and where validation lives.
+description: How errors are typed, thrown, caught, and surfaced across the stack - and where validation lives.
 ---
 
 ## Philosophy
@@ -46,33 +46,33 @@ src/validation/
 
 Each domain file exports:
 
-- A **create schema** — required fields with sensible defaults
-- An **update schema** — the same base made fully `.partial()` so callers send
+- A **create schema** - required fields with sensible defaults
+- An **update schema** - the same base made fully `.partial()` so callers send
   only what changed
 - **Types** inferred from the schemas via `z.infer`
 
 ```ts
-// 1. Base — no defaults. This is what both schemas are built from.
+// 1. Base - no defaults. This is what both schemas are built from.
 const exampleItemFields = z.object({
   quantity: z.number().int().min(0),
   status: z.enum(['draft', 'active', 'archived']),
   // ...other fields
 });
 
-// 2. Create schema — layers defaults on top of the base.
+// 2. Create schema - layers defaults on top of the base.
 //    Omitting quantity or status gives you 0 / 'draft'.
 export const exampleItemSchema = exampleItemFields.extend({
   quantity: exampleItemFields.shape.quantity.default(0),
   status: exampleItemFields.shape.status.default('draft'),
 });
 
-// 3. Update schema — base made partial. Absent = genuinely absent.
+// 3. Update schema - base made partial. Absent = genuinely absent.
 export const exampleItemUpdateSchema = exampleItemFields.partial();
 ```
 
 <Callout>
 The base is kept **default-free** deliberately. Zod's `.default()` fills a
-field when it's absent — even on a `.partial()` schema. If the base had
+field when it's absent - even on a `.partial()` schema. If the base had
 `quantity.default(0)` and you did `exampleItemFields.partial()`, a `PATCH`
 with only `{ status: 'active' }` would parse to `{ status: 'active', quantity: 0 }`,
 silently resetting quantity in the database. Keeping the base default-free
@@ -81,7 +81,7 @@ means an absent field on an update stays absent.
 
 ### OpenAPI integration
 
-The `.meta()` annotations on schema fields double as the OpenAPI contract — the
+The `.meta()` annotations on schema fields double as the OpenAPI contract - the
 spec in `src/lib/openapi/` feeds these schemas to `createDocument`, so the
 API docs, the validator, and the column shape all derive from one file.
 
@@ -123,16 +123,16 @@ throw new ApplicationError('Failed to fetch user data', {
 ```
 
 It lives in `classes/errors/` without a `server-only` import. That's
-intentional — it's cross-cutting infrastructure, and adding `server-only`
+intentional - it's cross-cutting infrastructure, and adding `server-only`
 would block edge cases like catching it in an `ErrorBoundary` for an
 `instanceof` check. In practice you'll rarely if ever throw it client-side;
 the structured context it carries (`source`, `function`, `originalError`) is
-only useful when something is observing it — Winston on the server, not the
+only useful when something is observing it - Winston on the server, not the
 browser console.
 
 <Callout>
   If you do need client-side error observability, that's a job for a monitoring
-  tool like [Sentry](https://sentry.io) — it captures unhandled exceptions from
+  tool like [Sentry](https://sentry.io) - it captures unhandled exceptions from
   the browser, attaches context, and surfaces them in a dashboard. That's not
   wired up in this template but is a natural next addition for production apps.
 </Callout>
@@ -158,7 +158,7 @@ catch (error) {
 
 Route handlers use two shared utilities from `src/app/api/utils/`:
 
-**`validationErrorResponse`** — returns a consistent 400 with flattened field
+**`validationErrorResponse`** - returns a consistent 400 with flattened field
 errors after a failed `safeParse`:
 
 ```ts
@@ -168,7 +168,7 @@ if (!parsed.success) {
 }
 ```
 
-**`routeErrorHandler`** — catches unexpected errors in the `catch` block, logs
+**`routeErrorHandler`** - catches unexpected errors in the `catch` block, logs
 them, and returns a consistent 500:
 
 ```ts
@@ -194,7 +194,7 @@ export type ActionResult<TData> =
 
 Validation failures return `{ ok: false, error, fieldErrors }`. Unexpected
 errors are caught, logged once at the action boundary, and returned as
-`{ ok: false, error: 'Something went wrong' }` — never leaking internal
+`{ ok: false, error: 'Something went wrong' }` - never leaking internal
 details to the client.
 
 ### Services
@@ -208,13 +208,13 @@ two different sources.
 
 Two error surfaces handle client-side errors:
 
-- **`app/error.tsx`** — Next.js's reserved segment boundary, fires when a
+- **`app/error.tsx`** - Next.js's reserved segment boundary, fires when a
   route segment throws during render or hydration. Delegates to `ErrorDisplay`.
-- **`ErrorBoundary`** (`src/components/common/error-boundary.tsx`) — a client
+- **`ErrorBoundary`** (`src/components/common/error-boundary.tsx`) - a client
   boundary for errors thrown after hydration, which Next's boundary misses.
   Uses `ErrorDisplay` as its fallback.
 
-`ErrorDisplay` is purely presentational — a message and a route back home. In
+`ErrorDisplay` is purely presentational - a message and a route back home. In
 production-facing paths, don't pass raw error messages to it; they may leak
 implementation details.
 

@@ -16,7 +16,7 @@ const require = createRequire(import.meta.url);
 
 /*
  * The two assets the docs page needs: the JS bundle and the stylesheet. The
- * `swagger-ui-standalone-preset` is intentionally omitted — it adds the topbar
+ * `swagger-ui-standalone-preset` is intentionally omitted - it adds the topbar
  * / spec-URL explorer, which we don't want for a single-spec page.
  */
 const assets = ['swagger-ui-bundle.js', 'swagger-ui.css'] as const;
