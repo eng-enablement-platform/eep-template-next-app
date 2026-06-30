@@ -14,5 +14,5 @@
   <!-- Divider -->
   <line x1="4" y1="78" x2="236" y2="78" stroke="#CBD5E0" stroke-width="0.75"/>
   <!-- Full name -->
-  <text x="4" y="97" font-family="Inter, sans-serif" font-weight="400" font-size="8.5" letter-spacing="1.6" fill="#4A6A85">ENGINEERING ENABLEMENT PLATFORM</text>
+  <text x="12" y="97" font-family="Inter, sans-serif" font-weight="400" font-size="8.5" letter-spacing="1.6" fill="#4A6A85">ENGINEERING ENABLEMENT PLATFORM</text>
 </svg>
