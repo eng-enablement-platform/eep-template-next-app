@@ -62,7 +62,7 @@ files_changed() {
 # Run Trivy only when dependency manifests changed
 if git diff --cached --name-only | grep -qE '^(package\.json|pnpm-lock\.yaml)$'; then
     echo "🔐 Running Trivy security scan..."
-    if ! trivy fs --scanners vuln --ignore-unfixed --detection-priority comprehensive --disable-telemetry --skip-version-check --severity CRITICAL --exit-code 1 .; then
+    if ! trivy fs --scanners vuln --ignore-unfixed --detection-priority comprehensive --disable-telemetry --skip-version-check --severity HIGH,CRITICAL --exit-code 1 .; then
         echo "❌ Security vulnerabilities found! Fix them before committing."
         exit 1
     fi
