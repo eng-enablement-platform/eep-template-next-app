@@ -9,6 +9,12 @@
   <a href="https://renovateapp.com">
     <img src="https://img.shields.io/badge/renovate-enabled-brightgreen?logo=renovatebot" alt="Renovate enabled" />
   </a>
+  <a href="https://github.com/gitleaks/gitleaks">
+    <img src="https://img.shields.io/badge/protected_by-gitleaks-blue" alt="Protected by gitleaks" />
+  </a>
+  <a href="https://aquasecurity.github.io/trivy/">
+    <img src="https://img.shields.io/badge/security-trivy-1904DA" alt="Trivy security scan" />
+  </a>
   <a href="LICENSE">
     <img src="https://img.shields.io/badge/license-MIT-blue" alt="License: MIT" />
   </a>
