@@ -2,7 +2,17 @@
   <img src="public/eep-logo-full.svg" alt="EEP" width="360" />
 </p>
 
-# Next.js Template
+<p align="center">
+  <a href="https://github.com/eng-enablement-platform/eep-template-next-app/actions/workflows/ci.yml">
+    <img src="https://github.com/eng-enablement-platform/eep-template-next-app/actions/workflows/ci.yml/badge.svg" alt="CI" />
+  </a>
+  <a href="https://renovateapp.com">
+    <img src="https://img.shields.io/badge/renovate-enabled-brightgreen?logo=renovatebot" alt="Renovate enabled" />
+  </a>
+  <a href="LICENSE">
+    <img src="https://img.shields.io/badge/license-MIT-blue" alt="License: MIT" />
+  </a>
+</p>
 
 A production-grade Next.js scaffold built on [Engineering Enablement Platform
 (EEP)](https://github.com/your-org/eep) principles. Ships full - authentication,

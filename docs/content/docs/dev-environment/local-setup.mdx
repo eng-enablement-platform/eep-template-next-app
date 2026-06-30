@@ -5,28 +5,13 @@ description: Prerequisites, environment variables, and getting the app running l
 
 ## Prerequisites
 
-| Tool    | Version | Notes                                                                                                                                             |
-| ------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Node.js | ≥ 24    | Install via [nvm](https://github.com/nvm-sh/nvm) or [Homebrew](https://brew.sh/)                                                                  |
-| pnpm    | ≥ 10    | `npm install -g pnpm`                                                                                                                             |
-| Docker  | any     | [Docker Desktop](https://www.docker.com/products/docker-desktop/) or [Rancher Desktop](https://rancherdesktop.io/) (free, works on Apple Silicon) |
-
----
-
-The repo ships an `.nvmrc` pinning the required Node version. Pick whichever
-version manager you prefer:
-
-```bash
-# nvm (most common)
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
-nvm install  # reads .nvmrc and installs the pinned version
-nvm use      # switch to it in the current shell
-```
-
-```bash
-# Homebrew (macOS, installs latest stable - check .nvmrc for required version)
-brew install node
-```
+| Tool     | Version | Notes                                                                                                                                                                       |
+| -------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Node.js  | ≥ 24    | `nvm install && nvm use` (reads `.nvmrc`) or `brew install node`. Install nvm: `curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh \| bash`           |
+| pnpm     | ≥ 10    | `npm install -g pnpm`                                                                                                                                                       |
+| Docker   | any     | [Docker Desktop](https://www.docker.com/products/docker-desktop/) or [Rancher Desktop](https://rancherdesktop.io/) (free, works on Apple Silicon)                           |
+| Trivy    | any     | `brew install trivy` - required for pre-commit security scan on dependency changes. See [aquasecurity/trivy](https://aquasecurity.github.io/trivy/)                         |
+| Gitleaks | any     | `brew install gitleaks` - scans staged files for secrets on every commit. Pre-commit blocks if not installed. See [gitleaks/gitleaks](https://github.com/gitleaks/gitleaks) |
 
 ---
 

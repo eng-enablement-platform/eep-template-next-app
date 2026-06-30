@@ -20,6 +20,27 @@ fi
 
 echo '🏗️👷 Pre commit checks being completed...'
 
+# ── Secret scanning ────────────────────────────────────────────────────────
+# Scans staged files only - fast and low CPU. Uses .gitleaks.toml for
+# allowlists and .gitleaksignore for one-off historical fingerprints.
+# Install: brew install gitleaks
+if ! command -v gitleaks &>/dev/null; then
+    echo ''
+    echo '🔑❌ gitleaks is not installed - install it before committing.'
+    echo ''
+    echo '   Fix: brew install gitleaks'
+    echo ''
+    exit 1
+fi
+
+echo '🔑 Running gitleaks secret scan...'
+if ! gitleaks protect --staged --no-banner; then
+    echo '❌ Potential secret detected! Review the above findings.'
+    echo '   If this is a false positive, add an allowlist entry to .gitleaks.toml'
+    exit 1
+fi
+echo '✅ No secrets detected!'
+
 # ── Deps sync check ────────────────────────────────────────────────────────
 # Run this FIRST before any pnpm command. If node_modules is out of sync
 # with package.json, pnpm will abort with a cryptic no-TTY error on every

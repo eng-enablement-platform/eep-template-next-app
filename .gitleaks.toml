@@ -1,0 +1,26 @@
+title = "EEP Next.js Template - Gitleaks configuration"
+
+[extend]
+useDefault = true
+
+# vitest.config.ts - CLERK_SECRET_KEY and CLERK_PUBLISHABLE_KEY are dummy
+# placeholder values for the test environment, not real credentials.
+[[rules]]
+id = "stripe-access-token"
+
+[[rules.allowlists]]
+description = "vitest.config.ts test environment placeholders"
+paths = [
+  '''vitest\.config\.ts$''',
+]
+
+# .env.local_template - all values are empty or placeholder strings.
+# This file is intentionally committed as a reference for developers.
+[[rules]]
+id = "generic-api-key"
+
+[[rules.allowlists]]
+description = ".env.local_template intentional placeholders"
+paths = [
+  '''\.env\.local_template$''',
+]

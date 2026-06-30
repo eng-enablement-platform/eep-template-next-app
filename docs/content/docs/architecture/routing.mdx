@@ -22,7 +22,7 @@ invisible to the URL: `app/(app)/dashboard/page.tsx` is still `/dashboard`.
 Their only purpose is **layout segmentation** - grouping pages that share a
 common layout without that grouping appearing in the URL.
 
-This template ships with two groups:
+This template ships with two route groups plus a restricted catch-all:
 
 <Files>
   <Folder name='app' defaultOpen>
@@ -51,11 +51,26 @@ This template ships with two groups:
         <File name='page.tsx' description='// /sign-up' />
       </Folder>
     </Folder>
+    <Folder name='restricted' defaultOpen>
+      <File
+        name='page.tsx'
+        description='// /restricted - shown when a signed-in user lacks the required role'
+      />
+    </Folder>
     <Folder name='api' defaultOpen>
       <File name='...' description='// route handlers' />
     </Folder>
   </Folder>
 </Files>
+
+The route groups and their purpose at a glance:
+
+| Location          | What lives here                    | Rule                                                                                                                                                  |
+| ----------------- | ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `app/`            | Next.js file-convention files only | `page.tsx`, `layout.tsx`, `error.tsx`, `not-found.tsx` etc. - thin shells that delegate to `components/` and `classes/`. No business logic.           |
+| `app/(app)/`      | Authenticated app pages            | All pages that require a signed-in user. Layout mounts the auth gate and navbar automatically.                                                        |
+| `app/(auth)/`     | Auth pages                         | Sign-in and sign-up. Bare layout - no navbar, no auth gate.                                                                                           |
+| `app/restricted/` | Role-based access denial           | Shown when a signed-in user lacks the required role for a resource. Lives outside `(app)/` so it can be reached without passing the role check again. |
 
 ---
 

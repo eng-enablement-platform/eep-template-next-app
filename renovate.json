@@ -1,0 +1,69 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+
+  "timezone": "Europe/London",
+  "schedule": ["before 9am on Monday"],
+
+  "labels": ["dependencies"],
+  "assignees": ["hectorkurtyanek"],
+  "reviewers": ["hectorkurtyanek"],
+
+  "vulnerabilityAlerts": {
+    "labels": ["security"],
+    "schedule": ["at any time"],
+    "automerge": false
+  },
+
+  "packageRules": [
+    {
+      "description": "Group all Clerk packages into a single PR",
+      "matchPackagePrefixes": ["@clerk/"],
+      "groupName": "Clerk"
+    },
+    {
+      "description": "Group all OpenTelemetry packages into a single PR",
+      "matchPackagePrefixes": ["@opentelemetry/", "@vercel/otel"],
+      "groupName": "OpenTelemetry"
+    },
+    {
+      "description": "Group all Radix UI packages into a single PR",
+      "matchPackagePrefixes": ["@radix-ui/"],
+      "groupName": "Radix UI"
+    },
+    {
+      "description": "Group all testing packages into a single PR",
+      "matchPackageNames": [
+        "vitest",
+        "@vitest/coverage-v8",
+        "playwright",
+        "@playwright/test",
+        "@testing-library/react",
+        "@testing-library/user-event",
+        "@testing-library/jest-dom"
+      ],
+      "groupName": "Testing"
+    },
+    {
+      "description": "Group all ESLint packages into a single PR",
+      "matchPackagePrefixes": ["eslint", "@eslint/", "@stylistic/"],
+      "matchPackageNames": [
+        "eslint-plugin-import",
+        "eslint-plugin-tsdoc",
+        "simple-import-sort"
+      ],
+      "groupName": "ESLint"
+    },
+    {
+      "description": "Group Drizzle packages into a single PR",
+      "matchPackageNames": ["drizzle-orm", "drizzle-kit"],
+      "groupName": "Drizzle"
+    },
+    {
+      "description": "Pin major version bumps to require explicit review - they may contain breaking changes",
+      "matchUpdateTypes": ["major"],
+      "labels": ["dependencies", "major-update"],
+      "automerge": false
+    }
+  ]
+}

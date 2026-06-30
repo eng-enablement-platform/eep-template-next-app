@@ -1,34 +1,36 @@
 ---
 title: CI/CD
-description: GitHub Actions quality gate - what runs, when it runs, and how to set it up.
+description: GitHub Actions quality gate, Trivy security scanning, and Renovate dependency management.
 ---
 
 ## Overview
 
-CI is defined in `.github/workflows/ci.yml` and runs on every push to every
-branch. It runs five jobs in parallel, with e2e gated behind all of them:
+CI is defined in `.github/workflows/ci.yml` and runs on every push to every branch.
+Five jobs run in parallel, with e2e gated behind all of them:
 
 ```
-lint ---------\
-typecheck -----\
-tests ---------+---> e2e
-build --------/
+lint ----------\
+typecheck ------\
+tests ----------+---> e2e
+build ---------/
+security ------/
 ```
 
-If any of the first four fail, e2e is skipped. No point running a browser
-suite against broken code.
+If any of the first five fail, e2e is skipped.
+No point running a browser suite against broken or vulnerable code.
 
 ---
 
 ## Jobs
 
-| Job           | Command                                             | What it checks                             |
-| ------------- | --------------------------------------------------- | ------------------------------------------ |
-| **Lint**      | `pnpm lint`                                         | ESLint - code style, import hygiene, TSDoc |
-| **Typecheck** | `pnpm typecheck`                                    | TypeScript - no type errors                |
-| **Tests**     | `pnpm test` + `pnpm test:tz` + `pnpm test:contract` | Unit, timezone, and contract tests         |
-| **Build**     | `pnpm build`                                        | Next.js production build succeeds          |
-| **E2e**       | `pnpm e2e`                                          | Playwright - auth flow and UI smoke tests  |
+| Job           | Command                                             | What it checks                                                                   |
+| ------------- | --------------------------------------------------- | -------------------------------------------------------------------------------- |
+| **Lint**      | `pnpm lint`                                         | ESLint - code style, import hygiene, TSDoc                                       |
+| **Typecheck** | `pnpm typecheck`                                    | TypeScript - no type errors                                                      |
+| **Tests**     | `pnpm test` + `pnpm test:tz` + `pnpm test:contract` | Unit, timezone, and contract tests                                               |
+| **Build**     | `pnpm build`                                        | Next.js production build succeeds                                                |
+| **Security**  | Trivy + Gitleaks                                    | Scans `pnpm-lock.yaml` for HIGH/CRITICAL CVEs and git history for leaked secrets |
+| **E2e**       | `pnpm e2e`                                          | Playwright - auth flow and UI smoke tests                                        |
 
 ---
 
@@ -50,22 +52,93 @@ not required - T3 Env defaults them to `/sign-in`, `/sign-up`, and `/`.
 
 ---
 
+## Security scanning
+
+Two security tools run on every CI push, both in the `security` job.
+
+### Trivy
+
+[Trivy](https://aquasecurity.github.io/trivy/) scans `pnpm-lock.yaml` for HIGH or CRITICAL CVEs and fails the build if any are found.
+This mirrors the pre-commit Trivy hook so vulnerabilities are caught in CI even if the hook was bypassed locally.
+
+Trivy does not need to be installed on CI - the `aquasecurity/trivy-action` handles it.
+Locally, install with `brew install trivy` (macOS).
+
+<Callout type='warn'>
+  Trivy itself has faced supply chain attacks, so keep an eye on the [GitHub
+  Advisory Database](https://github.com/advisories) for known vulnerabilities in
+  your toolchain.
+</Callout>
+
+### Gitleaks
+
+[Gitleaks](https://github.com/gitleaks/gitleaks) scans the git history for accidentally committed secrets - API keys, tokens, passwords.
+It runs in CI via `gitleaks-action` and locally as part of the pre-commit hook (staged files only, so it's fast).
+
+Locally, install with `brew install gitleaks` (macOS).
+If gitleaks is not installed, the pre-commit hook warns but does not block the commit.
+
+**Handling false positives** - add a path or pattern-based allowlist entry to `.gitleaks.toml`.
+This is committed to the repo so the allowlist is shared across the team.
+See the existing entries in `.gitleaks.toml` for the pattern to follow.
+
+---
+
+## Dependency management
+
+Dependencies are managed by [Renovate](https://docs.renovatebot.com/), configured in `renovate.json` at the repo root.
+Renovate runs as a GitHub App - install it at [github.com/apps/renovate](https://github.com/apps/renovate) and grant it access to this repo.
+No self-hosting or tokens required.
+
+### Schedule
+
+- **Weekly updates** - every Monday before 9am (Europe/London)
+- **Security patches** - immediately, on any schedule
+
+### What it does
+
+Renovate scans all dependencies across the root and `docs/` workspace, groups related packages into single PRs, and opens them for review.
+It never auto-merges - all PRs require your approval before merging.
+
+### Package groups
+
+Related packages are batched into single PRs so you're not flooded with individual bumps:
+
+| Group         | Packages                                   |
+| ------------- | ------------------------------------------ |
+| Clerk         | All `@clerk/*` packages                    |
+| OpenTelemetry | All `@opentelemetry/*` + `@vercel/otel`    |
+| Radix UI      | All `@radix-ui/*` packages                 |
+| Testing       | vitest, Playwright, Testing Library        |
+| ESLint        | eslint, all plugins and stylistic packages |
+| Drizzle       | `drizzle-orm` + `drizzle-kit`              |
+
+Major version bumps always get their own PR and are labelled `major-update` - they may contain breaking changes and should be reviewed carefully.
+
+### PR labels
+
+| Label          | Meaning               |
+| -------------- | --------------------- |
+| `dependencies` | All Renovate PRs      |
+| `security`     | Vulnerability patches |
+| `major-update` | Major version bumps   |
+
+---
+
 ## E2e tests
 
-Playwright runs against `pnpm dev` (not a production build). The dev server
-boots as part of the job - no separate deploy step needed.
+Playwright runs against `pnpm dev` (not a production build).
+The dev server boots as part of the job - no separate deploy step needed.
 
-On failure, the Playwright HTML report is uploaded as a GitHub Actions
-artifact (retained for 7 days). Download it from the Actions run summary
-and open it locally with `pnpm e2e:report` to inspect screenshots and traces.
+On failure, the Playwright HTML report is uploaded as a GitHub Actions artifact (retained for 7 days).
+Download it from the Actions run summary and open it locally with `pnpm e2e:report` to inspect screenshots and traces.
 
 ---
 
 ## Concurrency
 
-Each branch has its own concurrency group. Pushing a new commit to a branch
-while CI is running cancels the in-progress run and starts a fresh one -
-stale runs don't queue up.
+Each branch has its own concurrency group.
+Pushing a new commit to a branch while CI is running cancels the in-progress run and starts a fresh one - stale runs don't queue up.
 
 ---
 
@@ -75,10 +148,9 @@ To require CI to pass before merging PRs to `main`, go to **GitHub Settings
 -> Branches -> Add branch protection rule** with branch pattern `main`:
 
 - Tick **Require status checks to pass before merging**
-- Add each check by name: `Lint`, `Typecheck`, `Tests`, `Build`, `E2e tests`
+- Add each check by name: `Lint`, `Typecheck`, `Tests`, `Build`, `Security scan`, `E2e tests`
 - Tick **Require branches to be up to date before merging**
-- Leave **Require a pull request before merging** unticked if you want to
-  keep the ability to push directly to `main`
+- Leave **Require a pull request before merging** unticked if you want to keep the ability to push directly to `main`
 
 <Callout>
   Status check names only appear in the search box after at least one CI run has
