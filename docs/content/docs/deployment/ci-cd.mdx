@@ -83,8 +83,8 @@ This is committed to the repo so the allowlist is shared across the team.
 See the existing entries in `.gitleaks.toml` for the pattern to follow.
 
 <Callout type='warn'>
-  **Avoid `gitleaks-action` for organisation repos.** `gitleaks-action@v3` requires a paid
-  `GITLEAKS_LICENSE` secret for any GitHub organisation repo — even if you obtain a free key,
+  **Avoid `gitleaks-action` for organisation repos.** `gitleaks-action@v3` requires a
+  `GITLEAKS_LICENSE` secret for any GitHub organisation repo. Even after you have obtained a key
   environment-scoped secrets are not reliably passed to the action. This workflow installs the
   gitleaks CLI directly instead, which has no licence requirement:
 
