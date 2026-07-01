@@ -73,7 +73,7 @@ Locally, install with `brew install trivy` (macOS).
 ### Gitleaks
 
 [Gitleaks](https://github.com/gitleaks/gitleaks) scans the git history for accidentally committed secrets - API keys, tokens, passwords.
-It runs in CI via `gitleaks-action` and locally as part of the pre-commit hook (staged files only, so it's fast).
+It runs in CI by installing the CLI directly and locally as part of the pre-commit hook (staged files only, so it's fast).
 
 Locally, install with `brew install gitleaks` (macOS).
 If gitleaks is not installed, the pre-commit hook warns but does not block the commit.
@@ -81,6 +81,22 @@ If gitleaks is not installed, the pre-commit hook warns but does not block the c
 **Handling false positives** - add a path or pattern-based allowlist entry to `.gitleaks.toml`.
 This is committed to the repo so the allowlist is shared across the team.
 See the existing entries in `.gitleaks.toml` for the pattern to follow.
+
+<Callout type='warn'>
+  **Avoid `gitleaks-action` for organisation repos.** `gitleaks-action@v3` requires a paid
+  `GITLEAKS_LICENSE` secret for any GitHub organisation repo — even if you obtain a free key,
+  environment-scoped secrets are not reliably passed to the action. This workflow installs the
+  gitleaks CLI directly instead, which has no licence requirement:
+
+```yaml
+- name: Install gitleaks
+  run: curl -sSL https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz | tar -xz && sudo mv gitleaks /usr/local/bin/
+
+- name: Run gitleaks secret scan
+  run: gitleaks detect --no-banner
+```
+
+</Callout>
 
 ---
 
