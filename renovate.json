@@ -5,6 +5,10 @@
   "timezone": "Europe/London",
   "schedule": ["before 9am on Monday"],
 
+  "toolSettings": {
+    "nodeMaxMemory": 2048
+  },
+
   "labels": ["dependencies"],
   "assignees": ["hectorkurtyanek"],
   "reviewers": ["hectorkurtyanek"],
