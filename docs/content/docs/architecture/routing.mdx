@@ -9,10 +9,6 @@ description: How the app/ directory is structured, what route groups are, and ho
 `error.tsx`, `not-found.tsx`, `loading.tsx`, `route.ts`. These are reserved
 filenames the router discovers by location, so they must live here.
 
-Keep them **thin**. A page file resolves params and wires the framework; a
-layout mounts providers and shells. Real components live in `components/` and
-are imported via `@/`.
-
 ---
 
 ## Route groups
@@ -156,16 +152,9 @@ an admin panel with a sidebar.
 Each group gets its own `layout.tsx`. The root `layout.tsx` only provides
 global providers - it never makes assumptions about which group is rendering.
 
----
-
-## Navbar
-
-The `Navbar` component lives in `components/common/navbar.tsx` and is mounted
-once in `(app)/layout.tsx`. Because it's in the layout rather than on
-individual pages it renders automatically on every authenticated route without
-any per-page wiring.
-
 <Callout>
   Shared layout elements - navbars, sidebars, footers - belong in the relevant
   group layout, not on individual pages.
 </Callout>
+
+---

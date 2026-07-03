@@ -1,18 +1,18 @@
 'use client';
 
+import { UserButton } from '@clerk/nextjs';
 import { BookOpen, FileText } from 'lucide-react';
 import Image from 'next/image';
 
 import { ThemeToggle } from '@/components/common/theme-toggle';
 import { TimezoneSelector } from '@/components/common/timezone-selector';
-import { HomeProfile } from '@/components/features/home-profile';
 import { Button } from '@/components/ui/button';
 import { env } from '@/lib/env';
 
 /**
  * Application navbar - rendered on every authenticated page via `RootLayoutClient`.
  *
- * Contains the primary nav links (docs, API docs) and the user profile/theme
+ * Contains the primary nav links (docs, API docs) and the user menu/theme
  * toggle. Extracted from page.tsx so it doesn't need to be repeated per-page
  * and so page content doesn't bleed under an absolutely-positioned header.
  *
@@ -59,7 +59,7 @@ export function Navbar() {
         </div>
       </div>
       <div className='flex items-center gap-4'>
-        <HomeProfile />
+        <UserButton />
         <ThemeToggle />
         <TimezoneSelector />
       </div>

@@ -20,9 +20,9 @@ import {
  * Keeps the page tidy by default - visitors can expand only what they're
  * interested in. Each item maps to one of the three scaffold demo features:
  *
- * - Zustand counter
- * - SWR-fetched posts list
- * - Full-CRUD example
+ * - Zustand counter: <Counter />
+ * - SWR-fetched posts list: <Posts />
+ * - Full-CRUD example: <ExampleItems />
  *
  * @example
  * ```tsx
