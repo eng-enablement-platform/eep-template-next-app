@@ -43,15 +43,19 @@ description: Where things live, how they interact and the "three-layer system"
 
 ### Project root - tooling and infrastructure
 
-| Location        | What lives here                                                                                  |
-| --------------- | ------------------------------------------------------------------------------------------------ |
-| `scripts/`      | DB seeding, smoke checks, asset copy scripts. Run outside the Next.js context via `tsx`.         |
-| `e2e-tests/`    | Playwright end-to-end tests. One spec per feature.                                               |
-| `drizzle/`      | Generated SQL migrations and Drizzle metadata. Committed - never edit by hand.                   |
-| `docs/`         | This documentation site (Fumadocs). Separate Next.js app, runs on `:3001`.                       |
-| `diagrams/`     | Architecture diagram source (`main.py`). Regenerate with `cd diagrams && uv run python main.py`. |
-| `eslint-rules/` | Custom ESLint rules specific to this project.                                                    |
-| `public/`       | Static assets served at `/`. Includes vendored Swagger UI bundle.                                |
+| Location          | What lives here                                                                                                 |
+| ----------------- | --------------------------------------------------------------------------------------------------------------- |
+| `scripts/`        | DB seeding, smoke checks, asset copy scripts. Run outside the Next.js context via `tsx`.                        |
+| `e2e-tests/`      | Playwright end-to-end tests. One spec per feature.                                                              |
+| `contract-tests/` | Live network checks that a third-party API still returns the shape we depend on. Run with `pnpm test:contract`. |
+| `drizzle/`        | Generated SQL migrations and Drizzle metadata. Committed - never edit by hand.                                  |
+| `docs/`           | This documentation site (Fumadocs). Separate Next.js app, runs on `:3001`.                                      |
+| `diagrams/`       | Architecture diagram source (`main.py`). Regenerate with `cd diagrams && uv run python main.py`.                |
+| `eslint-rules/`   | Custom ESLint rules specific to this project.                                                                   |
+| `public/`         | Static assets served at `/`. Includes vendored Swagger UI bundle.                                               |
+| `.github/`        | GitHub Actions CI workflow (`workflows/ci.yml`) and the pull request template.                                  |
+| `.devcontainer/`  | Dev Container config for a zero-setup VS Code / Codespaces environment.                                         |
+| `.husky/`         | Git hooks. The `pre-commit` hook runs lint, typecheck, tests, and build.                                        |
 
 ## The three layers
 

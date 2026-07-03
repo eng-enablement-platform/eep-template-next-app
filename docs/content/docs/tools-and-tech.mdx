@@ -6,22 +6,23 @@ icon: Wrench
 
 ## Framework
 
-- **[Next.js](https://nextjs.org/docs)** - The application framework. We use the App Router with React Server Components and a strict three-layer architecture (`components/`, `app/api/`, `classes/`).
-- **[React](https://react.dev/)** - Handles UI rendering. Named exports, function declarations for components, arrow functions for callbacks. No default exports except where Next.js requires them.
-- **[TypeScript](https://www.typescriptlang.org/)** - Strict throughout. We default to `type` for all declarations and reach for `interface` only when declaration merging is genuinely needed. `import type` is enforced for type-only imports.
+- **[Next.js](https://nextjs.org/docs)** - The application framework.
+- **[React](https://react.dev/)** - The UI library.
+- **[TypeScript](https://www.typescriptlang.org/)** - The language everything is written in.
 
 ---
 
 ## Styling
 
-- **[Tailwind CSS](https://tailwindcss.com/docs)** - The only styling mechanism. No CSS modules, no styled-components.
-- **[shadcn/ui](https://ui.shadcn.com/)** - Unstyled, accessible component primitives copied directly into `src/components/ui/` and owned by the project.
-- **[Radix UI](https://www.radix-ui.com/)** - The headless primitive layer backing shadcn/ui. Provides focus management, keyboard navigation, and ARIA roles without styling opinions.
-- **[Lucide React](https://lucide.dev/)** - SVG icon library used throughout the UI for consistent iconography.
+- **[Tailwind CSS](https://tailwindcss.com/docs)** - The styling system.
+- **[shadcn/ui](https://ui.shadcn.com/)** - Component primitives.
+- **[Radix UI](https://www.radix-ui.com/)** - The layer backing shadcn/ui. Provides focus management, keyboard navigation, and ARIA roles without styling opinions.
+- **[Lucide React](https://lucide.dev/)** - SVG icon library.
 - **[tw-animate-css](https://github.com/joe-bell/tw-animate-css)** - A thin Tailwind plugin that maps `animate-*` utilities to CSS `@keyframes`, keeping animation tokens in the same layer as everything else.
 - **[clsx](https://github.com/lukeed/clsx) & [tailwind-merge](https://github.com/dcastil/tailwind-merge)** - `clsx` composes conditional class strings; `tailwind-merge` resolves Tailwind class conflicts so the last value wins. Both are wrapped in the `cn()` utility at `src/utils/tailwind-merge.ts`.
 - **[class-variance-authority](https://cva.style/)** - Type-safe variant API used by shadcn/ui components to define button, badge, and other variant sets as typed config objects rather than ad-hoc class strings.
-- **[next-themes](https://github.com/pacocoursey/next-themes)** - Handles light/dark mode by injecting a `class` on `<html>` to drive Tailwind's `dark:` utilities, persisted to `localStorage` across reloads.
+- **[next-themes](https://github.com/pacocoursey/next-themes)** - Handles light/dark mode.
+- **[Sonner](https://sonner.emilkowal.ski/)** - Toast notification library, wired in `src/components/common/toast.tsx` and provided at the app root for non-blocking user feedback on mutations.
 
 ---
 
@@ -41,16 +42,16 @@ icon: Wrench
 
 ## Forms
 
-- **[React Hook Form](https://react-hook-form.com/)** - Handles form state, validation, and submission with minimal re-renders. Always paired with `zodResolver` so the same Zod schema used by the server action also drives client-side validation.
+- **[React Hook Form](https://react-hook-form.com/)** - Handles form state, validation, and submission with minimal re-renders. Paired with `zodResolver` so the same Zod schema used by the server action also drives client-side validation.
 - **[@hookform/resolvers](https://github.com/react-hook-form/resolvers)** - Bridges React Hook Form and Zod via `zodResolver`. Pass it to `useForm` and your Zod schema becomes the validation contract for both the client form and the server action.
-- **[date-fns](https://date-fns.org/)** - Date formatting and manipulation. Used for safe local-midnight parsing of ISO date strings - avoiding the JS `new Date('YYYY-MM-DD')` UTC-midnight gotcha that shifts calendar dates back a day for users in negative-offset timezones. Also backs the shadcn Calendar/date picker components.
+- **[date-fns](https://date-fns.org/)** - Date formatting and manipulation.
 
 ---
 
 ## API & Validation
 
-- **[Zod](https://zod.dev/)** - Runtime validation at every boundary: route handlers, server actions, and environment variables. Schemas live in `src/validation/`, one file per domain, shared between the read route and the write action so they can never drift.
-- **[T3 Env](https://env.t3.gg/)** (`@t3-oss/env-nextjs`) - Validates all environment variables at build time using Zod. Required vars missing or malformed fail the build immediately with a clear error rather than producing a broken deployment. The schema lives in `src/lib/env/index.ts` and is the single source of truth - `env.d.ts` has been removed.
+- **[Zod](https://zod.dev/)** - Runtime validation at every boundary: route handlers, server actions, and environment variables.
+- **[T3 Env](https://env.t3.gg/)** (`@t3-oss/env-nextjs`) - Validates all environment variables at build time using Zod.
 - **[zod-openapi](https://github.com/samchungy/zod-openapi)** - Generates an OpenAPI 3.1 spec from the same Zod schemas used for validation.
 - **[swagger-ui-dist](https://swagger.io/tools/swagger-ui/)** - Serves the generated OpenAPI spec as an interactive UI at `/api-docs`, copied into `public/` at build time via `scripts/copy-swagger-ui.ts`.
 
@@ -58,7 +59,7 @@ icon: Wrench
 
 ## Data Fetching & State
 
-- **[SWR](https://swr.vercel.app/)** - Handles all client-side data fetching. Every API call from the browser goes through a SWR hook in `src/hooks/`.
+- **[SWR](https://swr.vercel.app/)** - Handles all client-side data fetching. Every API call from the browser goes through an SWR hook in `src/hooks/`.
 - **[Zustand](https://zustand.pmnd.rs/)** - Manages UI state that doesn't belong in a server fetch: modals, selections, ephemeral form state. Stores live in `src/store/`, one file per domain. See `src/store/counter-store.ts` for the reference shape.
 
 ---
@@ -74,7 +75,7 @@ icon: Wrench
 ## Testing
 
 - **[Vitest](https://vitest.dev/)** - Unit and integration test runner, configured with the jsdom environment for component tests.
-- **[React Testing Library](https://testing-library.com/) & [user-event](https://testing-library.com/docs/user-event/intro/)** - Tests behaviour (decisions, branches, state changes), not appearance. `user-event` simulates realistic user interactions rather than direct DOM events.
+- **[React Testing Library](https://testing-library.com/) & [user-event](https://testing-library.com/docs/user-event/intro/)** - Renders components and queries them the way a user would. `user-event` simulates realistic user interactions rather than direct DOM events.
 - **[@testing-library/jest-dom](https://github.com/testing-library/jest-dom)** - Readable Vitest matchers (`toBeInTheDocument`, `toHaveClass`, etc.), bootstrapped in `vitest.setup.ts`.
 - **[Playwright](https://playwright.dev/)** - End-to-end tests in `e2e-tests/`, covering full user flows against a running app. Run with `pnpm e2e`.
 - **[@clerk/testing](https://clerk.com/docs/testing/playwright/overview)** - Official Clerk SDK for Playwright. Provides `clerkSetup()` (global setup) and the `clerk.signIn()` helper used by the `authenticatedPage` fixture to sign in via the Backend API without a password or OTP flow.
@@ -85,8 +86,9 @@ icon: Wrench
 
 - **[ESLint](https://eslint.org/)** - Static analysis via flat config in `eslint.config.ts`. Key plugins: `eslint-plugin-tsdoc` (enforces TSDoc), `eslint-plugin-import` + `simple-import-sort` (import hygiene), `@stylistic/eslint-plugin` (comment style rules), and a local `single-line-comment-style` rule.
 - **[Prettier](https://prettier.io/)** - Opinionated formatter, running on all staged files via lint-staged.
-- **[Husky](https://typicode.github.io/husky/) & [lint-staged](https://github.com/lint-staged/lint-staged)** - Power the pre-commit hook. On `.ts/.tsx` changes the full `tsc --noEmit`, test suite, and build run. Use `SKIP_CHECKS=1 git commit` only for intentional WIP.
+- **[Husky](https://typicode.github.io/husky/) & [lint-staged](https://github.com/lint-staged/lint-staged)** - Power the pre-commit hook.
 - **[Trivy](https://aquasecurity.github.io/trivy/)** - Security scanner that runs on pre-commit whenever `package.json` or `pnpm-lock.yaml` changes. Blocks commits if known vulnerabilities are flagged. Install with `brew install trivy` on macOS.
+- **[gitleaks](https://github.com/gitleaks/gitleaks)** - Secret scanner run in CI (`gitleaks detect`) to catch committed credentials, API keys, and tokens before they reach the remote.
 
 <Callout type='warn'>
   Trivy itself has faced [supply chain style
@@ -105,16 +107,23 @@ icon: Wrench
 - **[tsx](https://github.com/privatenumber/tsx)** - Runs TypeScript files directly without a compile step. Used by all `scripts/*.ts` and `src/db/*.ts` entry points (migrations, seed, smoke check).
 - **[TSDoc](https://tsdoc.org/)** - Documentation annotation standard for TypeScript. All public symbols are documented with `/** */` blocks, enforced by the ESLint `tsdoc` plugin on pre-commit. See [Code Style](/docs/conventions/code-style) for the canonical shape.
 - **[concurrently](https://github.com/open-cli-tools/concurrently)** - Runs the app and docs dev servers in parallel via `pnpm dev:all` with colour-coded output per process.
-- **[Sonner](https://sonner.emilkowal.ski/)** - Toast notification library, wired in `src/components/common/toast.tsx` and provided at the app root for non-blocking user feedback on mutations.
+- **[Renovate](https://docs.renovatebot.com/)** - Automated dependency updates. Configured in `renovate.json`, it opens grouped PRs for outdated packages on a weekly schedule and at any time for security advisories.
 - **[dotenv](https://github.com/motdotla/dotenv)** - Loads `.env.local` for scripts running outside the Next.js context. Next.js handles `.env` loading natively for the app itself.
 - **[Diagrams](https://diagrams.mingrammer.com/)** - Python library for generating the architecture diagram as code. The definition lives in `diagrams/main.py`. Run with `uv run python main.py` from the `diagrams/` directory.
 - **[uv](https://docs.astral.sh/uv/)** - Fast Python package manager used solely to run the diagrams script. Handles the Python environment in `diagrams/pyproject.toml` without a manual `venv` setup.
 
 ---
 
+## CI
+
+- **[GitHub Actions](https://docs.github.com/actions)** - The CI pipeline, defined in `.github/workflows/ci.yml`. On every push and pull request it runs lint, typecheck, tests, build, and a security scan in parallel, then Playwright e2e once they all pass.
+- **[Pull request template](https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests/creating-a-pull-request-template-for-your-repository)** - `.github/pull_request_template.md` pre-fills every PR with Problem/Solution, verification steps, and an AI-assistance disclosure prompt.
+
+---
+
 ## Deployment
 
-- **[Vercel](https://vercel.com/)** - Happy path for deploying Next.js apps with minimal configuration. Set `DATABASE_URL` and the Clerk environment variables in the Vercel project settings and deploy.
+- **[Vercel](https://vercel.com/)** - Happy path for deploying Next.js apps with minimal configuration.
 
 ---
 
