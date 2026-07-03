@@ -1,9 +1,18 @@
 /**
- * Checks the error received and formats it into
- * an appropriate message
+ * Normalise any thrown value into a display string.
  *
- * @param error - The error that occurred
- * @returns - A string formatted representation of the error
+ * `catch` clauses type their argument as `unknown`, so callers have to handle
+ * `Error`, plain strings, and arbitrary objects. This does that once so nothing
+ * else has to.
+ *
+ * @param error - The value from a `catch` clause.
+ * @returns A human-readable string, never throws.
+ * @example
+ * ```ts
+ * try { ... } catch (err) {
+ *   toast.error(formatErrorMessage(err));
+ * }
+ * ```
  */
 export const formatErrorMessage = (error: unknown): string => {
   if (error instanceof Error) {

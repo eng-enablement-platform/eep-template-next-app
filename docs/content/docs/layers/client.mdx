@@ -116,10 +116,7 @@ function InvoiceRow({ invoice }: InvoiceRowProps) {
 <Callout>
   `example-items` earned a folder here because it grew three distinct concerns:
   shared form fields and types, the create form mutation, and the list/row
-  display with inline edit mode. `counter.tsx` and `posts.tsx` remain flat files
-  - they have no sub-parts to organise. The rule is the same as for utilities:
-  promote to a folder only when there are real files to put inside it, not
-  speculatively.
+  display with inline edit mode.
 </Callout>
 
 ---
@@ -205,8 +202,28 @@ same hook is a handful of lines.
 
 ## State management with Zustand
 
+Reach for a store when the same piece of client state has to be read or updated
+by components that don't share a direct parent-child line, a theme toggle in the
+navbar and a setting elsewhere in the tree, a selection made in one panel and
+consumed in another, a modal opened from anywhere. If the state stays inside one
+component or flows one level down, plain `useState` is enough, don't reach for a
+store.
+
+The alternative to a store is prop drilling, threading the value and its setter
+down through every intermediate component that doesn't itself care about it just
+to reach the one that does. That couples unrelated components to the shape of the
+state and turns a small change into an edit across the whole chain. A store lets
+any component subscribe directly to the slice it needs, no intermediaries.
+
 [Zustand](https://zustand.docs.pmnd.rs/learn/getting-started/introduction) stores live in `store/`, one file per domain. The state shape and
 actions are always defined as separate types and intersected.
+
+<Callout type='warn'>
+  The counter below is a reference example, not a real need. Its state lives in
+  one component, so by the rule above it should just be `useState`. It's a store
+  purely to demonstrate the pattern in a copy-pasteable shape, don't take it as
+  a cue to reach for Zustand whenever you have a counter.
+</Callout>
 
 ```ts
 // store/counter-store.ts

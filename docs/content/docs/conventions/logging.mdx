@@ -137,6 +137,26 @@ opt-in diagnostic for watching queries live during development.
 DB_QUERY_LOG=1 pnpm dev
 ```
 
+The query logger (`src/classes/loggers/query/`) deliberately uses `console.debug`
+rather than `rootLogger`, wrapping each query in `___QUERY___` / `___END_QUERY___`
+delimiters:
+
+```ts
+console.debug('___QUERY___');
+console.debug(query);
+console.debug(params);
+console.debug('___END_QUERY___');
+```
+
+<Callout>
+  This is the one sanctioned `console.*` in server code. It's a raw dev
+  firehose, not a structured log - the delimiters just give the SQL and params a
+  readable, scannable shape in the terminal. Routing it through `rootLogger`
+  would wrap every query in JSON envelope noise and defeat the point. It's safe
+  because it's off by default and gated behind `DB_QUERY_LOG=1`, so it never
+  reaches production output.
+</Callout>
+
 ---
 
 ## Console logging
@@ -158,12 +178,3 @@ console.dir(obj, { depth: 3 }); // deep object structure
 </Callout>
 
 ---
-
-## OpenTelemetry
-
-This page covers structured logs (Winston). The template also ships with
-distributed tracing via OpenTelemetry - spans for every request, render, fetch
-call, and route handler, visible locally in Jaeger.
-
-See [Observability](/docs/conventions/observability) for the full setup,
-local dev workflow, custom spans, and production vendor config.

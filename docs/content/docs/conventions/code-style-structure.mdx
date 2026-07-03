@@ -10,7 +10,7 @@ they are there to create a codebase that it's easy to work quickly and sustainab
 At the end of day code is ultimately just the vehicle to get to an outcome, respect
 the codebase but don't become infatuated with it!
 
-Three principles drive every rule in this doc:
+Three principles drive every rule:
 
 - [**Readable**](https://www.alexmolas.com/2024/06/06/good-code.html) - If it's hard to read, it's wrong. Clarity beats cleverness every time.
 - [**DRY**](https://www.boot.dev/blog/computer-science/dry-code) - Don't repeat yourself. Duplication is a maintenance debt that compounds.
@@ -38,10 +38,8 @@ const LOG_LEVEL_DEFAULT = 'info';
 
 **Tests** - co-located in a `__tests__/` subfolder at the same directory level
 as the file under test. `components/common/theme-toggle.tsx` →
-`components/common/__tests__/theme-toggle.test.tsx`. e2e tests are the exception
-
-- they live in `e2e-tests/tests/` at the project root. See
-  [Testing](/docs/conventions/testing) for the full picture.
+`components/common/__tests__/theme-toggle.test.tsx`. e2e tests are the exception, they live in `e2e-tests/tests/` at the project root. See
+[Testing](/docs/conventions/testing) for the full picture.
 
 ---
 
@@ -534,7 +532,7 @@ type, or component. When you hover over a call site in your editor, the TSDoc
 block is what surfaces. It's the difference between seeing a type signature and
 understanding what the function actually does and why it exists.
 
-```ts
+````ts
 /**
  * Normalise any thrown value into a display string.
  *
@@ -544,12 +542,18 @@ understanding what the function actually does and why it exists.
  *
  * @param error - The value from a `catch` clause.
  * @returns A human-readable string, never throws.
+ * @example
+ * ```ts
+ * try { ... } catch (err) {
+ *   toast.error(formatErrorMessage(err));
+ * }
+ * ```
  */
 export const formatErrorMessage = (error: unknown): string => { ... };
-```
+````
 
-Hovering `formatErrorMessage` anywhere it's called surfaces that explanation
-inline, no hunting for the definition.
+Hovering `formatErrorMessage` anywhere it's called surfaces that explanation inline, no
+hunting for the definition.
 
 ![TSDoc hover tooltip in VS Code](/code/tsdoc-hover.png)
 
