@@ -23,8 +23,7 @@ type UsePostsReturn = {
  * Fetches a short list of posts from `GET /api/posts`.
  *
  * The route is backed by a server-side integration service rather than calling
- * JSONPlaceholder directly from the browser - see the client docs for why this
- * particular flow is illustrative.
+ * JSONPlaceholder directly from the browser - this particular flow is illustrative.
  *
  * @returns `posts` (undefined while loading), `isLoading` flag, and an `error`
  *          if the fetch failed.

@@ -177,12 +177,17 @@ by role so there is one obvious place to look. Three buckets:
 - `classes/services/<domain>/` - business logic and third-party integrations
   (HubSpot, Slack, `example-item`). **Server-only** - this is where the
   server-only guarantee actually lives. One subfolder per domain.
-- `classes/errors/` - universal error types (e.g. `ApplicationError`). **Not**
-  server-only: thrown from both server and client, so no `server-only` import.
+- `classes/errors/` - structured error types (e.g. `ApplicationError`).
+  **Server-only** - its whole value is server-side observability (thrown at
+  integration boundaries, caught in handlers/actions, logged by Winston). A
+  thrown error serializes to a plain `Error` across the network boundary, so the
+  client never sees the class; client errors are handled by `error.tsx`,
+  `ErrorBoundary`, and `ActionResult`.
 - `classes/loggers/` - logger classes (`server-only` - Winston writes to the filesystem).
 
-The server-only invariant is scoped to `services/`, not the whole folder -
-`errors/` is cross-cutting infra that the client may touch; `loggers/` is `server-only` (Winston, filesystem writes).
+Every bucket under `classes/` is `server-only`: `services/` (integrations),
+`errors/` (server-side observability), and `loggers/` (Winston, filesystem
+writes). The client layer has its own error surfaces and never imports from here.
 
 **API Layer (`app/api/`)** - Next.js route handlers only. All business logic
 lives in `classes/`, not here; handlers validate input, call a service, and
@@ -552,7 +557,7 @@ README covers what the project is and how to run it. agents.md covers rules only
 | Concern          | Location            | Convention                                   |
 | ---------------- | ------------------- | -------------------------------------------- |
 | Business logic   | `classes/services/` | Domain subdirectories, server-only           |
-| Errors           | `classes/errors/`   | Not server-only - thrown from both layers    |
+| Errors           | `classes/errors/`   | `server-only` - server-side observability    |
 | Loggers          | `classes/loggers/`  | `server-only` - Winston, filesystem writes   |
 | Route handlers   | `app/api/`          | Reads (GET) + external writes; Zod-validated |
 | Mutations        | `actions/`          | UI writes, `*-actions.ts`, shared Zod schema |

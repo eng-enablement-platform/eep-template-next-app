@@ -6,7 +6,8 @@ import { postsService } from '@/classes/services/posts';
 /**
  * EXAMPLE ROUTE
  *
- * Read route for the posts demo. This flow is deliberately illustrative
+ * Read route for the posts demo.
+ * This flow is illustrative
  *
  */
 

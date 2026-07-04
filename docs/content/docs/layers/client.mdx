@@ -198,10 +198,7 @@ same hook is a handful of lines.
   option and is worth looking at if you need more granular cache control.
 </Callout>
 
-### What a hook fetches from
-
-A SWR hook always calls an internal `/api/*` route - it never talks to a
-third-party API directly from the browser. Both example hooks follow this:
+An SWR hook should in most cases call an internal `/api/*` route:
 
 - `useExampleItems` → `GET /api/example-items` → the DB service.
 - `usePosts` → `GET /api/posts` → the `posts` **integration service**, which

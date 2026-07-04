@@ -3,9 +3,6 @@
  *
  * Every internal `/api/*` path consumed by a SWR hook is defined here.
  *
- * For parameterised routes, use the builder function - it produces a
- * fully-resolved path and keeps call sites free of manual string interpolation.
- *
  * @example
  * ```ts
  * // Flat route

@@ -1,3 +1,5 @@
+import 'server-only';
+
 import { formatErrorMessage } from '@/utils/format-error-message';
 
 // Structured context attached to every `ApplicationError`.
