@@ -162,6 +162,113 @@ catch (error) {
 
 ---
 
+## When to catch
+
+Open a `catch` only when you can do something the caller can't. There are three
+reasons; if none apply, don't catch - let the error bubble.
+
+| Reason        | What you do                                                                           | Example                          |
+| ------------- | ------------------------------------------------------------------------------------- | -------------------------------- |
+| **Translate** | Rethrow as `ApplicationError` so callers get one typed shape, not a mystery `unknown` | integration service on `!res.ok` |
+| **Handle**    | Recover with a real fallback, then carry on                                           | corrupt cache → return defaults  |
+| **Observe**   | Log once at the boundary that owns the outcome, then shape a response                 | route handler, server action     |
+| _(none)_      | Don't catch - let it bubble                                                           | plain Drizzle CRUD               |
+
+<Callout>
+  `try/catch` only exists to deal with a `throw` - but throwing and catching are
+  two different jobs. A function that throws does so bare (an `if` + `throw`, no
+  `try`): it raises the failure and bows out. The `try/catch` belongs *up the
+  stack*, at the boundary that catches that throw. So a bare `throw` isn't a
+  missing `catch` - it's the thing a `catch` later handles. A failure that
+  arrives as a *value* instead - like Zod's `safeParse` returning
+  `{ success: false }` - never needs either; you read it with an `if`.
+</Callout>
+
+**Where does it bubble to?** "Bubble" means the error unwinds the server call
+stack until a boundary catches it. The boundary
+converts it into a value, and _that value_ is what crosses the network and
+reaches the UI:
+
+```
+PostsService.getAll()          throws ApplicationError
+        ↑ bubbles up (no catch here)
+route handler / server action  ← CAUGHT HERE (the boundary that owns the outcome)
+        ↓ converted to a value
+        → route:  routeErrorHandler(error) → 500 JSON { error, details }
+        → action: catch → return { ok: false, error: '...' }
+        ↓ crosses the network as data, not an exception
+client (hook / form)           reads the value, renders an error state
+```
+
+### throw vs return
+
+Both signal failure - the choice is about who must handle it and when.
+
+**`throw`** when failure is exceptional and _not this function's job to
+resolve_. It interrupts flow and bubbles up until a boundary catches it, so
+intermediate callers stay clean. Services throw for this reason.
+
+```ts
+// classes/services/posts/index.ts - the service throws, then bows out.
+if (!response.ok) {
+  throw new ApplicationError('Failed to fetch posts', {
+    scope: 'posts',
+    function: 'PostsService.getAll',
+    originalError: `${response.status} ${response.statusText}`,
+  });
+}
+```
+
+**`return` a result** when failure is a _routine, expected outcome the caller
+must handle every time_. Modelled as data (`ActionResult<T>`), the type forces
+the caller to branch on it. Actions return for this reason.
+
+```ts
+// actions/example-item-actions.ts - the action returns a value the form reads.
+if (!parsed.success) {
+  return {
+    ok: false,
+    error: 'Validation failed',
+    fieldErrors: z.flattenError(parsed.error).fieldErrors,
+  };
+}
+```
+
+A server action shows both at once: a validation failure is already a value
+(`return { ok: false }`), while a thrown service error is _caught and turned
+into_ one. The action's job is to funnel every failure into the single
+`ActionResult` shape the UI renders.
+
+```ts
+export async function createExampleItem(
+  input: unknown,
+): Promise<ActionResult<ExampleItem>> {
+  // Failure as a VALUE - safeParse returns { success: false }, so read it with an if.
+  const parsed = exampleItemSchema.safeParse(input);
+  if (!parsed.success) {
+    return {
+      ok: false,
+      error: 'Validation failed',
+      fieldErrors: z.flattenError(parsed.error).fieldErrors,
+    };
+  }
+
+  // Failure as a THROW - the service throws, so catch it and turn it into a value.
+  try {
+    return { ok: true, data: await exampleItemService.create(parsed.data) };
+  } catch (error) {
+    logger.error({
+      scope: 'example-items',
+      message: 'Failed to create example item',
+      error,
+    });
+    return { ok: false, error: 'Something went wrong' };
+  }
+}
+```
+
+---
+
 ## Error handling by layer
 
 ### Route handlers

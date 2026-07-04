@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { ZodError } from 'zod';
+import { z } from 'zod';
 
 import { LOG_SOURCE, rootLogger } from '@/classes/loggers/application';
 
@@ -19,7 +20,7 @@ export function validationErrorResponse(error: ZodError): NextResponse {
   return NextResponse.json(
     {
       error: 'Validation failed',
-      fieldErrors: error.flatten().fieldErrors,
+      fieldErrors: z.flattenError(error).fieldErrors,
     },
     { status: 400 },
   );

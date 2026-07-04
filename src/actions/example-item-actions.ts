@@ -1,6 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { z } from 'zod';
 
 import { LOG_SOURCE, rootLogger } from '@/classes/loggers/application';
 import { exampleItemService } from '@/classes/services/example-item';
@@ -13,10 +14,8 @@ import {
 /**
  * Example Item Server Actions
  *
- * The template's recommended write path: mutations triggered from our own UI go
+ * Mutations triggered from our own UI go
  * through these `'use server'` actions rather than the REST route handlers.
- * They share the exact Zod schemas the routes use (`@/validation/example-item`), so the
- * two write surfaces can never validate differently.
  *
  * Each action returns a discriminated `ActionResult` so a client can branch on
  * success vs validation failure (e.g. with `useActionState`) without throwing.
@@ -26,7 +25,7 @@ const logger = rootLogger(LOG_SOURCE.ACTION);
 
 /**
  * Field-level validation errors keyed by field name, as produced by Zod's
- * `flatten().fieldErrors`.
+ * `flattenError().fieldErrors`.
  */
 type FieldErrors = Record<string, string[] | undefined>;
 
@@ -53,7 +52,7 @@ export async function createExampleItem(
     return {
       ok: false,
       error: 'Validation failed',
-      fieldErrors: parsed.error.flatten().fieldErrors,
+      fieldErrors: z.flattenError(parsed.error).fieldErrors,
     };
   }
 
@@ -96,7 +95,7 @@ export async function updateExampleItem(
     return {
       ok: false,
       error: 'Validation failed',
-      fieldErrors: parsed.error.flatten().fieldErrors,
+      fieldErrors: z.flattenError(parsed.error).fieldErrors,
     };
   }
 
