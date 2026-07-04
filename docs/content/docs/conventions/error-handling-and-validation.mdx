@@ -137,11 +137,8 @@ _deliberate_ throw:
 - A required credential is missing
 - A domain invariant is broken.
 
-It is **not** for wrapping infrastructure faults. A dropped database connection already throws a rich,
-typed error - wrapping it adds nothing, so let it bubble to the boundary and be
-handled by `formatErrorMessage`. This is why plain CRUD against Drizzle never
-throws one, but an outbound integration does (see
-[Server Layer → Integration errors](/docs/layers/server#integration-errors)).
+It is **not** for wrapping infrastructure faults - see [Server Layer →
+Integration errors](/docs/layers/server#integration-errors)
 
 <Callout>
   Client side errors are handled by `error.tsx`, `ErrorBoundary`, and
