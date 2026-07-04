@@ -41,9 +41,7 @@ class PostsService {
   }
 }
 
-/**
- * Singleton service instance. Import this to read posts from the server.
- */
+// Singleton service instance. Import this to read posts from the server.
 export const postsService = new PostsService();
 
 // test-only exports
