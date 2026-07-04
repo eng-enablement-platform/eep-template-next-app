@@ -198,6 +198,26 @@ same hook is a handful of lines.
   option and is worth looking at if you need more granular cache control.
 </Callout>
 
+### What a hook fetches from
+
+A SWR hook always calls an internal `/api/*` route - it never talks to a
+third-party API directly from the browser. Both example hooks follow this:
+
+- `useExampleItems` → `GET /api/example-items` → the DB service.
+- `usePosts` → `GET /api/posts` → the `posts` **integration service**, which
+  fetches JSONPlaceholder server-side.
+
+<Callout type='warn'>
+  `usePosts` going through a route + service is **illustrative**.
+  JSONPlaceholder is a public no-auth GET, so realistically the hook could hit
+  it directly and skip the server layer entirely. It's wired the long way purely
+  to demonstrate the server-integration pattern end to end. The rule for real
+  code: reach for a `classes/services/` class only when there's auth, a secret,
+  or response shaping to own - otherwise the client → SWR → `fetcher` path is
+  enough. See [Server Layer → When do you need a service
+  class?](/docs/layers/server#when-do-you-need-a-service-class)
+</Callout>
+
 ---
 
 ## State management with Zustand

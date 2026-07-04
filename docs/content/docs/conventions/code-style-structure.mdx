@@ -38,7 +38,7 @@ const LOG_LEVEL_DEFAULT = 'info';
 
 **Tests** - co-located in a `__tests__/` subfolder at the same directory level
 as the file under test. `components/common/theme-toggle.tsx` →
-`components/common/__tests__/theme-toggle.test.tsx`. e2e tests are the exception, they live in `e2e-tests/tests/` at the project root. See
+`components/common/__tests__/theme-toggle.test.tsx`. e2e tests and contract tests are the exception. See
 [Testing](/docs/conventions/testing) for the full picture.
 
 ---
@@ -202,8 +202,10 @@ Always use `@/` path aliases - never relative paths. `import type { Foo } from
 '../../types'` is a maintenance hazard that silently breaks when files move.
 `import type { Foo } from '@/types/foo'` always resolves from the project root.
 
-Imports are auto-sorted by `eslint-plugin-simple-import-sort` on every commit:
-external packages first, then internal `@/` aliases, then relative.
+<Callout>
+  Imports are auto-sorted by `eslint-plugin-simple-import-sort` on every commit:
+  external packages first, then internal `@/` aliases, then relative.
+</Callout>
 
 ---
 
@@ -240,12 +242,10 @@ Next.js file conventions that require a default export:
 
 ### Barrel exports
 
-A barrel is just the `index.ts` that appears when a folder grows multiple files
-
-- it's the same pattern as the component folder grouping. Once a `sidebar/`
-  folder has `header.tsx`, `nav.tsx`, and `footer.tsx` inside it, an `index.ts`
-  lets callers import from `@/components/features/sidebar` without knowing the
-  internal file names. The barrel controls what the outside world sees.
+A barrel is just the `index.ts` that appears when a folder grows multiple files. It's the same pattern as the component folder grouping. Once a `sidebar/`
+folder has `header.tsx`, `nav.tsx`, and `footer.tsx` inside it, an `index.ts`
+lets callers import from `@/components/features/sidebar` without knowing the
+internal file names. The barrel controls what the outside world sees.
 
 ```ts
 // components/features/sidebar/index.ts
@@ -509,6 +509,7 @@ const prices = items.map((item) => item.price * 1.2);
 // Delay matches the animation duration in the design spec (300ms)
 const TRANSITION_MS = 300;
 
+// ✅ multi-line - always /* */
 /*
  * next-themes can only resolve the active theme on the client, so the
  * first server render must not commit theme-dependent markup. Flipping
@@ -523,11 +524,17 @@ useEffect(() => {
 ## TSDoc
 
 <Callout type='idea'>
-  TSDoc on exported `.ts` files is enforced via `eslint-plugin-jsdoc` on
-  pre-commit. For `.tsx` components it's advised but not linted.
+  On exported `.ts` symbols, documentation is enforced on pre-commit by **two**
+  plugins covering non-overlapping concerns: `eslint-plugin-jsdoc` handles
+  _presence and structure_ (`require-jsdoc`, `require-param`, `require-returns`)
+  while `eslint-plugin-tsdoc` handles _syntax_ (`tsdoc/syntax`, validating that
+  the comment follows the TSDoc spec). Both are needed because tsdoc alone lints
+  only comments that already exist - it has no `require-*` rule, so it can't
+  force an undocumented symbol to be documented. For `.tsx` components this is
+  advised but not linted.
 </Callout>
 
-TSDoc (`/** */`) is documentation attached directly above an exported function,
+[TSDoc](https://tsdoc.org/) (`/** */`) is documentation attached directly above an exported function,
 type, or component. When you hover over a call site in your editor, the TSDoc
 block is what surfaces. It's the difference between seeing a type signature and
 understanding what the function actually does and why it exists.

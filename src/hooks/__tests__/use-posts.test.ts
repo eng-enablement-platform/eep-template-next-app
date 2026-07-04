@@ -1,7 +1,7 @@
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
-import { JSONPLACEHOLDER_POSTS_KEY } from '@/config/constants/external-urls';
+import { API_ROUTES } from '@/config/constants/api-routes';
 import { usePosts } from '@/hooks/use-posts';
 import type { Post } from '@/types/post';
 
@@ -32,7 +32,7 @@ describe('usePosts', () => {
 
     renderHook(() => usePosts());
 
-    expect(mockUseSWR).toHaveBeenCalledWith(JSONPLACEHOLDER_POSTS_KEY);
+    expect(mockUseSWR).toHaveBeenCalledWith(API_ROUTES.posts);
   });
 
   it('returns isLoading true and no data while fetching', () => {
@@ -51,7 +51,7 @@ describe('usePosts', () => {
 
   it('returns posts once data resolves', () => {
     mockUseSWR.mockReturnValue({
-      data: MOCK_POSTS,
+      data: { posts: MOCK_POSTS },
       isLoading: false,
       error: undefined,
     });

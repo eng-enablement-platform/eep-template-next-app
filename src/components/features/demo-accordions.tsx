@@ -54,7 +54,7 @@ export function DemoAccordions() {
           <span className='flex flex-col gap-0.5'>
             <span>Recent Posts</span>
             <span className='text-muted-foreground text-xs font-normal tracking-normal normal-case'>
-              SWR - External API
+              SWR · Service · Route Handler
             </span>
           </span>
         </AccordionTrigger>

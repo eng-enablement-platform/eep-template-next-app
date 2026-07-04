@@ -19,6 +19,9 @@ export const API_ROUTES = {
   /** `GET /api/example-items` - list all example items. */
   exampleItems: '/api/example-items',
 
+  /** `GET /api/posts` - list the demo posts (server-side integration example). */
+  posts: '/api/posts',
+
   /**
    * Builds a path for a single example item.
    *

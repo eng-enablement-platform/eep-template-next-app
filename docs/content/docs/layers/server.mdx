@@ -143,6 +143,78 @@ export const exampleItemService = new ExampleItemService();
 
 ---
 
+## When do you need a service class?
+
+Not every external call earns a service class. The deciding question is **is
+there a server boundary to own?** - auth headers, a secret token, a credentialed
+base URL, or response shaping. If there is, the call belongs in
+`classes/services/<domain>/`. If there isn't, it doesn't.
+
+| Call type                   | Example                   | Where it lives                            | Error story                              |
+| --------------------------- | ------------------------- | ----------------------------------------- | ---------------------------------------- |
+| **Public, no-auth read**    | An open `GET`, no secret  | client hook → SWR → global `fetcher`      | generic `Error`, surfaced by SWR         |
+| **Authed / secret-bearing** | A credentialed API client | `classes/services/<domain>/`, server-only | typed `ApplicationError` at the boundary |
+
+A public no-auth GET does **not** need a service class - wrapping it in one is
+pure ceremony, a class with a single method that just does `fetch(url)` and
+holds no config. You reach for `classes/services/` only when there's something
+for the class to own.
+
+<Callout type='warn'>
+  The `posts` demo (`classes/services/posts/`) is a **deliberate exception to
+  its own rule**. JSONPlaceholder is a public, no-auth GET, so in real life it
+  would use the client → SWR → `fetcher` path and no service class at all. It is
+  wired through a full service + route handler purely so the template can
+  demonstrate the integration pattern end to end. Don't copy it for a genuinely
+  public read - copy it when you have auth, a secret, or response shaping to
+  own.
+</Callout>
+
+---
+
+## Integration errors
+
+Where a DB service lets Drizzle errors bubble untouched, an **integration
+service throws a typed `ApplicationError`** - because `fetch` behaves
+differently. `fetch` does _not_ throw on an HTTP error: a 404 or 500 resolves a
+`Response` with `ok: false`. So _your_ code has to make the decision - "this
+response is not ok, that's a failure" - and that deliberate throw is exactly
+what `ApplicationError` is for.
+
+```ts
+// classes/services/posts/index.ts
+import 'server-only';
+
+import { ApplicationError } from '@/classes/errors';
+
+class PostsService {
+  async getAll(): Promise<Post[]> {
+    const response = await fetch(JSONPLACEHOLDER_POSTS_URL);
+
+    // fetch doesn't throw on 4xx/5xx - inspect and throw deliberately.
+    if (!response.ok) {
+      throw new ApplicationError('Failed to fetch posts', {
+        scope: 'posts',
+        function: 'PostsService.getAll',
+        originalError: `${response.status} ${response.statusText}`,
+      });
+    }
+
+    return (await response.json()) as Post[];
+  }
+}
+```
+
+This is _not_ wrapping the call in try/catch - it runs the fetch, inspects the
+result, and throws on a rule. The route handler that calls the service catches
+the `ApplicationError` at its boundary, logs it once by `scope`, and shapes the
+response - the same log-at-the-boundary discipline the
+[Logging](/docs/conventions/logging#where-to-log) doc describes. See
+[Error Handling → ApplicationError](/docs/conventions/error-handling-and-validation#applicationerror)
+for the full contract.
+
+---
+
 ## Module-scoped instances vs factory
 
 It's worth being precise about what "module-scoped instance" means in this

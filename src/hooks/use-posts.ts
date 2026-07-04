@@ -1,6 +1,6 @@
 import useSWR from 'swr';
 
-import { JSONPLACEHOLDER_POSTS_KEY } from '@/config/constants/external-urls';
+import { API_ROUTES } from '@/config/constants/api-routes';
 import type { Post } from '@/types/post';
 
 /*
@@ -11,6 +11,8 @@ import type { Post } from '@/types/post';
  *
  */
 
+type PostsResponse = { posts: Post[] };
+
 type UsePostsReturn = {
   posts: Post[] | undefined;
   isLoading: boolean;
@@ -18,7 +20,11 @@ type UsePostsReturn = {
 };
 
 /**
- * Fetches a short list of posts from the JSONPlaceholder API.
+ * Fetches a short list of posts from `GET /api/posts`.
+ *
+ * The route is backed by a server-side integration service rather than calling
+ * JSONPlaceholder directly from the browser - see the client docs for why this
+ * particular flow is illustrative.
  *
  * @returns `posts` (undefined while loading), `isLoading` flag, and an `error`
  *          if the fetch failed.
@@ -28,10 +34,10 @@ type UsePostsReturn = {
  * ```
  */
 export function usePosts(): UsePostsReturn {
-  const { data, isLoading, error } = useSWR<Post[]>(JSONPLACEHOLDER_POSTS_KEY);
+  const { data, isLoading, error } = useSWR<PostsResponse>(API_ROUTES.posts);
 
   return {
-    posts: data,
+    posts: data?.posts,
     isLoading,
     // SWR types error as `any` - narrow to Error so callers get a stable shape.
     error: error instanceof Error ? error : undefined,

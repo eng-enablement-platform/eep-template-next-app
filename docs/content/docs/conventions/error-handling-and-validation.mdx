@@ -1,6 +1,6 @@
 ---
 title: Error Handling & Validation
-description: How errors are typed, thrown, caught, and surfaced across the stack - and where validation lives.
+description: How errors are typed, thrown, caught, and surfaced across the stack and where validation lives.
 ---
 
 ## Philosophy
@@ -111,22 +111,47 @@ const item = await exampleItemService.create(parsed.data);
 ### ApplicationError
 
 `ApplicationError` (in `src/classes/errors/`) is a structured error class for
-when you need context attached to a runtime error. It extends `Error` with a
-`context` object carrying the source, function name, and original error:
+**deliberate, domain-level failures** - where _your_ code decides something is
+wrong. It extends `Error` with a `context` object carrying a `scope`, the
+originating function, and the original error:
 
 ```ts
-throw new ApplicationError('Failed to fetch user data', {
-  source: 'API', // where it originated
-  function: 'getUserData',
-  originalError: error, // formatted to a string automatically
+throw new ApplicationError('Failed to fetch posts', {
+  scope: 'posts', // the module/concern, mirrors the logger's scope axis
+  function: 'PostsService.getAll',
+  originalError: `${response.status} ${response.statusText}`, // normalised to a string
 });
 ```
+
+<Callout>
+  `scope` deliberately mirrors the logger's free-form `scope` field (not its
+  closed `logSource` set). So when the boundary catches an `ApplicationError`
+  and logs it, the error's `scope` flows straight into `logger.error({scope})` -
+  the two systems compose instead of colliding. See
+  [Logging](/docs/conventions/logging) for the `logSource` vs `scope` split.
+</Callout>
+
+<Callout type='warn'>
+  Keep `originalError` a primitive (a string, a status line). Passing a rich
+  object like a raw `Response` is a trap - it gets stringified to `"[object
+  Response]"`, which tells you nothing. Pull out what matters
+  (`response.status`, `response.statusText`) before handing it over.
+</Callout>
+
+**When to reach for it - and when not to.** `ApplicationError` is for a
+_deliberate_ throw: a third-party call returns a non-ok response, a required
+credential is missing, a domain invariant is broken. It is **not** for wrapping
+infrastructure faults. A dropped database connection already throws a rich,
+typed error - wrapping it adds nothing, so let it bubble to the boundary and be
+handled by `formatErrorMessage`. This is why plain CRUD against Drizzle never
+throws one, but an outbound integration does (see
+[Server Layer → Integration errors](/docs/layers/server#integration-errors)).
 
 It lives in `classes/errors/` without a `server-only` import. That's
 intentional - it's cross-cutting infrastructure, and adding `server-only`
 would block edge cases like catching it in an `ErrorBoundary` for an
 `instanceof` check. In practice you'll rarely if ever throw it client-side;
-the structured context it carries (`source`, `function`, `originalError`) is
+the structured context it carries (`scope`, `function`, `originalError`) is
 only useful when something is observing it - Winston on the server, not the
 browser console.
 
