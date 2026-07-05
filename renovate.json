@@ -6,8 +6,12 @@
   "schedule": ["before 9am on Monday"],
 
   "toolSettings": {
-    "nodeMaxMemory": 2048
+    "nodeMaxMemory": 2560
   },
+
+  "prConcurrentLimit": 3,
+  "prHourlyLimit": 2,
+  "branchConcurrentLimit": 3,
 
   "labels": ["dependencies"],
   "assignees": ["hectorkurtyanek"],
