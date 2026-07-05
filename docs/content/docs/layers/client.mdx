@@ -3,8 +3,7 @@ title: Client Layer
 description: How the client side is structured. Components, SWR hooks, and Zustand
 ---
 
-The client layer is split across three folders: `components/`, `hooks/`, and
-`store/`.
+The client layer is split across three folders:
 
 | Folder        | Job                                  |
 | ------------- | ------------------------------------ |
@@ -220,13 +219,11 @@ An SWR hook should in most cases call an internal `/api/*` route:
 ## State management with Zustand
 
 Reach for a store when the same piece of client state has to be read or updated
-by components that don't share a direct parent-child line, a theme toggle in the
-navbar and a setting elsewhere in the tree, a selection made in one panel and
-consumed in another, a modal opened from anywhere. If the state stays inside one
+by components that don't share a direct parent-child line. If the state stays inside one
 component or flows one level down, plain `useState` is enough, don't reach for a
 store.
 
-The alternative to a store is prop drilling, threading the value and its setter
+The alternative to a store is [prop drilling](geeksforgeeks.org/reactjs/what-is-prop-drilling-and-how-to-avoid-it/) threading the value and its setter
 down through every intermediate component that doesn't itself care about it just
 to reach the one that does. That couples unrelated components to the shape of the
 state and turns a small change into an edit across the whole chain. A store lets

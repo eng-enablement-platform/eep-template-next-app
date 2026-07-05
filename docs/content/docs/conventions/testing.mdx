@@ -11,9 +11,10 @@ to a test suite. This should actually limit the number of tests that are needed 
 
 When an agent is writing all of the code, you become the QA. Neither you nor the agent should
 reach for tests automatically. Un-targeted tests add noise, erode the feedback loop, and
-create false confidence without catching real bugs. **The goal isn't to chase coverage metrics but test what actually matters!**
+create false confidence without catching real bugs.
 
 <Callout type='idea'>
+  The goal isn't to chase coverage metrics but test what actually matters!
   Before writing a test, ask: _would this prevent a future bug or make
   refactoring safer?_ If yes, write it.
 </Callout>
@@ -45,7 +46,6 @@ it('falls back to a generic message for an unknown value', () => {
 
 **2. Components with branches, state, or effects - test the decision.**
 Conditional rendering, event handlers, timers - anything that makes a decision.
-Test that the decision is correct, not that the markup rendered.
 
 ```tsx
 // ✅ tests the branch (which icon shows) and the behaviour (setTheme called)
@@ -68,15 +68,17 @@ it('calls setTheme with the chosen option', async () => {
 });
 ```
 
-See `src/components/common/__tests__/theme-toggle.test.tsx` for the full
-reference shape including the `useTheme` mock pattern.
+<Callout>
+  See `src/components/common/__tests__/theme-toggle.test.tsx` for the full
+  reference shape including the `useTheme` mock pattern.
+</Callout>
 
 **3. Pure presentational components - do not test.**
 Takes props, renders markup, no branching. Asserting "the markup rendered" tests
 that React works - it catches no bugs and breaks on every cosmetic change.
 `error`, `page-not-found`, `toast`, `auth` get no unit test for this reason.
 
-<Callout type='info'>
+<Callout type='idea'>
   The tiers above cover [**unit
   tests**](https://www.ibm.com/think/topics/unit-testing) but testing doesn't
   stop here! This doc also covers:
@@ -93,13 +95,13 @@ that React works - it catches no bugs and breaks on every cosmetic change.
 ## Test Driven Development (TDD)
 
 [TDD](https://www.ibm.com/think/topics/test-driven-development) can be a contentious topic, some developers apply it to everything, others never touch it.
-The pragmatic middle ground: TDD pays off for small, isolated functions with a clear contract - pure utilities, validation
+The pragmatic approach I find works well is that TDD pays off for small, isolated functions with a clear contract - pure utilities, validation
 schemas, well-defined logic. Write the test first, watch it fail, make it pass.
 
 Where I feel it doesn't really pay off is larger integration work where the spec is still being discovered.
 As the module boundaries and interface shapes evolve, tests written against them become
 liable to break for structural reasons rather than logic errors and they often end up being
-rewritten or discarded rather than acting as a safety net.
+rewritten or discarded.
 
 ### Worked example - timezone-safe date parsing
 
@@ -220,8 +222,7 @@ through, the Denver run would fail - Dec 28 instead of Dec 29.
 ## Co-location
 
 Tests live next to the code they test in a `__tests__/` subfolder at the same
-directory level. See [Code Style](/docs/conventions/code-style#naming) for the
-full co-location rule.
+directory level (with the exception of `e2e-tests` and `contract-tests`)
 
 | Type      | Location                                        |
 | --------- | ----------------------------------------------- |
@@ -323,12 +324,6 @@ in isolation.
 - Logic already covered by a unit test - don't duplicate coverage
 - Presentation details - if a unit test already verifies the decision, an e2e test
   asserting the same outcome in the browser adds friction without value
-
-### Location
-
-E2e tests live in `e2e-tests/tests/` at the project root - they're the one exception to
-the co-location rule, since they run against the compiled app rather than individual
-modules.
 
 ### Running
 

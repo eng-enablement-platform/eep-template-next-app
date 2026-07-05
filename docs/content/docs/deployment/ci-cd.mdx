@@ -139,6 +139,83 @@ Major version bumps always get their own PR and are labelled `major-update` - th
 | `security`     | Vulnerability patches |
 | `major-update` | Major version bumps   |
 
+### Running jobs from the Mend dashboard
+
+The `renovate.json` schedule controls when Renovate runs automatically, but you can also
+trigger runs on demand from the [Mend developer dashboard](https://developer.mend.io/).
+This is created for you when the Renovate GitHub App is installed - sign in with the same
+GitHub account you granted access to.
+
+<CollapsibleSteps>
+
+<CollapsibleStep title="Open the dashboard for your repo" defaultOpen={false}>
+
+From [developer.mend.io](https://developer.mend.io/), select the repo. The dashboard shows
+Renovate's status and lets you kick off a run without waiting for the next scheduled window.
+
+![Mend Renovate dashboard for the repository](/renovate/renovate-dashboard.png)
+
+</CollapsibleStep>
+
+<CollapsibleStep title="Review the available updates" defaultOpen={false}>
+
+The dashboard lists every update Renovate has detected across the root and `docs/`
+workspace, grouped exactly as your `packageRules` define. From here you can trigger
+a PR if you don't want to wait for the scheduled run.
+
+![Mend dashboard list of available dependency updates](/renovate/renovate-updates-list.png)
+
+</CollapsibleStep>
+
+<CollapsibleStep title="Review the resulting PR" defaultOpen={false}>
+
+Each run opens grouped PRs against your repo. They carry the `dependencies` label, run the
+full CI pipeline, and wait for your approval - Renovate never auto-merges.
+
+![Example Renovate pull request](/renovate/renovate-pr.png)
+
+</CollapsibleStep>
+
+</CollapsibleSteps>
+
+### Memory tuning
+
+Large pnpm workspaces can hit a `kernel-out-of-memory` / timeout failure on Mend-hosted
+runs. When Renovate batches many updates into one branch it runs a single large
+`pnpm install` to regenerate the lockfile, and that resolution is what exhausts the heap -
+this repo is a prime candidate with two lockfiles (root + `docs/`) and heavy trees (Next,
+Clerk, Radix, OpenTelemetry, Playwright, Fumadocs).
+
+Two levers in `renovate.json` fix it, both applied here:
+
+- **`toolSettings.nodeMaxMemory`** - raises the heap ceiling for the pnpm/yarn child
+  process. [Mend recommends](https://docs.renovatebot.com/mend-hosted/faq/) 1.5-2.5 GB; this repo sits at `2560` (2.5 GB), the upper bound.
+- **Concurrency caps** - `prConcurrentLimit`, `prHourlyLimit`, and `branchConcurrentLimit`
+  limit how many lockfile-regenerating branches resolve at once, so peak memory stays
+  bounded even when many updates land in the same window.
+
+```json
+"toolSettings": {
+  "nodeMaxMemory": 2560
+},
+"prConcurrentLimit": 3,
+"prHourlyLimit": 2,
+"branchConcurrentLimit": 3
+```
+
+<Callout type='warn'>
+  On Mend-hosted apps you cannot set `NODE_OPTIONS` (for example
+  `--max-old-space-size`) via the config `env` block - it is rejected by the
+  bot's `allowedEnv` allowlist. `toolSettings.nodeMaxMemory` is the only
+  supported heap lever, which is exactly why Mend documents it as _the_ setting
+  for this failure.
+</Callout>
+
+If a run still OOMs at 2.5 GB, the remaining lever is reducing per-branch install size:
+the largest grouped families (Radix UI is dozens of packages) regenerate a big chunk of the
+lockfile in one branch, so splitting or ungrouping the biggest group shrinks the largest
+install.
+
 ---
 
 ## E2e tests

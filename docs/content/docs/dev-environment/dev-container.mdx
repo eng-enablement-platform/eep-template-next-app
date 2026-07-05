@@ -45,7 +45,7 @@ Inside the `app` container you get:
 
 <CollapsibleSteps>
 
-<CollapsibleStep title="Open in the container" defaultOpen={true}>
+<CollapsibleStep title="Open in the container" defaultOpen={false}>
 
 1. Make sure Docker Desktop or Rancher Desktop is running
 2. Open the repo in VS Code or Cursor
@@ -54,7 +54,7 @@ Inside the `app` container you get:
 
 </CollapsibleStep>
 
-<CollapsibleStep title="Set up environment variables" defaultOpen={true}>
+<CollapsibleStep title="Set up environment variables" defaultOpen={false}>
 
 ```bash
 cp .env.local_template .env.local
@@ -64,7 +64,7 @@ Fill in your Clerk keys. `DATABASE_URL` is already set to the Postgres service -
 
 </CollapsibleStep>
 
-<CollapsibleStep title="Run migrations and start the server" defaultOpen={true}>
+<CollapsibleStep title="Run migrations and start the server" defaultOpen={false}>
 
 ```bash
 pnpm db:migrate   # apply migrations (idempotent)
