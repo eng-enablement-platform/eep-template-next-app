@@ -11,11 +11,11 @@ description: The classes/ directory. Services, errors, loggers
   to stop anything sensitive on the server side leaking to the browser
 </Callout>
 
-| Folder              | What lives here               | Why server-only                  |
-| ------------------- | ----------------------------- | -------------------------------- |
-| `classes/services/` | Business logic + integrations | Drizzle, third-party API clients |
-| `classes/errors/`   | Structured error types        | Server-side observability only   |
-| `classes/loggers/`  | Logger classes                | Winston writes to the filesystem |
+| Folder              | What lives here               |
+| ------------------- | ----------------------------- |
+| `classes/services/` | Business logic + integrations |
+| `classes/errors/`   | Structured error types        |
+| `classes/loggers/`  | Logger classes                |
 
 ## Design Patterns
 
