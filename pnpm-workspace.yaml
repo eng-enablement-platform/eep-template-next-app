@@ -1,6 +1,14 @@
 packages:
   - 'docs'
 
+# Skip pnpm's per-install supply-chain re-verification pass (minimumReleaseAge /
+# trustPolicy re-check of every lockfile entry). That pass holds per-package
+# registry metadata in memory for the whole install and OOMs Renovate's 3GB
+# Mend-hosted runner during full multi-lockfile regeneration. We author every
+# lockfile change here and defend PRs with --frozen-lockfile + Trivy + review,
+# so trusting the committed lockfile is an acceptable trade. Requires pnpm >= 11.3.
+trustLockfile: true
+
 # Force vite to a patched version across all workspace packages.
 # CVE-2026-53571: server.fs.deny bypass, fixed in 8.0.16.
 # Remove once vitest/fumadocs-mdx update their peer deps to pull >= 8.0.16.
