@@ -1,5 +1,11 @@
-packages:
-  - 'docs'
+# docs/ is a standalone Fumadocs site with its own package.json, tsconfig, and
+# lockfile - no code coupling to the root app in either direction. It is
+# deliberately NOT a workspace member: making it one forces Renovate's
+# `pnpm update --lockfile-only --recursive` to resolve both dependency trees in
+# one process on every root branch, which OOM-kills Mend's 3GB runner. Detaching
+# keeps root Renovate branches resolving the root tree only. Drive docs from root
+# via `cd docs && ...` scripts instead of `pnpm --filter`.
+packages: []
 
 # Skip pnpm's per-install supply-chain re-verification pass (minimumReleaseAge /
 # trustPolicy re-check of every lockfile entry). That pass holds per-package
