@@ -1,0 +1,47 @@
+# Self-hosted Renovate.
+name: Renovate
+
+on:
+  schedule:
+    # Wed 06:00 UTC. renovate.json's own `schedule` still gates when PRs open;
+    # this cron only controls how often Renovate wakes up to check.
+    - cron: '0 6 * * 3'
+  # Manual "run now" button in the Actions tab.
+  workflow_dispatch:
+
+# GITHUB_TOKEN is too restrictive for Renovate; we use an App token instead.
+# These permissions apply to the workflow itself, not the App token.
+permissions:
+  contents: read
+
+concurrency:
+  group: renovate
+  cancel-in-progress: false
+
+jobs:
+  renovate:
+    name: Renovate
+    runs-on: ubuntu-latest
+    steps:
+      # Mint a short-lived (1h) installation token from the Renovate GitHub App.
+      # Renovate uses this to open and update PRs under the App's bot identity.
+      - name: Get Renovate app token
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.RENOVATE_APP_ID }}
+          private-key: ${{ secrets.RENOVATE_APP_PRIVATE_KEY }}
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Self-hosted Renovate
+        uses: renovatebot/github-action@v46.1.18
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+        env:
+          # Scope Renovate to this repo only - never autodiscover the whole org.
+          RENOVATE_REPOSITORIES: ${{ github.repository }}
+          # Read-only github.com token for changelog/release-note fetching.
+          RENOVATE_GITHUB_COM_TOKEN: ${{ secrets.RENOVATE_GITHUB_COM_TOKEN }}
+          LOG_LEVEL: debug

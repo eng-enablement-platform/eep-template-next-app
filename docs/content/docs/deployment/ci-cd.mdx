@@ -102,13 +102,20 @@ See the existing entries in `.gitleaks.toml` for the pattern to follow.
 
 ## Dependency management
 
+<Callout type='warn'>
+  **Do not use the Mend-hosted Renovate app for this repo.** The obvious path -
+  installing [github.com/apps/renovate](https://github.com/apps/renovate) and
+  letting Mend run it - fails here. Mend's runners have a hard **3GB memory
+  cap**, and our pnpm lockfile regeneration OOM-kills against it with a
+  `kernel-out-of-memory` error.
+</Callout>
+
 Dependencies are managed by [Renovate](https://docs.renovatebot.com/), configured in `renovate.json` at the repo root.
-Renovate runs as a GitHub App - install it at [github.com/apps/renovate](https://github.com/apps/renovate) and grant it access to this repo.
-No self-hosting or tokens required.
+Renovate is **self-hosted** here: it runs inside a GitHub Actions workflow (`.github/workflows/renovate.yml`) on GitHub's runners, not on Mend's hosted infrastructure.
 
 ### Schedule
 
-- **Weekly updates** - every Monday before 9am (Europe/London)
+- **Weekly updates** - Wednesday between 6am and 9am (Europe/London)
 - **Security patches** - immediately, on any schedule
 
 ### What it does
@@ -139,12 +146,131 @@ Major version bumps always get their own PR and are labelled `major-update` - th
 | `security`     | Vulnerability patches |
 | `major-update` | Major version bumps   |
 
-### Running jobs from the Mend dashboard
+### Self-hosting setup
 
-The `renovate.json` schedule controls when Renovate runs automatically, but you can also
-trigger runs on demand from the [Mend developer dashboard](https://developer.mend.io/).
-This is created for you when the Renovate GitHub App is installed - sign in with the same
-GitHub account you granted access to.
+Self-hosting means running Renovate yourself inside a GitHub Actions workflow instead of
+letting Mend's servers run it. The workflow (`.github/workflows/renovate.yml`) does exactly
+what Mend's bot did - reads `renovate.json`, opens grouped PRs - but on GitHub's ~7GB runners
+instead of Mend's 3GB-capped ones, which is what clears the OOM. Nothing about `renovate.json`
+changes: same grouping, same labels, same schedule.
+
+The one-time setup below is done once per repo. It looks long but it's mostly clicking through
+a single web form - **no code, no server, no webhooks.**
+
+<Callout type='warn'>
+  The GitHub App you create below is a **new, private App you own** - it is NOT
+  the public Mend-hosted "Renovate" app. Yours only mints a short-lived token so
+  the workflow can open PRs under a bot identity. Do **not** follow GitHub's
+  "writing code for a GitHub App" quickstart - that is for building a bot from
+  scratch, which you don't need (Renovate is the bot).
+</Callout>
+
+<CollapsibleSteps>
+
+<CollapsibleStep title="Create the GitHub App" defaultOpen={false}>
+
+Go to your org's **Settings -> Developer settings -> GitHub Apps -> New GitHub App**
+and fill in the form:
+
+- **GitHub App name:** something distinct like `eep-renovate-runner` (not just `renovate`, to avoid confusion with Mend's app)
+- **Homepage URL:** the repo URL is fine
+- Under **Webhook**, **uncheck "Active"** - scheduled runs need no webhook, and this is the step that skips the entire code-writing path
+- **Repository permissions** - set exactly these:
+  - Contents: **Read & write**
+  - Pull requests: **Read & write**
+  - Issues: **Read & write** (needed for the Dependency Dashboard)
+  - Workflows: **Read & write** (needed if Renovate ever bumps a workflow file)
+  - Commit statuses: **Read & write**
+  - Checks: **Read & write**
+  - Administration: **Read**
+  - Metadata: **Read** (auto-selected)
+- **Where can this App be installed?** Only on this account
+- Click **Create GitHub App**
+- On the App page, click **Generate a private key** - this downloads a `.pem` file
+- Note the **App ID** (numeric, shown at the top of the App's settings page)
+
+</CollapsibleStep>
+
+<CollapsibleStep title="Install the App on the repo" defaultOpen={false}>
+
+- On the App page -> **Install App** -> choose your org
+- Select **Only select repositories** -> pick this repo -> **Install**
+
+</CollapsibleStep>
+
+<CollapsibleStep title="Add the repo secrets" defaultOpen={false}>
+
+Go to the repo -> **Settings -> Secrets and variables -> Actions -> New repository secret**
+and add three secrets:
+
+**`RENOVATE_APP_ID`** - the numeric App ID noted when you created the App.
+
+**`RENOVATE_APP_PRIVATE_KEY`** - the full contents of the `.pem` file, including the
+`-----BEGIN...` and `-----END...` lines. A `.pem` is just Base64 text despite the scary name;
+"getting the key out" means copying that text. The fastest way on macOS is to pipe the file
+straight to your clipboard, then paste (Cmd+V) into the secret value box:
+
+```bash
+pbcopy < ~/Downloads/eep-renovate-runner.*.private-key.pem
+```
+
+GitHub preserves the newlines in multi-line secrets, and `actions/create-github-app-token`
+reads the key exactly as-is. Once it's saved, **delete the `.pem`** so a plaintext private key
+isn't left on disk:
+
+```bash
+rm ~/Downloads/eep-renovate-runner.*.private-key.pem
+```
+
+**`RENOVATE_GITHUB_COM_TOKEN`** - a classic personal access token from your own account, used
+only to fetch changelogs and release notes (never to open PRs). Create it at
+[github.com/settings/tokens](https://github.com/settings/tokens) -> **Tokens (classic)** ->
+**Generate new token (classic)**, tick only the **`public_repo`** scope, and copy the
+`ghp_...` value. This one is optional: without it Renovate still opens PRs, but changelog
+fetches may hit GitHub's unauthenticated rate limit. If you skip it, delete the
+`RENOVATE_GITHUB_COM_TOKEN` env line from `renovate.yml`.
+
+</CollapsibleStep>
+
+<CollapsibleStep title="Test it" defaultOpen={false}>
+
+- Repo -> **Actions** tab -> **Renovate** workflow -> **Run workflow** (the `workflow_dispatch` button)
+- Watch the run. With `LOG_LEVEL: debug` set in `renovate.yml`, you'll see it resolve dependencies and open PRs.
+- Note the two layers of scheduling: the workflow `cron` controls how often Renovate wakes up; `renovate.json`'s `schedule` field still gates when PRs actually open. A manual run outside the schedule window resolves dependencies but opens no PRs.
+- Once confirmed working, drop `LOG_LEVEL: debug` from `renovate.yml` to quieten the logs.
+
+</CollapsibleStep>
+
+</CollapsibleSteps>
+
+#### Reference articles
+
+- [Renovate GitHub Action](https://github.com/renovatebot/github-action) - the action itself
+- [Running Renovate](https://docs.renovatebot.com/getting-started/running/) - self-host overview
+- [GitHub App permissions for Renovate](https://docs.renovatebot.com/modules/platform/github/)
+- [Minting the App token in Actions](https://github.com/actions/create-github-app-token)
+- [Registering a GitHub App](https://docs.github.com/en/apps/creating-github-apps/registering-a-github-app/registering-a-github-app) - the click-through form, no code
+
+#### Caveats
+
+- `GITHUB_TOKEN` alone is deliberately not used - Renovate's README states it's too restrictive to open PRs, so the App token is required.
+- App installation tokens expire after 1 hour; the workflow mints a fresh one per run via `actions/create-github-app-token`.
+- For a **public** repo, Actions minutes are free. If this repo is private, these weekly runs count against the org's Actions minutes (still cheap at once a week).
+
+### The Mend dashboard
+
+<Callout type='warn'>
+  For **this repo** the Mend-hosted path OOMs (see the warning above), so you
+  run Renovate from the Actions tab, not from Mend. This section is kept as a
+  reference for the Mend dashboard itself - it applies to any repo small enough
+  to run on Mend's hosted infrastructure, and to understand what the self-hosted
+  workflow replaces.
+</Callout>
+
+When Renovate runs on Mend's hosted app, it comes with a dashboard at
+[developer.mend.io](https://developer.mend.io/) - created for you when the Mend Renovate
+GitHub App is installed. Sign in with the same GitHub account you granted access to. It shows
+Renovate's status and lets you trigger a run on demand without waiting for the scheduled window.
 
 <CollapsibleSteps>
 
@@ -177,44 +303,6 @@ full CI pipeline, and wait for your approval - Renovate never auto-merges.
 </CollapsibleStep>
 
 </CollapsibleSteps>
-
-### Memory tuning
-
-Large pnpm workspaces can hit a `kernel-out-of-memory` / timeout failure on Mend-hosted
-runs. When Renovate batches many updates into one branch it runs a single large
-`pnpm install` to regenerate the lockfile, and that resolution is what exhausts the heap -
-this repo is a prime candidate with two lockfiles (root + `docs/`) and heavy trees (Next,
-Clerk, Radix, OpenTelemetry, Playwright, Fumadocs).
-
-Two levers in `renovate.json` fix it, both applied here:
-
-- **`toolSettings.nodeMaxMemory`** - raises the heap ceiling for the pnpm/yarn child
-  process. [Mend recommends](https://docs.renovatebot.com/mend-hosted/faq/) 1.5-2.5 GB; this repo sits at `2560` (2.5 GB), the upper bound.
-- **Concurrency caps** - `prConcurrentLimit`, `prHourlyLimit`, and `branchConcurrentLimit`
-  limit how many lockfile-regenerating branches resolve at once, so peak memory stays
-  bounded even when many updates land in the same window.
-
-```json
-"toolSettings": {
-  "nodeMaxMemory": 2560
-},
-"prConcurrentLimit": 3,
-"prHourlyLimit": 2,
-"branchConcurrentLimit": 3
-```
-
-<Callout type='warn'>
-  On Mend-hosted apps you cannot set `NODE_OPTIONS` (for example
-  `--max-old-space-size`) via the config `env` block - it is rejected by the
-  bot's `allowedEnv` allowlist. `toolSettings.nodeMaxMemory` is the only
-  supported heap lever, which is exactly why Mend documents it as _the_ setting
-  for this failure.
-</Callout>
-
-If a run still OOMs at 2.5 GB, the remaining lever is reducing per-branch install size:
-the largest grouped families (Radix UI is dozens of packages) regenerate a big chunk of the
-lockfile in one branch, so splitting or ungrouping the biggest group shrinks the largest
-install.
 
 ---
 
