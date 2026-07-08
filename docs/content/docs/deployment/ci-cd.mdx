@@ -115,8 +115,13 @@ Renovate is **self-hosted** here: it runs inside a GitHub Actions workflow (`.gi
 
 ### Schedule
 
-- **Weekly updates** - Wednesday between 6am and 9am (Europe/London)
+- **Monthly updates** - the first Sunday of each month, from 6am (Europe/London)
 - **Security patches** - immediately, on any schedule
+
+The cadence is expressed as a cron string in `renovate.json` (`0 6 1-7 * 0` -
+06:00 on any day 1-7 that is also a Sunday, which resolves to the first Sunday
+of the month). The workflow's own `cron` wakes Renovate every Sunday; this
+`renovate.json` schedule is what gates PRs down to just the first one.
 
 ### What it does
 
@@ -235,8 +240,25 @@ fetches may hit GitHub's unauthenticated rate limit. If you skip it, delete the
 <CollapsibleStep title="Test it" defaultOpen={false}>
 
 - Repo -> **Actions** tab -> **Renovate** workflow -> **Run workflow** (the `workflow_dispatch` button)
-- Watch the run. With `LOG_LEVEL: debug` set in `renovate.yml`, you'll see it resolve dependencies and open PRs.
-- Note the two layers of scheduling: the workflow `cron` controls how often Renovate wakes up; `renovate.json`'s `schedule` field still gates when PRs actually open. A manual run outside the schedule window resolves dependencies but opens no PRs.
+- Watch the run. With `LOG_LEVEL: debug` set in `renovate.yml`, you'll see it resolve dependencies and, on a successful run, open or update the **Dependency Dashboard** issue - that alone confirms the App token has write access and everything is wired correctly.
+
+There are **two layers of scheduling** and it trips people up on the first test:
+
+- the workflow `cron` controls how often the Action _wakes up_
+- `renovate.json`'s `schedule` field gates when Renovate _actually opens PRs_
+
+So a manual run outside the first-Sunday-of-the-month window resolves dependencies and updates the dashboard but opens **no PRs** - which looks like a failure but is correct behaviour. To prove PRs open on demand at any time, the **Run workflow** button has a **force** checkbox:
+
+- Tick **"Ignore renovate.json schedule and open PRs immediately (for testing)"** and run
+- This sets `RENOVATE_FORCE={"schedule":null}` for that single run, nulling the schedule so grouped PRs open right away
+- Leave it **unticked** for normal runs so the first-Sunday-of-the-month window is respected
+
+<Callout>
+  The force checkbox only affects that one manual run - it is not persisted, so
+  there is nothing to undo afterwards. The scheduled `cron` runs always respect
+  `renovate.json`.
+</Callout>
+
 - Once confirmed working, drop `LOG_LEVEL: debug` from `renovate.yml` to quieten the logs.
 
 </CollapsibleStep>
@@ -255,7 +277,7 @@ fetches may hit GitHub's unauthenticated rate limit. If you skip it, delete the
 
 - `GITHUB_TOKEN` alone is deliberately not used - Renovate's README states it's too restrictive to open PRs, so the App token is required.
 - App installation tokens expire after 1 hour; the workflow mints a fresh one per run via `actions/create-github-app-token`.
-- For a **public** repo, Actions minutes are free. If this repo is private, these weekly runs count against the org's Actions minutes (still cheap at once a week).
+- For a **public** repo, Actions minutes are free. If this repo is private, these monthly runs count against the org's Actions minutes (negligible at once a month).
 
 ### The Mend dashboard
 

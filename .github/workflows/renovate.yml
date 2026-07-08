@@ -3,11 +3,17 @@ name: Renovate
 
 on:
   schedule:
-    # Wed 06:00 UTC. renovate.json's own `schedule` still gates when PRs open;
-    # this cron only controls how often Renovate wakes up to check.
-    - cron: '0 6 * * 3'
+    # Every Sunday 06:00 UTC. renovate.json's own `schedule` gates PRs to the
+    # first Sunday of the month; this cron only controls how often Renovate
+    # wakes up to check.
+    - cron: '0 6 * * 0'
   # Manual "run now" button in the Actions tab.
   workflow_dispatch:
+    inputs:
+      force:
+        description: 'Ignore renovate.json schedule and open PRs immediately (for testing)'
+        type: boolean
+        default: false
 
 # GITHUB_TOKEN is too restrictive for Renovate; we use an App token instead.
 # These permissions apply to the workflow itself, not the App token.
@@ -44,4 +50,7 @@ jobs:
           RENOVATE_REPOSITORIES: ${{ github.repository }}
           # Read-only github.com token for changelog/release-note fetching.
           RENOVATE_GITHUB_COM_TOKEN: ${{ secrets.RENOVATE_GITHUB_COM_TOKEN }}
+          # When the "force" input is ticked, null the schedule so PRs open now
+          # regardless of renovate.json's window. Empty string otherwise (no-op).
+          RENOVATE_FORCE: ${{ inputs.force && '{"schedule":null}' || '' }}
           LOG_LEVEL: debug
