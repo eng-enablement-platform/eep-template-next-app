@@ -22,17 +22,17 @@
   "packageRules": [
     {
       "description": "Group all Clerk packages into a single PR",
-      "matchPackagePrefixes": ["@clerk/"],
+      "matchPackageNames": ["@clerk/{/,}**"],
       "groupName": "Clerk"
     },
     {
       "description": "Group all OpenTelemetry packages into a single PR",
-      "matchPackagePrefixes": ["@opentelemetry/", "@vercel/otel"],
+      "matchPackageNames": ["@opentelemetry/{/,}**", "@vercel/otel{/,}**"],
       "groupName": "OpenTelemetry"
     },
     {
       "description": "Group all Radix UI packages into a single PR",
-      "matchPackagePrefixes": ["@radix-ui/"],
+      "matchPackageNames": ["@radix-ui/{/,}**"],
       "groupName": "Radix UI"
     },
     {
@@ -50,11 +50,13 @@
     },
     {
       "description": "Group all ESLint packages into a single PR",
-      "matchPackagePrefixes": ["eslint", "@eslint/", "@stylistic/"],
       "matchPackageNames": [
         "eslint-plugin-import",
         "eslint-plugin-tsdoc",
-        "simple-import-sort"
+        "simple-import-sort",
+        "eslint{/,}**",
+        "@eslint/{/,}**",
+        "@stylistic/{/,}**"
       ],
       "groupName": "ESLint"
     },

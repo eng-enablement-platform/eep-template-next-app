@@ -124,7 +124,7 @@ on the 1st; the `renovate.json` schedule gates when PRs actually open.
 
 ### What it does
 
-Renovate scans all dependencies across the root and `docs/` workspace, groups related packages into single PRs, and opens them for review.
+Renovate scans all dependencies across the root and `docs/` workspace, groups related package families into single PRs, and opens them for review.
 It never auto-merges - all PRs require your approval before merging.
 
 ### Package groups
@@ -141,6 +141,19 @@ Related packages are batched into single PRs so you're not flooded with individu
 | Drizzle       | `drizzle-orm` + `drizzle-kit`              |
 
 Major version bumps always get their own PR and are labelled `major-update` - they may contain breaking changes and should be reviewed carefully.
+
+<Callout type='warn'>
+  Grouping is **per-family, not one-PR-for-everything**. Each group above
+  collapses only its matching packages into a single PR. Anything that does not
+  match a group rule (for example `swr`, `postcss`, `@types/node`) falls through
+  to Renovate's default of **one PR per package**. So a run typically opens
+  several PRs - the grouped families plus the ungrouped one-offs - not a single
+  combined PR. This is deliberate: each PR stays coherent and independently
+  mergeable, so a broken bump never blocks the safe ones. `prConcurrentLimit`
+  (3) and `prHourlyLimit` (2) throttle how many open at once; the rest show as
+  **Rate-Limited** on the Dependency Dashboard and are released as open PRs are
+  merged or closed.
+</Callout>
 
 ### PR labels
 
