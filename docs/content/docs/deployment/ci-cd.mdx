@@ -115,13 +115,12 @@ Renovate is **self-hosted** here: it runs inside a GitHub Actions workflow (`.gi
 
 ### Schedule
 
-- **Monthly updates** - the first Sunday of each month, from 6am (Europe/London)
+- **Monthly updates** - the first day of each month, before 9am (Europe/London)
 - **Security patches** - immediately, on any schedule
 
-The cadence is expressed as a cron string in `renovate.json` (`0 6 1-7 * 0` -
-06:00 on any day 1-7 that is also a Sunday, which resolves to the first Sunday
-of the month). The workflow's own `cron` wakes Renovate every Sunday; this
-`renovate.json` schedule is what gates PRs down to just the first one.
+The cadence is expressed in `renovate.json` as `before 9am on the first day of
+the month`. The workflow's own `cron` (`0 6 1 * *`) wakes Renovate at 06:00 UTC
+on the 1st; the `renovate.json` schedule gates when PRs actually open.
 
 ### What it does
 
@@ -247,11 +246,11 @@ There are **two layers of scheduling** and it trips people up on the first test:
 - the workflow `cron` controls how often the Action _wakes up_
 - `renovate.json`'s `schedule` field gates when Renovate _actually opens PRs_
 
-So a manual run outside the first-Sunday-of-the-month window resolves dependencies and updates the dashboard but opens **no PRs** - which looks like a failure but is correct behaviour. To prove PRs open on demand at any time, the **Run workflow** button has a **force** checkbox:
+So a manual run outside the first-of-the-month window resolves dependencies and updates the dashboard but opens **no PRs** - which looks like a failure but is correct behaviour. To prove PRs open on demand at any time, the **Run workflow** button has a **force** checkbox:
 
 - Tick **"Ignore renovate.json schedule and open PRs immediately (for testing)"** and run
 - This sets `RENOVATE_FORCE={"schedule":null}` for that single run, nulling the schedule so grouped PRs open right away
-- Leave it **unticked** for normal runs so the first-Sunday-of-the-month window is respected
+- Leave it **unticked** for normal runs so the first-of-the-month window is respected
 
 <Callout>
   The force checkbox only affects that one manual run - it is not persisted, so

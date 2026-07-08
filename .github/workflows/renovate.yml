@@ -3,10 +3,10 @@ name: Renovate
 
 on:
   schedule:
-    # Every Sunday 06:00 UTC. renovate.json's own `schedule` gates PRs to the
-    # first Sunday of the month; this cron only controls how often Renovate
-    # wakes up to check.
-    - cron: '0 6 * * 0'
+    # 1st of the month, 06:00 UTC. renovate.json's own `schedule` gates when
+    # PRs actually open; this cron only controls how often Renovate wakes up
+    # to check.
+    - cron: '0 6 1 * *'
   # Manual "run now" button in the Actions tab.
   workflow_dispatch:
     inputs:
