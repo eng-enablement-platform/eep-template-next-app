@@ -3,8 +3,8 @@
 </p>
 
 <h1 align="center">
-  <img src="public/nextjs-mark.svg" alt="" width="28" align="center" />
-  Next.js Template
+  <img src="public/nextjs-mark.svg" alt="" width="40" valign="middle" />
+  &nbsp;Next.js Template
 </h1>
 
 <p align="center">
