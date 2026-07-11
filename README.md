@@ -42,6 +42,10 @@ deployment, deep dives) is in the docs.
 | Trivy    | any     | `brew install trivy` (pre-commit scan)    |
 | Gitleaks | any     | `brew install gitleaks` (pre-commit scan) |
 
+You'll also need a [Clerk](https://clerk.com) account for authentication keys.
+For deployment you'll need a [Neon](https://neon.tech) account for the Postgres
+database - locally, Docker handles the DB so no Neon account is needed for dev.
+
 ## Quick start
 
 ```bash

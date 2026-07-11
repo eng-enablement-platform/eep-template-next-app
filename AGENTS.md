@@ -5,8 +5,7 @@ Rules only. This is how we work - follow it.
 ## Philosophy
 
 Clean, coherent, simple. Boring beats clever - if it's hard to read it's wrong.
-Move fast, stay maintainable. North star: could another dev or agent pick this
-up and work confidently without asking anyone?
+Move fast but stay maintainable.
 
 ## Code Standards
 
