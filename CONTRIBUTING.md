@@ -42,18 +42,3 @@ BREAKING CHANGE: incompatible API change
   stack PRs rather than opening one giant diff.
 - **Stay on it after it's up.** Once threads are resolved and approvals are in,
   merge promptly.
-
-## Pre-commit hook
-
-Heads up, the hook is intentionally aggressive - a full `tsc --noEmit`, test suite, and
-build run on every commit touching `.ts`/`.tsx` or config. This is the guardrail
-that keeps the codebase (and agentic workflows) from quietly drifting.
-
-For intentional WIP or a TDD red phase only:
-
-```bash
-SKIP_CHECKS=1 git commit -m "wip: rough sketch"
-```
-
-Lint, Trivy, and style still run even with `SKIP_CHECKS=1`. Never use it to
-bypass failing tests on shippable code.

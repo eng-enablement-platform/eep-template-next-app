@@ -114,8 +114,6 @@ imports for `ui/`.
 - Methods/hooks/utilities: purpose, `@param`, `@returns` (enforced), one `@example`
 - Components: one-line what, why/when, `@param` for non-obvious props, one `@example`
 - Never re-list props as prose - the type is the source of truth
-- Handbook lives in `docs/` (Fumadocs); every significant decision gets an ADR in `decisions/`
-- Keep README and this file lean - they point to the docs site
 
 ## Quick Reference
 
