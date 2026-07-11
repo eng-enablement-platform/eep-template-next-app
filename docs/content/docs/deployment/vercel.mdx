@@ -457,6 +457,25 @@ the production Clerk instance, or the instance hasn't fully activated yet.
   production instance takes time to fully activate after DNS verification.
   This is normal and will resolve on its own
 
+### Docs build fails with `Module not found: Can't resolve '@vercel/otel'`
+
+When deploying the docs site (root directory `docs/`), the build fails resolving
+`@vercel/otel` from `src/instrumentation.ts` - a file that belongs to the root
+app, not the docs package.
+
+This happens because `docs/next.config.mjs` widens Turbopack's `root` to the repo
+root. That is needed **locally** to work around pnpm v11's global virtual store
+(which symlinks `docs/node_modules/next` up to the root `.pnpm` store), but on
+Vercel it drags the root app's `src/` into the docs module graph.
+
+The config already guards against this by scoping `turbopack.root` to the `docs/`
+directory when `process.env.VERCEL` is set, so a normal Vercel deploy works. If
+you still hit this, confirm:
+
+- The **Root Directory** in Vercel project settings is `docs` (not empty)
+- `docs/next.config.mjs` keeps the `process.env.VERCEL` conditional on
+  `turbopack.root` - don't hardcode it to the repo root
+
 ### Clerk DNS shows verified but the sign-in component still fails
 
 Clerk's verification and the browser resolving the DNS are independent. Clerk
