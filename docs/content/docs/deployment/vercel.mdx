@@ -457,24 +457,30 @@ the production Clerk instance, or the instance hasn't fully activated yet.
   production instance takes time to fully activate after DNS verification.
   This is normal and will resolve on its own
 
-### Docs build fails with `Module not found: Can't resolve '@vercel/otel'`
+### Docs build fails on Vercel (`routes-manifest` ENOENT or `@vercel/otel`)
 
-When deploying the docs site (root directory `docs/`), the build fails resolving
-`@vercel/otel` from `src/instrumentation.ts` - a file that belongs to the root
-app, not the docs package.
+When deploying the docs site (root directory `docs/`) the build can fail two ways:
 
-This happens because `docs/next.config.mjs` widens Turbopack's `root` to the repo
-root. That is needed **locally** to work around pnpm v11's global virtual store
-(which symlinks `docs/node_modules/next` up to the root `.pnpm` store), but on
-Vercel it drags the root app's `src/` into the docs module graph.
+- `ENOENT: ... .next/routes-manifest-deterministic.json`
+- `Module not found: Can't resolve '@vercel/otel'` (a file that belongs to the
+  root app's `src/instrumentation.ts`, not the docs package)
 
-The config already guards against this by scoping `turbopack.root` to the `docs/`
-directory when `process.env.VERCEL` is set, so a normal Vercel deploy works. If
-you still hit this, confirm:
+Both trace back to Next 16 defaulting to **Turbopack** for `next build`.
+Turbopack writes `.next/routes-manifest-deterministic.json`, but Vercel's Next
+adapter looks for the classic `routes-manifest.json` and fails with `ENOENT`
+([vercel/next.js#88579](https://github.com/vercel/next.js/issues/88579)). The
+`@vercel/otel` variant is the same root cause surfacing through Turbopack's
+workspace-root inference dragging the repo root's `src/` into the docs graph.
+
+The fix is to build the docs site with **webpack** instead of Turbopack. The docs
+`build` script is pinned to `next build --webpack`, which writes the classic
+manifest and resolves `next` without any `turbopack.root` / `outputFileTracingRoot`
+tuning. `next dev` still uses Turbopack, so local dev speed is unaffected.
+
+If you still hit this, confirm:
 
 - The **Root Directory** in Vercel project settings is `docs` (not empty)
-- `docs/next.config.mjs` keeps the `process.env.VERCEL` conditional on
-  `turbopack.root` - don't hardcode it to the repo root
+- `docs/package.json`'s `build` script still passes `--webpack`
 
 ### Clerk DNS shows verified but the sign-in component still fails
 
