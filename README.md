@@ -28,6 +28,9 @@ authentication, database, API docs, logging, and conventions all wired and
 demonstrated - so you can strip what you don't need rather than bolt on what
 you do.
 
+**Live site:** [eep-next-template.dev](https://eep-next-template.dev/) - feel
+free to try signing in, though you'll be blocked by the role gate.
+
 **Full docs live at [docs.example.com](https://docs.example.com).** This README
 covers just enough to get running - everything else (architecture, conventions,
 deployment, deep dives) is in the docs.
