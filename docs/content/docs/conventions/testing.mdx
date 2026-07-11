@@ -426,14 +426,14 @@ password flow).
 
 <CollapsibleSteps>
 
-<CollapsibleStep title="Get a Clerk user for testing" defaultOpen={false}>
+<CollapsibleStep title="Get three Clerk users for testing" defaultOpen={false}>
 
-You need any user that exists in your Clerk instance. The easiest way is to
-just sign in to the running app (`pnpm dev`) - that creates your account
-automatically. Alternatively, go to [dashboard.clerk.com](https://dashboard.clerk.com)
-→ your application → Users → Create user.
-
-Either way, use the email from that account as `E2E_CLERK_USER_EMAIL`.
+The role model needs one user per persona: a `SuperAdmin`, an `Admin`, and one
+with no qualifying role. The easiest way is to sign in to the running app
+(`pnpm dev`) as each - that auto-creates the account - then grant the `role`
+metadata in the Clerk Dashboard (Users → Metadata → Public: `{ "role": "SuperAdmin" }`
+or `{ "role": "Admin" }`; leave the third with no `role` key). See
+[Authentication](/docs/dev-environment/authentication) for the metadata steps.
 
 </CollapsibleStep>
 
@@ -441,34 +441,40 @@ Either way, use the email from that account as `E2E_CLERK_USER_EMAIL`.
 
 ```bash
 CLERK_SECRET_KEY=sk_test_...     # already set from Clerk setup
-E2E_CLERK_USER_EMAIL=you@yourdomain.com
+E2E_CLERK_USER_EMAIL_SUPER_ADMIN=superadmin@yourdomain.com
+E2E_CLERK_USER_EMAIL_ADMIN=admin@yourdomain.com
+E2E_CLERK_USER_EMAIL_NO_ROLE=norole@yourdomain.com
 ```
 
 `CLERK_SECRET_KEY` must belong to the same Clerk instance as
-`NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` - the test user must exist in **that** instance.
+`NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` - the test users must exist in **that** instance.
 The SDK uses the secret key to call Clerk's Backend API and sign in without any
 browser interaction, OTP, or password.
 
 </CollapsibleStep>
 
-<CollapsibleStep title="Use the authenticatedPage fixture in your tests" defaultOpen={false}>
+<CollapsibleStep title="Use a role fixture in your tests" defaultOpen={false}>
 
-The `authenticatedPage` fixture in `e2e-tests/fixtures/auth.fixture.ts` signs in
-before each test and signs out after. It uses `CLERK_SECRET_KEY` to call Clerk's
-Backend API directly - no password, no OTP, no browser interaction:
+The fixtures in `e2e-tests/fixtures/auth.fixture.ts` (`superAdminPage`,
+`adminPage`, `noRolePage`) each sign in as the matching persona before the test
+and sign out after, using `CLERK_SECRET_KEY` to call Clerk's Backend API
+directly - no password, no OTP, no browser interaction:
 
 ```ts
 import { test, expect } from '../fixtures/auth.fixture';
 
-test('counter increments', async ({ authenticatedPage }) => {
-  await authenticatedPage.goto('/');
-  await authenticatedPage.getByRole('button', { name: 'Increment' }).click();
-  await expect(authenticatedPage.getByText('Count: 1')).toBeVisible();
+test('counter increments', async ({ superAdminPage }) => {
+  await superAdminPage.goto('/');
+  await superAdminPage.getByRole('button', { name: 'Increment' }).click();
+  await expect(superAdminPage.getByText('Count: 1')).toBeVisible();
 });
 ```
 
-For tests that don't need auth (smoke checks, redirect behaviour), import from
-`@playwright/test` directly and use the plain `page` fixture.
+Reach for `superAdminPage` when a test just needs any valid session (a
+super-admin can do everything); use `adminPage` / `noRolePage` to assert the
+role boundary itself. For tests that don't need auth (smoke checks, redirect
+behaviour), import from `@playwright/test` directly and use the plain `page`
+fixture.
 
 </CollapsibleStep>
 
@@ -476,12 +482,13 @@ For tests that don't need auth (smoke checks, redirect behaviour), import from
 
 ### Reference specs
 
-The template ships two specs as reference coverage for the core patterns:
+The template ships these specs as reference coverage for the core patterns:
 
 | Spec              | What it covers                                                                        |
 | ----------------- | ------------------------------------------------------------------------------------- |
 | `home.spec.ts`    | Smoke checks - unauthenticated redirect to sign-in, Clerk component renders           |
 | `counter.spec.ts` | Zustand client state (authenticated) - increment, decrement, and reset in the browser |
+| `roles.spec.ts`   | Two-tier role model - page gate, API authz (403 vs 201), and the action toast         |
 
 ## Contract tests
 

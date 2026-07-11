@@ -61,12 +61,12 @@ This template ships with two route groups plus a restricted catch-all:
 
 The route groups and their purpose at a glance:
 
-| Location          | What lives here                    | Rule                                                                                                                                                  |
-| ----------------- | ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `app/`            | Next.js file-convention files only | `page.tsx`, `layout.tsx`, `error.tsx`, `not-found.tsx` etc. - thin shells that delegate to `components/` and `classes/`. No business logic.           |
-| `app/(app)/`      | Authenticated app pages            | All pages that require a signed-in user. Layout mounts the auth gate and navbar automatically.                                                        |
-| `app/(auth)/`     | Auth pages                         | Sign-in and sign-up. Bare layout - no navbar, no auth gate.                                                                                           |
-| `app/restricted/` | Role-based access denial           | Shown when a signed-in user lacks the required role for a resource. Lives outside `(app)/` so it can be reached without passing the role check again. |
+| Location          | What lives here                    | Rule                                                                                                                                                                            |
+| ----------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `app/`            | Next.js file-convention files only | `page.tsx`, `layout.tsx`, `error.tsx`, `not-found.tsx` etc. - thin shells that delegate to `components/` and `classes/`. No business logic.                                     |
+| `app/(app)/`      | Authenticated app pages            | All pages that require a signed-in user. Layout mounts the auth gate and navbar automatically.                                                                                  |
+| `app/(auth)/`     | Auth pages                         | Sign-in and sign-up. Bare layout - no navbar, no auth gate.                                                                                                                     |
+| `app/restricted/` | Role-based access denial           | Shown when a signed-in user lacks a qualifying role (`Admin` or `SuperAdmin`) for app access. Lives outside `(app)/` so it can be reached without passing the role check again. |
 
 ---
 

@@ -3,7 +3,7 @@
 import type { ReactNode } from 'react';
 import { SWRConfig } from 'swr';
 
-import { fetcher } from '@/lib/swr/fetcher';
+import { fetcher } from '@/lib/swr';
 
 type SwrProviderProps = {
   children: ReactNode;

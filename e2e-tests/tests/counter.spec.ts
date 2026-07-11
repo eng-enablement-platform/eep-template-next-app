@@ -11,45 +11,45 @@ import { expect, test } from '../fixtures/auth.fixture';
  * The counter lives inside a collapsible accordion on the home page - the
  * beforeEach opens it before each test.
  *
- * Uses the `authenticatedPage` fixture - the counter lives on the home page
- * which is behind Clerk auth.
+ * Uses the `superAdminPage` fixture - the counter lives on the home page which
+ * is behind Clerk auth, and a super-admin can do everything a valid session can.
  */
 
 test.describe('counter', () => {
-  test.beforeEach(async ({ authenticatedPage }) => {
-    await authenticatedPage.goto('/');
-    await authenticatedPage.waitForURL('/', { timeout: 15_000 });
+  test.beforeEach(async ({ superAdminPage }) => {
+    await superAdminPage.goto('/');
+    await superAdminPage.waitForURL('/', { timeout: 15_000 });
 
     /* The counter is inside the "Counter" accordion - open it first. */
-    await authenticatedPage.getByRole('button', { name: /Counter/ }).click();
-    await expect(authenticatedPage.getByText('Count: 0')).toBeVisible({
+    await superAdminPage.getByRole('button', { name: /Counter/ }).click();
+    await expect(superAdminPage.getByText('Count: 0')).toBeVisible({
       timeout: 5_000,
     });
   });
 
-  test('increments the count', async ({ authenticatedPage }) => {
-    await authenticatedPage.getByRole('button', { name: 'Increment' }).click();
-    await authenticatedPage.getByRole('button', { name: 'Increment' }).click();
+  test('increments the count', async ({ superAdminPage }) => {
+    await superAdminPage.getByRole('button', { name: 'Increment' }).click();
+    await superAdminPage.getByRole('button', { name: 'Increment' }).click();
 
-    await expect(authenticatedPage.getByText('Count: 2')).toBeVisible();
+    await expect(superAdminPage.getByText('Count: 2')).toBeVisible();
   });
 
-  test('decrements the count', async ({ authenticatedPage }) => {
-    await authenticatedPage.getByRole('button', { name: 'Increment' }).click();
-    await expect(authenticatedPage.getByText('Count: 1')).toBeVisible();
+  test('decrements the count', async ({ superAdminPage }) => {
+    await superAdminPage.getByRole('button', { name: 'Increment' }).click();
+    await expect(superAdminPage.getByText('Count: 1')).toBeVisible();
 
-    await authenticatedPage.getByRole('button', { name: 'Decrement' }).click();
+    await superAdminPage.getByRole('button', { name: 'Decrement' }).click();
 
-    await expect(authenticatedPage.getByText('Count: 0')).toBeVisible();
+    await expect(superAdminPage.getByText('Count: 0')).toBeVisible();
   });
 
-  test('resets the count back to zero', async ({ authenticatedPage }) => {
-    await authenticatedPage.getByRole('button', { name: 'Increment' }).click();
-    await authenticatedPage.getByRole('button', { name: 'Increment' }).click();
-    await expect(authenticatedPage.getByText('Count: 2')).toBeVisible();
+  test('resets the count back to zero', async ({ superAdminPage }) => {
+    await superAdminPage.getByRole('button', { name: 'Increment' }).click();
+    await superAdminPage.getByRole('button', { name: 'Increment' }).click();
+    await expect(superAdminPage.getByText('Count: 2')).toBeVisible();
 
-    await authenticatedPage.getByRole('button', { name: 'Reset' }).click();
+    await superAdminPage.getByRole('button', { name: 'Reset' }).click();
 
-    await expect(authenticatedPage.getByText('Count: 0')).toBeVisible();
+    await expect(superAdminPage.getByText('Count: 0')).toBeVisible();
   });
 });

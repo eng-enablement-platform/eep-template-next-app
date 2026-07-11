@@ -2,7 +2,10 @@
   <img src="public/eep-logo-full.svg" alt="EEP" width="360" />
 </p>
 
-<h1 align="center">Next.js Template</h1>
+<h1 align="center">
+  <img src="public/nextjs-mark.svg" alt="" width="28" align="center" />
+  Next.js Template
+</h1>
 
 <p align="center">
   <a href="https://github.com/eng-enablement-platform/eep-template-next-app/actions/workflows/ci.yml">

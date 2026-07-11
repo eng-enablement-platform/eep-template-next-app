@@ -2,8 +2,8 @@ import { defineConfig, devices } from '@playwright/test';
 import dotenv from 'dotenv';
 import path from 'path';
 
-/* Load .env.local so CLERK_SECRET_KEY and E2E_CLERK_USER_EMAIL are available
- * to the global setup and fixture without needing to export them manually. */
+/* Load .env.local so CLERK_SECRET_KEY and the E2E_CLERK_USER_EMAIL_* vars are
+ * available to the global setup and fixtures without exporting them manually. */
 dotenv.config({ path: path.resolve(__dirname, '../.env.local') });
 
 const baseURL = 'http://localhost:3000';

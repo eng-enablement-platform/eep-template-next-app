@@ -121,7 +121,7 @@ function ViewRow({ item, mutate, onEdit }: ViewRowProps) {
         const result = await deleteExampleItem(item.id);
         if (!result.ok) {
           toast.error('Failed to delete item', {
-            description: `Could not delete "${item.name}".`,
+            description: result.error,
           });
           return current;
         }

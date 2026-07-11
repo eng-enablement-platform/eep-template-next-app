@@ -40,15 +40,55 @@ Add both to `.env.local`.
 
 Auth is enforced in `src/proxy.ts` (Next.js 16 renamed `middleware.ts` to `proxy.ts` to
 make the network boundary explicit). It redirects unauthenticated users to `/sign-in`
-and gates admin routes by role.
+and gates app pages by role.
+
+The proxy is only the **first** line - a coarse routing gate. Every API route
+and server action **independently** re-checks auth (defence-in-depth), so a
+change to the proxy can never silently expose the database. See
+[API Layer → Auth](/docs/layers/api#auth-withauth-and-withrole) for the
+`withAuth` / `withRole` wrappers that do this.
 
 <Callout type='warn'>
-  The live demo deployment of this template is intentionally locked to Admin
-  users only. If you sign up and find yourself on an "Access restricted" page,
-  that's expected - the deployment is a private testing environment, not a
-  public product. When scaffolding a real project from this template, relax the
-  gate in `proxy.ts` to allow broader access.
+  The live demo deployment of this template is intentionally locked to
+  role-holding users only. If you sign in and find yourself on an "Access
+  restricted" page, that's expected - the deployment is a private testing
+  environment, not a public product. When scaffolding a real project from this
+  template, relax the gate in `proxy.ts` to allow broader access.
 </Callout>
+
+---
+
+## The two-role model
+
+The template ships **two roles with a hierarchy**. This
+exists to make the authentication-vs-authorization split concrete: `withAuth`
+answers "are you signed in?", `withRole` answers "are you allowed to do _this_?".
+
+| Role         | Gets into the app | Can read | Can write (POST/PATCH/DELETE) |
+| ------------ | ----------------- | -------- | ----------------------------- |
+| `Admin`      | yes               | yes      | no                            |
+| `SuperAdmin` | yes               | yes      | yes                           |
+
+<Callout type='warn'>
+  **`SuperAdmin` is a strict superset of `Admin` - it can do everything an Admin
+  can, plus write.** Anywhere the code checks a role it uses a hierarchy
+  (`hasRole`), never string equality, so a `SuperAdmin` automatically satisfies
+  any `Admin` requirement. When you add a new gated capability, remember that
+  `SuperAdmin` inherits it by default.
+</Callout>
+
+- **Proxy (`proxy.ts`)** - decides _page access_ only. Both `Admin` and
+  `SuperAdmin` pass; anyone else lands on `/restricted`.
+- **API routes + server actions** - reads require any signed-in Admin+
+  (`withAuth`); writes require `SuperAdmin` (`withRole('SuperAdmin')`). A
+  non-SuperAdmin write returns a 403 (routes) or a toasted error (actions).
+
+Gating every write behind `SuperAdmin` is a **teaching** choice for the template
+
+- it gives you two test users to exercise both the allowed and denied paths. In
+  a real product you would pick the role per route rather than blanket-`SuperAdmin`
+  every mutation. See [API Layer → Auth](/docs/layers/api#auth-withauth-and-withrole)
+  for the full pattern.
 
 ---
 
@@ -79,9 +119,9 @@ Clerk's component handles the internal navigation between steps.
 
 ---
 
-## Granting Admin access
+## Granting a role (Admin / SuperAdmin)
 
-Admin-only routes (`/admin/*`, `/api-docs/*`) are gated by a `role` claim in the session
+App access and the API write gate are driven by a `role` claim in the session
 token. Two steps are required - missing either gives a silent 403.
 
 <CollapsibleSteps>
@@ -104,10 +144,18 @@ this instance - without it, the `role` claim never reaches your app.
 
 <CollapsibleStep title="Set the role on the user" defaultOpen={false}>
 
-Clerk Dashboard → **Users** → pick the user → **Metadata** tab → **Public**:
+Clerk Dashboard → **Users** → pick the user → **Metadata** tab → **Public**.
+
+For an admin who can read but not write:
 
 ```json
 { "role": "Admin" }
+```
+
+For a super-admin who can do everything, including writes:
+
+```json
+{ "role": "SuperAdmin" }
 ```
 
 Save, then sign out and back in so a fresh token is minted with the new claim.
@@ -118,19 +166,32 @@ Save, then sign out and back in so a fresh token is minted with the new claim.
 
 </CollapsibleSteps>
 
+<Callout type='idea'>
+  To exercise both paths, set up **two** users - one `Admin` and one
+  `SuperAdmin`. The Admin gets into the app and can read but sees a 403 / "you
+  do not have the correct role" toast on any create/edit/delete; the SuperAdmin
+  can do everything.
+</Callout>
+
 If you still get a 403 after both steps, the claim is missing from the JWT - check that
 step 2 was saved, or that the session isn't stale (sign out and back in).
 
 ---
 
-## E2E test user
+## E2E test users
 
-For Playwright authenticated tests, you need a user in this Clerk instance. The simplest
-approach: just sign in to the running app - that creates your account automatically. Then
-set their email in `.env.local`:
+Playwright drives the role model with three users, one per persona. Create them the easy
+way - sign in to the running app as each account (that auto-creates it), then grant the
+`role` metadata in the Clerk Dashboard as above (`SuperAdmin`, `Admin`, and no `role` key
+for the third). Set their emails in `.env.local`:
 
 ```bash
-E2E_CLERK_USER_EMAIL=you@yourdomain.com
+E2E_CLERK_USER_EMAIL_SUPER_ADMIN=superadmin@yourdomain.com
+E2E_CLERK_USER_EMAIL_ADMIN=admin@yourdomain.com
+E2E_CLERK_USER_EMAIL_NO_ROLE=norole@yourdomain.com
 ```
+
+The `superAdminPage`, `adminPage`, and `noRolePage` fixtures each sign in as the matching
+user; `roles.spec.ts` uses all three to prove the page gate and API/action authz.
 
 See [Testing](/docs/conventions/testing#authentication-setup) for the full e2e auth setup.

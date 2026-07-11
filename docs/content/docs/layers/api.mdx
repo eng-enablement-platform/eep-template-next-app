@@ -157,15 +157,89 @@ service.
 
 ## Shared handler utilities
 
-`app/api/utils/index.ts` holds three small functions used by every handler:
+`app/api/utils/index.ts` holds the small functions used by every handler:
 
 | Function                            | What it does                                                   |
 | ----------------------------------- | -------------------------------------------------------------- |
 | `validationErrorResponse(error)`    | Returns a 400 with flattened Zod field errors                  |
 | `routeErrorHandler(error, context)` | Logs the failure and returns a 500 with a consistent envelope  |
 | `parseId(raw)`                      | Parses a route param string into a positive integer, or `null` |
+| `withAuth(handler)`                 | Wraps a handler to require authentication (401 otherwise)      |
+| `withRole(role, handler)`           | Wraps a handler to require a minimum role (401/403 otherwise)  |
+| `hasRole(callerRole, requiredRole)` | Role-hierarchy check (`SuperAdmin` >= `Admin`)                 |
 
 <Callout type='idea'>Keep any shared handler logic in here</Callout>
+
+---
+
+## Auth: `withAuth` and `withRole`
+
+Every route handler enforces auth **in the handler itself**. Two small wrappers in
+`app/api/utils/` do this:
+
+| Wrapper                   | Enforces                             | On failure         |
+| ------------------------- | ------------------------------------ | ------------------ |
+| `withAuth(handler)`       | Caller is signed in                  | `401 Unauthorized` |
+| `withRole(role, handler)` | Caller is signed in **and** has role | `401` or `403`     |
+
+A wrapped handler receives an `AuthContext` (`{ userId, role }`) as its third
+argument, so it never re-reads the session:
+
+```ts
+// Read - any authenticated caller
+export const GET = withAuth(async (_request, _context, { userId }) => {
+  // userId is guaranteed here
+  return NextResponse.json({ items: await service.getAll() });
+});
+
+// Write - SuperAdmin only
+export const POST = withRole('SuperAdmin', async (request) => {
+  // caller is an authenticated SuperAdmin
+});
+```
+
+### The two-role model
+
+The template ships two roles with a **hierarchy**, not two unrelated flags:
+
+- **`Admin`** - gets into the app and can **read** (`withAuth`).
+- **`SuperAdmin`** - a **strict superset**: everything Admin can do, **plus
+  writes** (`withRole('SuperAdmin')`). A SuperAdmin therefore also satisfies
+  `withRole('Admin')`.
+
+`hasRole(callerRole, requiredRole)` encodes this - it compares positions in a
+role hierarchy rather than doing string equality, so "SuperAdmin can do
+everything" holds by construction. In the example CRUD vertical:
+
+| Method                           | Wrapper                  | Who can call    |
+| -------------------------------- | ------------------------ | --------------- |
+| `GET /api/example-items`         | `withAuth`               | Any Admin+      |
+| `GET /api/example-items/[id]`    | `withAuth`               | Any Admin+      |
+| `POST /api/example-items`        | `withRole('SuperAdmin')` | SuperAdmin only |
+| `PATCH /api/example-items/[id]`  | `withRole('SuperAdmin')` | SuperAdmin only |
+| `DELETE /api/example-items/[id]` | `withRole('SuperAdmin')` | SuperAdmin only |
+| `GET /api/posts`                 | `withAuth`               | Any Admin+      |
+
+<Callout type='warn'>
+  Gating **every** write behind `SuperAdmin` is a *teaching* choice - it gives
+  you two test users to prove both the allowed and denied paths. In a real
+  product you pick the role per route (often per resource, e.g. an ownership
+  check), not blanket-`SuperAdmin` on every mutation.
+</Callout>
+
+### Server actions mirror the same gate
+
+A `'use server'` function is a remotely-invokable POST endpoint - it is a write
+surface just like a route handler. The mutating actions in
+`actions/example-item-actions.ts` therefore run the **same** authentication and
+`SuperAdmin` check (via a shared `authorizeMutation` helper) before touching the
+DB. Harden only the routes and leave the actions open and you have bolted the
+front door while leaving the side door ajar. Both surfaces share the same Zod
+schema _and_ the same role gate so they cannot drift.
+
+Because actions return a discriminated `ActionResult`, a denied write comes back
+as `{ ok: false, error: 'You do not have the correct role...' }`, which the form
+already surfaces as a toast - no extra wiring needed.
 
 ---
 

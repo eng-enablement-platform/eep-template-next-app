@@ -1,11 +1,14 @@
 'use server';
 
+import { auth } from '@clerk/nextjs/server';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 
+import { hasRole } from '@/app/api/utils';
 import { LOG_SOURCE, rootLogger } from '@/classes/loggers/application';
 import { exampleItemService } from '@/classes/services/example-item';
 import type { ExampleItem } from '@/db/types';
+import type { UserRole } from '@/types/clerk';
 import {
   exampleItemSchema,
   exampleItemUpdateSchema,
@@ -16,6 +19,13 @@ import {
  *
  * Mutations triggered from our own UI go
  * through these `'use server'` actions rather than the REST route handlers.
+ *
+ * A `'use server'` function is a remotely-invokable POST endpoint, so - exactly
+ * like the REST write handlers - each action independently authenticates and
+ * authorises the caller before touching the DB. The two write surfaces share
+ * the same Zod schema *and* the same `SuperAdmin` role gate so they cannot
+ * drift. On a failed check the action returns an `ActionResult` error the form
+ * surfaces as a toast.
  *
  * Each action returns a discriminated `ActionResult` so a client can branch on
  * success vs validation failure (e.g. with `useActionState`) without throwing.
@@ -38,6 +48,39 @@ export type ActionResult<TData> =
   | { ok: false; error: string; fieldErrors?: FieldErrors };
 
 /**
+ * Authorise a mutation action against a minimum role, mirroring the REST
+ * layer's `withRole`. Returns `null` when the caller is permitted, or a failing
+ * `ActionResult` (signed-out or under-privileged) the form can toast.
+ *
+ * @param requiredRole - The minimum role the caller must hold.
+ * @returns `null` if permitted, else a failing `ActionResult`.
+ *
+ * @example
+ * ```ts
+ * const denied = await authorizeMutation('SuperAdmin');
+ * if (denied) return denied;
+ * ```
+ */
+async function authorizeMutation(
+  requiredRole: UserRole,
+): Promise<{ ok: false; error: string } | null> {
+  const session = await auth();
+
+  if (!session.userId) {
+    return { ok: false, error: 'You must be signed in to do this' };
+  }
+
+  if (!hasRole(session.sessionClaims?.metadata?.role, requiredRole)) {
+    return {
+      ok: false,
+      error: `You do not have the correct role to do this (requires ${requiredRole})`,
+    };
+  }
+
+  return null;
+}
+
+/**
  * Create an example item.
  *
  * @param input - Raw, untrusted create input; validated by `exampleItemSchema`.
@@ -46,6 +89,9 @@ export type ActionResult<TData> =
 export async function createExampleItem(
   input: unknown,
 ): Promise<ActionResult<ExampleItem>> {
+  const denied = await authorizeMutation('SuperAdmin');
+  if (denied) return denied;
+
   const parsed = exampleItemSchema.safeParse(input);
 
   if (!parsed.success) {
@@ -89,6 +135,9 @@ export async function updateExampleItem(
   id: number,
   input: unknown,
 ): Promise<ActionResult<ExampleItem>> {
+  const denied = await authorizeMutation('SuperAdmin');
+  if (denied) return denied;
+
   const parsed = exampleItemUpdateSchema.safeParse(input);
 
   if (!parsed.success) {
@@ -131,6 +180,9 @@ export async function updateExampleItem(
 export async function deleteExampleItem(
   id: number,
 ): Promise<ActionResult<{ id: number }>> {
+  const denied = await authorizeMutation('SuperAdmin');
+  if (denied) return denied;
+
   try {
     const deleted = await exampleItemService.delete(id);
 

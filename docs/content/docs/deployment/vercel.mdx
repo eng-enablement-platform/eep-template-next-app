@@ -297,11 +297,12 @@ Cloudflare propagates almost instantly.
 
 <Callout type='info'>
   If you cloned settings from your dev instance, this session claim is already
-  configured and you can skip this step. You will still need to manually add the
-  Admin role to your user in the production Clerk dashboard before you can
-  access the full app - see [Granting Admin
-  access](/docs/dev-environment/authentication#granting-admin-access) for the
-  steps.
+  configured and you can skip this step. You will still need to manually add a
+  role (`Admin` for read access, `SuperAdmin` for write access) to your user in
+  the production Clerk dashboard before you can access the full app - see
+  [Granting a
+  role](/docs/dev-environment/authentication#granting-a-role-admin--superadmin)
+  for the steps.
 </Callout>
 
 Do this once per Clerk instance - required for role-based access to work.

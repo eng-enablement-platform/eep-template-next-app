@@ -10,22 +10,21 @@ import { expect, test } from '../fixtures/auth.fixture';
  * The posts list lives inside a collapsible accordion on the home page - the
  * beforeEach opens it before each test.
  *
- * Uses the `authenticatedPage` fixture - the home page is behind Clerk auth.
+ * Uses the `superAdminPage` fixture - the home page is behind Clerk auth, and a
+ * super-admin can do everything a valid session can.
  */
 
 test.describe('posts', () => {
-  test.beforeEach(async ({ authenticatedPage }) => {
-    await authenticatedPage.goto('/');
-    await authenticatedPage.waitForURL('/', { timeout: 15_000 });
+  test.beforeEach(async ({ superAdminPage }) => {
+    await superAdminPage.goto('/');
+    await superAdminPage.waitForURL('/', { timeout: 15_000 });
 
     /* The posts list is inside the "Recent Posts" accordion - open it first. */
-    await authenticatedPage
-      .getByRole('button', { name: /Recent Posts/ })
-      .click();
+    await superAdminPage.getByRole('button', { name: /Recent Posts/ }).click();
   });
 
   test('renders fetched posts from the /api/posts route', async ({
-    authenticatedPage,
+    superAdminPage,
   }) => {
     /*
      * JSONPlaceholder returns deterministic seed data; the first post's title
@@ -33,7 +32,7 @@ test.describe('posts', () => {
      * rather than just that a container rendered.
      */
     await expect(
-      authenticatedPage.getByText('sunt aut facere', { exact: false }),
+      superAdminPage.getByText('sunt aut facere', { exact: false }),
     ).toBeVisible({ timeout: 15_000 });
   });
 });

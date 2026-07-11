@@ -37,18 +37,42 @@ No point running a browser suite against broken or vulnerable code.
 ## Secrets
 
 The pipeline requires the following secrets, set in **GitHub Settings ->
-Environments -> production**:
+Environments -> preview**:
 
-| Secret                              | Required by                                   |
-| ----------------------------------- | --------------------------------------------- |
-| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | All jobs (T3 Env validation)                  |
-| `CLERK_SECRET_KEY`                  | All jobs (T3 Env validation)                  |
-| `DATABASE_URL`                      | Build (T3 Env validation - no migrations run) |
-| `E2E_CLERK_USER_EMAIL`              | E2e job only                                  |
+| Secret                              | Required by                                         |
+| ----------------------------------- | --------------------------------------------------- |
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | All jobs (T3 Env validation)                        |
+| `CLERK_SECRET_KEY`                  | All jobs (T3 Env validation)                        |
+| `DATABASE_URL`                      | Build (T3 Env validation) + e2e (real reads/writes) |
+| `E2E_CLERK_USER_EMAIL_SUPER_ADMIN`  | E2e job only                                        |
+| `E2E_CLERK_USER_EMAIL_ADMIN`        | E2e job only                                        |
+| `E2E_CLERK_USER_EMAIL_NO_ROLE`      | E2e job only                                        |
 
 The Clerk redirect URL variables (`NEXT_PUBLIC_CLERK_SIGN_IN_URL` etc.) are
 not required - T3 Env defaults them to `/sign-in`, `/sign-up`, and `/`.
 `NEXT_PUBLIC_DOCS_URL` is optional and can be omitted in CI.
+
+<Callout type='info'>
+  These secrets live in a GitHub environment named `preview` and are used **only
+  by CI and the test suite** - never by the deployed app. GitHub's environment
+  name is unrelated to Vercel's Preview/Production environments; it is simply
+  the bucket CI pulls secrets from. The **deployed** app's env vars (including a
+  real `DATABASE_URL`) are managed entirely in Vercel, per Vercel-environment,
+  and CI never sees them. So you do **not** set a production `DATABASE_URL` here
+  - only the throwaway test-branch URL described below.
+</Callout>
+
+<Callout type='warn'>
+  Point `DATABASE_URL` at a **dedicated, throwaway Neon test branch**, never
+  production. The `roles.spec.ts` e2e suite exercises the real write path (the
+  SuperAdmin `POST /api/example-items` test does an `INSERT`), so every CI run
+  leaves a junk row behind. [Neon
+  branching](https://neon.tech/docs/introduction/branching) makes a persistent
+  `ci-test` branch essentially free - create it once, migrate it (`pnpm
+  drizzle-kit migrate` against its URL), and reuse it for every run. It never
+  needs to be reset; the accumulating rows do no harm on a branch nothing else
+  reads.
+</Callout>
 
 ---
 

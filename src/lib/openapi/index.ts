@@ -64,6 +64,18 @@ const notFoundResponse = {
   content: jsonContent(messageErrorSchema),
 };
 
+// 401 - handler is wrapped in `withAuth`; the caller is not signed in.
+const unauthorizedResponse = {
+  description: 'Not authenticated.',
+  content: jsonContent(messageErrorSchema),
+};
+
+// 403 - handler is wrapped in `withRole('SuperAdmin')`; caller lacks the role.
+const forbiddenResponse = {
+  description: 'Authenticated, but missing the required SuperAdmin role.',
+  content: jsonContent(messageErrorSchema),
+};
+
 const document = createDocument({
   openapi: '3.1.0',
   info: {
@@ -86,6 +98,7 @@ const document = createDocument({
             description: 'All example items.',
             content: jsonContent(exampleItemListSchema),
           },
+          '401': unauthorizedResponse,
         },
       },
       post: {
@@ -99,6 +112,8 @@ const document = createDocument({
             content: jsonContent(exampleItemEnvelopeSchema),
           },
           '400': validationErrorResponse,
+          '401': unauthorizedResponse,
+          '403': forbiddenResponse,
         },
       },
     },
@@ -117,6 +132,7 @@ const document = createDocument({
             description: 'The id was not a positive integer.',
             content: jsonContent(messageErrorSchema),
           },
+          '401': unauthorizedResponse,
           '404': notFoundResponse,
         },
       },
@@ -132,6 +148,8 @@ const document = createDocument({
             content: jsonContent(exampleItemEnvelopeSchema),
           },
           '400': validationErrorResponse,
+          '401': unauthorizedResponse,
+          '403': forbiddenResponse,
           '404': notFoundResponse,
         },
       },
@@ -146,6 +164,8 @@ const document = createDocument({
             description: 'The id was not a positive integer.',
             content: jsonContent(messageErrorSchema),
           },
+          '401': unauthorizedResponse,
+          '403': forbiddenResponse,
           '404': notFoundResponse,
         },
       },
