@@ -14,7 +14,13 @@ const withMDX = createMDX();
    node_modules with no cross-store symlink to chase. Widening turbopack.root
    to the repo root there instead pulls the root app's src/ (and its
    @vercel/otel instrumentation) into the module graph, breaking the build.
-   So only widen the root outside Vercel. */
+   So only widen the root outside Vercel.
+
+   Next also derives outputFileTracingRoot independently; on Vercel it picks
+   the mounted repo root (/vercel/path0). When it disagrees with turbopack.root
+   Next discards turbopack.root and uses the wider tracing root, re-widening the
+   graph and dragging src/instrumentation.ts back in. Pin both to the same value
+   so they can never diverge. */
 const isVercel = Boolean(process.env.VERCEL);
 const turbopackRoot = isVercel
   ? import.meta.dirname
@@ -23,6 +29,7 @@ const turbopackRoot = isVercel
 /** @type {import('next').NextConfig} */
 const config = {
   reactStrictMode: true,
+  outputFileTracingRoot: turbopackRoot,
   turbopack: {
     root: turbopackRoot,
   },
