@@ -23,6 +23,38 @@
 </p>
 
 A production-grade Next.js scaffold built on [Engineering Enablement Platform
-(EEP)](https://github.com/your-org/eep) principles. Ships full - authentication,
-database, API docs, logging, and conventions all wired and demonstrated - so you
-can strip what you don't need rather than bolt on what you do.
+(EEP)](https://github.com/eng-enablement-platform) principles. Ships full -
+authentication, database, API docs, logging, and conventions all wired and
+demonstrated - so you can strip what you don't need rather than bolt on what
+you do.
+
+**Full docs live at [docs.example.com](https://docs.example.com).** This README
+covers just enough to get running - everything else (architecture, conventions,
+deployment, deep dives) is in the docs.
+
+## Prerequisites
+
+| Tool     | Version | Install                                   |
+| -------- | ------- | ----------------------------------------- |
+| Node.js  | ≥ 24    | `nvm install && nvm use` (reads `.nvmrc`) |
+| pnpm     | ≥ 10    | `npm install -g pnpm`                     |
+| Docker   | any     | Docker Desktop or Rancher Desktop         |
+| Trivy    | any     | `brew install trivy` (pre-commit scan)    |
+| Gitleaks | any     | `brew install gitleaks` (pre-commit scan) |
+
+## Quick start
+
+```bash
+pnpm install                         # install dependencies
+cp .env.local_template .env.local    # add your secrets (Clerk keys)
+docker compose up -d                 # start the database
+pnpm db:migrate                      # run migrations
+pnpm dev                             # http://localhost:3000
+```
+
+See [Local Setup](https://docs.example.com/docs/dev-environment/local-setup)
+for environment variables, database seeding, and the full command reference.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md).
