@@ -1,138 +1,54 @@
 # AGENTS instructions
 
+Rules only. This is how we work - follow it.
+
 ## Philosophy
 
-We write clean, coherent, and simple code. Nothing clever or fancy - if it's
-hard to read it's wrong.
-
-We respect the codebase but don't over-engineer it. Remember that code is
-simply a vehicle to get to the outcome - but we'd rather drive there in a
-Ferrari than an old banger.
-
-Move fast but always aim to keep things maintainable and scalable. When in
-doubt, boring is better. Simplicity is king!
-
-**The north star:** could a developer or an agent pick this up and work
-confidently without asking anyone?
+Clean, coherent, simple. Boring beats clever - if it's hard to read it's wrong.
+Move fast, stay maintainable. North star: could another dev or agent pick this
+up and work confidently without asking anyone?
 
 ## Code Standards
 
-- DRY, readable, boring - avoid clever solutions
-- Error handling and edge cases are first class concerns, not afterthoughts
-- Use import aliases (`@/`) never relative paths
-- Always use `import type` for type-only imports - never mix types and values
-  in the same import
-- Use named imports from `react` - never `import * as React from 'react'`.
-  Namespace imports break tree-shaking and prevent `import type` from working
-  cleanly. Exception: shadcn primitives in `src/components/ui/` are copied into
-  the codebase and owned by you - they may keep their upstream namespace imports.
-- Named exports everywhere - default exports only where Next.js requires
-- Components declared as function declarations, never const arrow functions
-- Arrow functions for utilities, callbacks, and inline handlers
+- DRY, readable, boring - no clever solutions
+- Error handling and edge cases are first-class, not afterthoughts
+- Import aliases (`@/`), never relative paths
+- `import type` for type-only imports - never mix types and values
+- Named `react` imports, never `import * as React` (exception: `components/ui/` shadcn primitives)
+- Named exports everywhere - default only where Next.js requires
+- Components are function declarations; utilities/callbacks/handlers are arrow functions
 - Props typed as a named type above the component, never inline
-- Default to `type` for all type declarations. Reach for `interface` only when
-  you need declaration merging (augmenting a third-party module or global) or an
-  `extends` contract. `type` is strictly more capable (unions, intersections,
-  mapped/conditional types) and keeps shapes uniform - no switching from
-  `interface` to `type` the day a shape needs a union.
-- Do not add dependencies arbitrarily - check if native TS/JS can do it first
-- Comments required for anything non-obvious - explain the why, not the what
-- Comment syntax signals **intent**, not just line count. Two different things
-  share angle-bracket syntax and the rule keeps them apart: **commentary** is
-  throwaway notes that live and die in the source, while **TSDoc (`/** \*/`) is a
-  tooling-consumed API surface\*\* - editors render it on hover, doc generators
-  publish it. Picking the wrong one either buries a note in fake doc syntax or
-  silently fails to document a symbol, so the form must match the intent. Ask
-  _"who is this for?"_:
-  - **Commentary** - notes for whoever reads this source file (the _why_ behind
-    the code). One line is always `//` (inline or standalone, no exceptions);
-    multi-line is always a `/* */` starred block. Never a single-line `/* */`,
-    and never `/** */` - a doc comment is not commentary.
-  - **Documentation** - TSDoc describing a symbol (function, type, member) so
-    consumers see it on hover. Use `/** */` **only** when attached directly
-    above the symbol it documents. It is an API surface, not a prettier
-    comment - never reach for `/**` just to write a note, even to satisfy the
-    single-line rule.
-  - Enforced and auto-fixable: `local/single-line-comment-style`
-    (`eslint-rules/`) bans single-line `/* */`; `@stylistic/multiline-comment-style`
-    forces multi-line commentary into starred blocks. TSDoc and tooling
-    directives (`eslint-*`, `ts-*`) are exempt because they are not commentary.
-- TSDoc on all `.ts` files - pre-commit will enforce this
-- If disabling a lint rule, leave a comment explaining why
-- Tailwind only for styles, no exceptions
+- `type` by default; `interface` only for declaration merging or `extends`
+- No arbitrary dependencies - check native TS/JS first
+- Comment the _why_, not the _what_ - only for non-obvious code
+- `//` for commentary (never single-line `/* */`); `/** */` TSDoc only directly above the symbol it documents
+- TSDoc on all `.ts` files (pre-commit enforced)
+- Disabling a lint rule requires a comment saying why
+- Tailwind only for styles
 
-## Git & Branching
+## Git
 
-Branch format: `<type>/<ticket-number>-<brief-description>`
-
-- `feat/` - new features
-- `fix/` - bug fixes
-- Ad-hoc: `fix/<brief-description>` (no ticket needed)
-
-Commit messages must follow conventional commits - at least one of:
-
-- `feat:` `fix:` `refactor:` `chore:` `docs:` `BREAKING CHANGE:`
+- Branch: `<type>/<ticket>-<desc>` - `feat/`, `fix/` (ad-hoc `fix/<desc>`, no ticket)
+- Conventional commits: `feat:` `fix:` `refactor:` `chore:` `docs:` `BREAKING CHANGE:`
 
 ## Git Hooks
 
-**Pre-commit** - full guardrail suite on every commit. Designed to be strict
-enough to constrain both human and agentic contributors.
+- **Pre-commit** is the first line of defence: Trivy (on dep changes), ESLint config probe (on `eslint.config.ts`), lint-staged, and on `.ts/.tsx`/config changes the full `tsc --noEmit` + tests + build
+- **Escape hatch** `SKIP_CHECKS=1 git commit` - WIP/TDD-red only; lint, Trivy, style still run. Never to bypass failing tests on shippable code
+- **CI** runs integration + e2e only
 
-- Trivy security scan (only when `package.json` / `pnpm-lock.yaml` changed) -
-  system binary, install with `brew install trivy` (macOS) or see
-  [aquasecurity/trivy](https://github.com/aquasecurity/trivy)
-- ESLint config probe (only when `eslint.config.ts` changed)
-- lint-staged - lint + prettier on staged files only
-- On `.ts/.tsx` or config changes: full `tsc --noEmit`, test suite, and build
-- On config file changes (`.mjs`, `.cjs`, `next.config.*`): build only
-- No relevant changes: skips heavy checks automatically
+## Testing
 
-**Escape hatch** - for intentional WIP or TDD red phase only:
-`SKIP_CHECKS=1 git commit -m "..."` - lint, Trivy, and style still run.
-Never use this to bypass failing tests on shippable code.
+Test behaviour, not appearance. Filter: if you can break it by changing a
+branch, a prop's effect, a timer, or state - test that; if the only assertion is
+"markup rendered" - skip it.
 
-**CI** - integration and e2e tests only. The pre-commit hook is the
-first line of defence, not CI.
-
-## Testing & QA
-
-We work in a QA orientated manner - no regressions, no silly bugs, no shortcuts.
-
-Before writing a test ask: "Would this prevent future bugs or make refactoring
-easier?" If yes, write it. We don't chase coverage metrics - we test what matters.
-
-**What earns a test (test behaviour, not appearance):**
-
-- **Pure logic** - functions, stores, validation, reducers. _Always test._ This
-  is where bugs hide and tests are cheap and stable (`utils/`, `store/`,
-  `validation/`).
-- **Components with branches, state, or effects** - conditional rendering,
-  timers, event handlers, anything that makes a _decision_. _Test the decision_
-  (e.g. "selecting Dark calls `setTheme('dark')`", "the moon icon shows in dark
-  mode"), not the surrounding markup. See `components/common/theme-toggle` for
-  the reference shape.
-- **Pure presentational components** - take props, render markup, no branching.
-  _Do not test._ Asserting "the markup rendered" tests that React works; it
-  catches no bugs and breaks on every cosmetic change. In this repo that means
-  `error`, `page-not-found`, `toast`, `auth` get no unit test.
-
-The one-line filter: **if you can break it by changing a branch, a prop's
-effect, a timer, or state, test that; if the only thing to assert is that markup
-rendered, skip it.**
-
-**TDD where it pays off** - small isolated methods with a clear contract (pure functions, utilities, well-defined logic) get written test-first. Larger integration work doesn't - the spec is still being discovered and tests written against a moving API end up brittle.
-
-**Co-location** - tests live next to the code they test, never in a separate
-top-level folder. Use a `__tests__/` subfolder within the relevant directory,
-mirroring the directory's files (this holds whether the directory contains flat
-files like `utils/` or flat components like `components/common/`). e2e tests are
-the exception - these live in `e2e-tests/tests/` at project root.
-
-**Test-only exports** - grouped under a single `_forTests` export at the bottom
-of the file. Never export internals individually. Never import `_forTests`
-outside of `__tests__/` files.
-
-## Quick Reference
+- **Pure logic** (utils, stores, validation, reducers) - always test
+- **Components with branches/state/effects** - test the decision, not the markup
+- **Pure presentational components** - do not test
+- TDD for small isolated units with a clear contract; not for exploratory integration work
+- Co-locate tests in a `__tests__/` subfolder mirroring the directory (e2e is the exception - `e2e-tests/tests/`)
+- Test-only exports grouped under one `_forTests` export; never import it outside `__tests__/`
 
 | Type      | Location                                        |
 | --------- | ----------------------------------------------- |
@@ -142,415 +58,64 @@ outside of `__tests__/` files.
 | Utility   | `utils/__tests__/`                              |
 | e2e       | `e2e-tests/tests/` (project root)               |
 
-A component's test lives in the `__tests__/` folder of the directory the
-component file sits in - `components/common/auth.tsx` →
-`components/common/__tests__/auth.test.tsx`. A flat component file does **not**
-get its own folder just to hold a test (see Naming Rules → Components); the
-shared `__tests__/` mirrors the directory, exactly like `utils/` and `store/`.
-
-<!-- TODO: MOVE THE EXAMPLES TO FUMADOCS -->
-
-## Testing Exports
-
-Test-only exports are grouped under a single `_forTests` named export at the
-bottom of the file. Never export internal classes or utilities individually
-for test purposes - keep the public API clean.
-
-```typescript
-// public API
-export const myService = new MyService();
-
-// test-only exports
-export const _forTests = { MyService };
-```
-
-The `_` prefix signals to developers and agents that this export is not part
-of the public API and should never be imported outside of test files.
-
 ## Architecture
 
 Three layers, strictly separated:
 
-**Server Layer (`classes/`)** - The home for **all class definitions**, grouped
-by role so there is one obvious place to look. Three buckets:
-
-- `classes/services/<domain>/` - business logic and third-party integrations
-  (HubSpot, Slack, `example-item`). **Server-only** - this is where the
-  server-only guarantee actually lives. One subfolder per domain.
-- `classes/errors/` - structured error types (e.g. `ApplicationError`).
-  **Server-only** - its whole value is server-side observability (thrown at
-  integration boundaries, caught in handlers/actions, logged by Winston). A
-  thrown error serializes to a plain `Error` across the network boundary, so the
-  client never sees the class; client errors are handled by `error.tsx`,
-  `ErrorBoundary`, and `ActionResult`.
-- `classes/loggers/` - logger classes (`server-only` - Winston writes to the filesystem).
-
-Every bucket under `classes/` is `server-only`: `services/` (integrations),
-`errors/` (server-side observability), and `loggers/` (Winston, filesystem
-writes). The client layer has its own error surfaces and never imports from here.
-
-**API Layer (`app/api/`)** - Next.js route handlers only. All business logic
-lives in `classes/`, not here; handlers validate input, call a service, and
-shape the response. See **Read vs write paths** below for which mutations
-belong here versus in `actions/`.
-
-**Client Layer (`hooks/`, `components/`, `store/`)** - `hooks/` wraps SWR for
-all data fetching, providing declarative interfaces with built-in loading/error
-states. `store/` manages client state via Zustand. `components/` are purely
-presentational.
-
-**The `app/` boundary** - `app/` holds **only Next.js file-convention files**:
-`page.tsx`, `layout.tsx`, `error.tsx`, `not-found.tsx`, `loading.tsx`,
-`route.ts`, plus `globals.css` and `favicon.ico`. These are reserved filenames
-the router discovers by location, so they _must_ live here. Keep them **thin**
-
-- a route file resolves params/wires the framework and delegates to a real
-  component in `components/` (e.g. `app/error.tsx` renders
-  `components/common/error`, `app/page.tsx` renders a feature component). Our own
-  components - even app-shell ones like the client root layout - never live loose
-  in `app/`; they belong in `components/` and are imported via `@/`.
+- **Server (`classes/`)** - all class definitions, `server-only`. `services/<domain>/` (business logic + integrations), `errors/` (structured error types), `loggers/` (Winston). Client never imports from here.
+- **API (`app/api/`)** - route handlers only: validate input, call a service, shape the response. No business logic.
+- **Client (`hooks/`, `components/`, `store/`)** - SWR hooks fetch data, Zustand holds state, components are presentational.
+- **`app/`** holds only Next.js file-convention files (`page`, `layout`, `error`, `not-found`, `loading`, `route`, `globals.css`). Keep them thin - delegate to a real component in `components/`.
 
 ## Patterns
 
-### Service instantiation
-
-Default to a **singleton** for service classes - third-party API clients
-(HubSpot, Slack, BambooHR), loggers, and any stateless, app-lifetime collaborator.
-These hold only config (base URL, API key, transports) that is identical for the
-whole app and cannot be corrupted by one request for the next, so one instance
-for the app's life is correct.
-
-Reach for a **factory or per-request instance** only when the object carries
-state that belongs to a single request - per-user/per-tenant auth (e.g. a Slack
-client built from the signed-in user's OAuth token, not an app-wide token),
-request/session context that must not leak between users, or a seam a test needs
-to swap. App-level token → singleton. Per-user token → per-request via factory.
-
-A factory is not an alternative to a singleton; it is how you build a
-non-singleton when the rule above demands one. Do not add a DI container to
-projects that do not need one.
-
-### Singleton style
-
-Default to the **eager** form - `export const x = new X()`. It is the right
-choice when construction is trivial and side-effect-free; the `getInstance()`
-ceremony would be pure noise.
-
-Use the **lazy** form - `private constructor` + `static getInstance()` - only
-when construction has side effects you must defer past import time (filesystem,
-network, env reads) or you genuinely need lazy initialisation. The
-`ApplicationLogger` uses this because its constructor creates `.logs/` file
-transports; `QueryLogger` uses the eager form because its constructor does
-nothing.
-
-### Domain Driven Design
-
-The three-layer split already captures the valuable 80% - logic out of handlers,
-domain in `classes/`, validation at boundaries. Heavier DDD machinery
-(aggregates, value objects, repositories, domain events) stays **opt-in per
-project**, reached for only when a domain earns it. Do not bake it into the base.
-
-### Integration class shape
-
-Every third-party integration class shares one shape so an agent can scaffold a
-new one by pattern-matching:
-
-- lives in `classes/services/<domain>/`, server-only
-- takes its config/secret through one constructor
-- exposes only domain methods (`getContact`, `postMessage`) - never leaks the
-  raw HTTP client
-- throws a typed error on failure
-
-### Read vs write paths
-
-The default split for the data API:
-
-- **Reads** → `GET` route handlers in `app/api/`.
-- **Writes from our own UI** → Server Actions in `actions/` (`*-actions.ts`).
-- **Writes from an external caller** (webhook, cron, third-party, non-browser
-  client) → a route handler, validated with the **same Zod schema** the action
-  uses, so the two write surfaces cannot drift.
-
-A full-CRUD REST route (`GET`/`POST`/`PATCH`/`DELETE`) is provided at
-`app/api/example-items/` as a learning reference - it is **not** the default;
-use the read-route + write-action split unless an external caller forces the
-REST write path. See `src/app/README.md` for the worked example.
-
-### Input validation
-
-Input validation schemas live in `src/validation/`, one file per domain
-(`validation/example-item.ts`, `validation/invoice.ts`), mirroring how
-`classes/` is organised. They parse untrusted input at the boundary, so they
-belong here - not in `db/`, which only ever sees already-validated objects. The
-route and the action for a domain share the **same** schema, so the read and
-write surfaces cannot validate differently. Name the folder for what it is
-(validation), never for the library (`zod-*`).
-
-### Logging
-
-Backend logging goes through `rootLogger` from `classes/loggers/application`.
-The whole point is debugging by source: every log line carries a `logSource`
-so you can follow a layer with
-`grep '"logSource":"action"' .logs/winston-combined.log`.
-
-**Source = layer, not concern.** `logSource` is constrained to the `LOG_SOURCE`
-enum so casing and the set can't drift. The values are architectural layers,
-because a layer maps 1:1 to a folder and never needs a judgement call:
-
-| Source               | Layer                        |
-| -------------------- | ---------------------------- |
-| `LOG_SOURCE.API`     | `app/api/` route handlers    |
-| `LOG_SOURCE.ACTION`  | `actions/` server actions    |
-| `LOG_SOURCE.SERVICE` | `classes/services/<domain>/` |
-
-For the specific module or concern (`auth`, `example-items`, `migrations`),
-pass a free-form `scope` field on the log call itself -
-`logger.error({ scope: 'auth', ... })`. Never invent a new `logSource` for a
-concern; the enum stays closed, `scope` is the open escape hatch.
-
-**Log at the boundary that owns the outcome, not in the service.** Domain
-services are thin wrappers around a data call with nothing to add to a failure,
-so they rethrow rather than log - log-and-rethrow would record the same failure
-twice under two sources. The write boundary (a server action, or a route
-handler) is where an exception becomes a user-facing result, so that is the one
-place it is caught and logged. See `actions/example-item-actions.ts` for the
-reference shape: each mutation wraps the service call, logs the failure once
-with a `scope`, and returns a structured error.
-
-**Verbosity is env-gated, off-noisy-by-default.** Two independent knobs, both
-optional:
-
-- `LOG_LEVEL` - the winston level floor for all `rootLogger` output. Defaults
-  per env (`info` in prod, `debug` in dev, `warn` in test). Override for a
-  single run when you want more: `LOG_LEVEL=debug pnpm dev`.
-- `DB_QUERY_LOG` - the Drizzle query firehose (raw SQL + params to the
-  console). Off by default; set `DB_QUERY_LOG=1` to watch queries and mutations
-  live while building. It is a dev diagnostic, **not** a `logSource` - DB
-  _errors_ you want greppable belong in the structured logger at the calling
-  layer instead.
+- **Service instantiation** - singleton by default (app-level config/token); factory or per-request only for per-user/per-tenant state
+- **Singleton style** - eager `export const x = new X()`; lazy `getInstance()` only when construction has deferred side effects
+- **DDD** - three-layer split is enough; heavier machinery is opt-in per project
+- **Integration classes** - live in `classes/services/<domain>/`, take config via one constructor, expose only domain methods, throw a typed error
+- **Read vs write** - reads → `GET` handlers; UI writes → server actions (`*-actions.ts`); external writes → route handlers, sharing the same Zod schema as the action
+- **Validation** - Zod schemas in `src/validation/`, one file per domain, shared by route + action
+- **Logging** - `rootLogger` from `classes/loggers/application`; `logSource` = layer (`API`/`ACTION`/`SERVICE`), `scope` = concern; log once at the write boundary, not in the service. Verbosity via `LOG_LEVEL`; DB firehose via `DB_QUERY_LOG=1`
 
 ## Data Fetching
 
-SWR is used for all client-side data fetching. Never use useEffect for fetching.
-Hooks wrap SWR and live in `hooks/`. Each hook handles its own loading and error
-state and exposes a clean interface to components.
+SWR for all client fetching. Never `useEffect` for fetching. Hooks wrap SWR in
+`hooks/`, each handling its own loading/error state.
 
-<!-- TODO: Cursor can re-write this once done -->
+## Naming
 
-## Folder Structure
-
-project-root/
-docs/ # Fumadocs site - full developer handbook
-content/
-getting-started/ # setup, running locally, env vars
-architecture/ # system design, layers, patterns
-stack/ # deep dives on each technology used
-conventions/ # coding standards, naming, patterns
-decisions/ # ADRs - what was chosen and why
-scripts/ # DB seeding and utility scripts, runs outside Next.js
-src/
-app/ # Next.js routing only - routes, layouts, pages, globals.css
-(root)/ # main app routes and layout
-api/ # Next.js route handlers only
-classes/ # all classes grouped by role
-services/ # business logic + integrations, server-only, one folder per domain
-errors/ # universal error types, not server-only
-loggers/ # server-only logger classes (Winston, filesystem)
-components/
-ui/ # shadcn primitives - owned by you, edit freely
-common/ # reusable components shared across features
-features/ # feature-specific components
-config/
-constants/ # app-wide constants
-hooks/ # SWR-based data fetching hooks
-lib/ # third party instantiation (db, auth, swr config)
-utils/ # shared utility functions
-store/ # zustand stores
-types/ # shared global types only
-.env
-.eslintrc
-package.json
-tsconfig.json
-env.d.ts # TypeScript env var declarations, must stay at root
-
-## Naming Rules
-
-**Folders** - always kebab-case.
-
-**index.ts / index.tsx** - only use when a folder represents a meaningful
-grouping or domain. Do not create a folder + index.ts just to wrap a single
-file - name the file directly instead (e.g. `this-class.ts`, `this-component.tsx`).
-
-**Components** - name the file for the component: a single-file component is a
-flat `kebab-name.tsx` (e.g. `components/common/auth.tsx`), imported as
-`@/components/common/auth`. Do **not** wrap a lone component in a
-folder+`index.tsx` - that is the "fold a single file" anti-pattern above, and it
-fills the editor with indistinguishable `index.tsx` tabs. Promote to a
-kebab-cased **folder** only once the component grows parts (sub-components in a
-nested `components/`, a split `types/`, helpers); then `index.tsx` becomes the
-entry barrel that curates the public surface. Same "earn the folder" threshold
-as utilities and types. Component types are inline by default; extract to a
-sibling `types.ts` (or a `types/` folder once split) per the Types section.
-
-**Utility modules** - single `index.ts` until the file exceeds ~200 lines or
-~3 distinct concerns, or its functions have grown dedicated test files. Count
-concerns, not functions - three functions serving one cohesive concern (e.g.
-HTTP response shaping) stay together; three unrelated utilities (math, error
-formatting, class merging) are three concerns. Then split into kebab-named
-per-function files along meaningful seams (not one-file-per-export). After splitting, `index.ts` becomes the folder's barrel
-(see Barrel Exports) - consumers import from the folder, internal siblings
-import directly.
-
-**Hooks** - one file per hook, named `use-*.ts`.
-
-**Stores** - one file per domain (e.g. `domain-store.ts`). Co-locate types
-unless shared, in which case pull up to `types/`. Split the type into a data
-shape and an actions shape, then intersect them - `type FooState` (data only),
-`type FooActions` (behaviours only), `type FooStore = FooState & FooActions`.
-Derive the `defaultFooState` from the state shape alone so defaults can't drift
-from the fields they back. Use `type` throughout, never `interface` (no
-declaration merging is needed here). Co-located types are the default even when
-there are several - only break that for a store large enough (~200 lines, per
-the utility-module threshold) that the types earn their own sibling file, or
-when a type is genuinely shared (then it goes to `src/types/`, not a per-store
-types file). See `src/store/counter-store.ts` for the reference shape.
-
-**Variables** - full descriptive names, never abbreviated.
+- **Folders** - kebab-case
+- **index.ts** - only for a meaningful grouping/domain; never to wrap a single file
+- **Components** - flat `kebab-name.tsx`; promote to a folder + `index.tsx` barrel only once it grows parts
+- **Utility modules** - single `index.ts` until ~200 lines or ~3 concerns, then split into kebab-named files with a barrel
+- **Hooks** - one file per hook, `use-*.ts`
+- **Stores** - one file per domain; split `FooState & FooActions`, derive defaults from state; co-locate types
+- **Variables** - full descriptive names, never abbreviated
 
 ## Types
 
-Two axes decide where a type lives: **scope** (who consumes it) and **size**
-(how big it has grown). Scope sets the default home; size can override it.
+Scope sets the home; size can override to a file:
 
-**By scope:**
-
-- **Used only by this component** → declare it **inline** at the top of the
-  component file. No separate file, no ceremony.
-- **Shared by 2+ siblings in the same feature/folder** → pull it up one level
-  to a `types.ts` at that **feature boundary** (e.g.
-  `components/features/dashboard/types.ts`). Still co-located, never duplicated.
-- **Shared across unrelated features or layers** (a component _and_ a service
-  _and_ a hook) → `src/types/`. Smell test: _would this type still make sense
-  if I deleted the component?_ If yes (a domain concept like `User`,
-  `Invoice`), it is global; if no (`ButtonProps`), it stays co-located.
-
-**By size (overrides "inline"):** a single-consumer type stays inline until it
-crosses a complexity threshold, then it moves to a sibling `types.ts` _even
-though nothing else consumes it_ - so a component file never becomes majority
-type declarations. Extract when **any** of:
-
-- the file has **~3+ type declarations**, or
-- a single type is **large** (>15–20 lines, nested/discriminated unions), or
-- the inline types are visually drowning the component logic.
-
-**File vs folder:** a single types file is a flat sibling `types.ts` - never a
-`types/` folder wrapping one `index.ts` (that ceremony is forbidden under
-Naming Rules). Promote to a `types/` **folder** only when the types themselves
-split into multiple files (`types/props.ts`, `types/api.ts`), the same
-threshold that splits a utility module.
-
-Store types follow the same logic but are co-located in the store file by
-default (see Naming Rules → Stores); pull up to `src/types/` only when shared.
+- Single-consumer → inline (unless ~3+ types, one large type, or drowning the logic → sibling `types.ts`)
+- Shared by siblings → `types.ts` at the feature boundary
+- Shared across features/layers → `src/types/`
+- Flat `types.ts` first; promote to a `types/` folder only when it splits into multiple files
 
 ## Barrel Exports
 
-Use barrels only at meaningful domain or feature boundaries - never at the
-top level of `components/`, `hooks/`, or `store/`.
-
-✅ Feature level: `components/features/dashboard/index.ts`
-
-- ✅ Domain level: `classes/services/payments/index.ts`
-- ✅ Split utility/domain folder: `billing-utils/index.ts` (see Naming Rules → Utility modules)
-- ❌ Never: `components/index.ts`, `hooks/index.ts`
-- ❌ Never mix server and client exports in the same barrel
-- ❌ Never import the barrel from a sibling file in the same folder
-- Direct imports preferred for `ui/` components
+Only at domain/feature boundaries. Never `components/index.ts` or `hooks/index.ts`,
+never mix server + client exports, never import a barrel from a sibling. Direct
+imports for `ui/`.
 
 ## Documentation
 
-All code documented with TSDoc. Keep it lean - focus on the _why_, not the
-_what_. Contextual knowledge ("this exists because…") beats mechanical
-description ("this function does X"). No verbose prose or pointless waffle.
-
-**Example / reference code** - any file that exists to demonstrate a pattern
-rather than serve a real feature must open its TSDoc with `EXAMPLE <TYPE>` as
-the first line, where `<TYPE>` is the kind of thing it is (capitalised):
-
-```ts
-/**
- * EXAMPLE COMPONENT
- * ...
- */
-
-/**
- * EXAMPLE HOOK
- * ...
- */
-
-/**
- * EXAMPLE STORE
- * ...
- */
-
-/**
- * EXAMPLE UTILITY
- * ...
- */
-```
-
-This makes example files grep-able and immediately obvious to any reader.
-Never use prose variants like "This is an example", "Reference store", or
-"Exists purely as a reference" - the `EXAMPLE <TYPE>` prefix is the only
-approved form.
-
-**Methods** document purpose, business context, `@param`, and `@returns`.
-
-**Hooks and utility functions** follow the same shape as methods: purpose/context
-sentence, `@param` for every parameter, `@returns` describing the return value,
-and one `@example`. The `jsdoc/require-returns` ESLint rule enforces `@returns`
-on all exported functions - omitting it is a lint error. Keep the description
-concise: one line stating _what_ is returned is enough unless the shape needs
-explaining.
-
-<!-- TODO: AGENTS.md refinement pass - expand this section with a concrete
-hook example (analogous to the component example below) and verify the full
-TSDoc rule set (require-param, require-returns, require-example) is documented
-here so agents have a single authoritative reference. -->
-
-**Components** follow one canonical shape - a one-line _what_, a sentence or two
-of _why it exists / when to use it_, `@param` notes for any **non-obvious**
-props, and one `@example`:
-
-````tsx
-/**
- * One line: what it is.
- * Why it exists / when to reach for it (the contextual bit).
- *
- * @param subtitle - Only NON-obvious props need a note; skip the self-evident.
- * @example
- * ```tsx
- * <Auth type='sign-in' />
- * ```
- */
-export function Auth({ type, subtitle }: AuthProps) { ... }
-````
-
-**Never re-list props as a prose/markdown block** (`**Props:** - x: ...`). The
-type is the single source of truth; a hand-maintained prose copy duplicates it
-and rots the moment a prop changes. Use `@param` for the few props that need a
-_why_, and let the type speak for the rest. Do not over-document types.
-
-### Documentation Site
-
-Full developer handbook lives in `docs/` powered by Fumadocs. Covers setup,
-architecture, stack deep dives, conventions, and decisions. Every significant
-technical decision gets an ADR in `decisions/`.
-
-`/llms-full.txt` is auto-generated by Fumadocs - agents and LLMs should fetch
-this for full project context before starting any significant task.
-
-Keep README.md and agents.md lean - they reference the docs site for detail.
-README covers what the project is and how to run it. agents.md covers rules only.
+- TSDoc on all code - lean, the _why_ not the _what_
+- Example/reference files open TSDoc with `EXAMPLE <TYPE>` (e.g. `EXAMPLE COMPONENT`) - the only approved form
+- Methods/hooks/utilities: purpose, `@param`, `@returns` (enforced), one `@example`
+- Components: one-line what, why/when, `@param` for non-obvious props, one `@example`
+- Never re-list props as prose - the type is the source of truth
+- Handbook lives in `docs/` (Fumadocs); every significant decision gets an ADR in `decisions/`
+- Keep README and this file lean - they point to the docs site
 
 ## Quick Reference
 
