@@ -31,11 +31,33 @@ authentication, database, API docs, logging, and conventions all wired and
 demonstrated - so you can strip what you don't need rather than bolt on what
 you do.
 
-**Live site:** [eep-next-template.dev](https://eep-next-template.dev/) - feel
-free to try signing in, though you'll be blocked by the role gate.
+**Live site:** [eep-next-template.dev](https://eep-next-template.dev/) - Feel
+free to try signing in if you like, though you will be blocked by the role gate.
 
-**Full docs live at [docs.eep-next-template.dev](https://docs.eep-next-template.dev).** This README covers just enough to get running - everything else (architecture, conventions,
-deployment, deep dives) is in the docs (also available via `/docs`)
+**Docs site:** [docs.eep-next-template.dev](docs.eep-next-template.dev) - This README covers just enough to get running - everything else (architecture, conventions,
+deployment, deep dives) is in the docs (also available via `/docs` in the template)
+
+## Using this template
+
+Two ways to start your own project from this template:
+
+- **CLI (recommended)** - scaffold and re-purpose interactively. _Coming soon -
+  the CLI is built from this template and will handle cloning, renaming, and
+  stripping the parts you don't need._
+- **Manual clone** - clone and make it your own by hand (below).
+
+### Manual clone
+
+```bash
+git clone https://github.com/eng-enablement-platform/eep-template-next-app.git my-app
+cd my-app
+rm -rf .git && git init        # start a fresh history that's yours
+```
+
+From here, follow the [Quick start](#quick-start) below. Strip the demo
+features you don't need (counter, posts, example items) and keep the wiring you
+do - see the [docs](https://docs.eep-next-template.dev) for the architecture and
+conventions.
 
 ## Prerequisites
 
