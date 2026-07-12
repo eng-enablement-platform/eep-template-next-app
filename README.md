@@ -34,9 +34,8 @@ you do.
 **Live site:** [eep-next-template.dev](https://eep-next-template.dev/) - feel
 free to try signing in, though you'll be blocked by the role gate.
 
-**Full docs live at [docs.example.com](https://docs.example.com).** This README
-covers just enough to get running - everything else (architecture, conventions,
-deployment, deep dives) is in the docs.
+**Full docs live at [docs.eep-next-template.dev](https://docs.eep-next-template.dev).** This README covers just enough to get running - everything else (architecture, conventions,
+deployment, deep dives) is in the docs (also available via `/docs`)
 
 ## Prerequisites
 

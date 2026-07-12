@@ -231,8 +231,23 @@ configure www as the redirect first, then re-add the apex as primary.
 If you're deploying the docs site as a separate Vercel project:
 
 1. Docs Vercel project → **Settings** → **Domains** → add `docs.yourproject.dev`
-2. Vercel gives you a `CNAME` pointing to `cname.vercel-dns.com`
-3. Add that `CNAME` in Cloudflare DNS (`docs` name, **DNS only**)
+2. Vercel shows the exact `CNAME` record to create. Copy the **Value** it gives
+   you verbatim - it's usually `cname.vercel-dns.com`, but Vercel sometimes
+   issues a project-specific target like `220fb9f65be55b09.vercel-dns-017.com`.
+   Use whatever Vercel displays, not a value from memory.
+3. Cloudflare DNS → **Add record**: Type `CNAME`, Name `docs` (just `docs`, not
+   the full hostname - Cloudflare appends the zone), Value = the target Vercel
+   gave you, Proxy status **DNS only** (grey cloud)
+4. Back on Vercel, hit **Refresh** on the domain - it flips from "Invalid
+   Configuration" to valid once the record propagates
+
+<Callout type='warn'>
+  **The proxy must be grey (DNS only), not orange (Proxied).** New Cloudflare
+  records default to orange. If left proxied, Cloudflare answers the `docs`
+  lookup with its own IPs instead of passing Vercel's target through, so Vercel
+  never sees its record and stays stuck on **Invalid Configuration** (and TLS
+  issuance fails). You must explicitly click the cloud to grey it out.
+</Callout>
 
 </CollapsibleStep>
 
@@ -417,7 +432,7 @@ All records live in the same Cloudflare DNS panel:
 | ------- | ----------------- | ----------------------------- | -------- | ------------------- |
 | `A`     | `@`               | Vercel IP                     | DNS only | App apex domain     |
 | `CNAME` | `www`             | `cname.vercel-dns.com`        | DNS only | www redirect        |
-| `CNAME` | `docs`            | `cname.vercel-dns.com`        | DNS only | Docs subdomain      |
+| `CNAME` | `docs`            | _(Vercel-provided)_           | DNS only | Docs subdomain      |
 | `CNAME` | `accounts`        | `accounts.clerk.services`     | DNS only | Clerk auth          |
 | `CNAME` | `clerk`           | `frontend-api.clerk.services` | DNS only | Clerk Frontend API  |
 | `CNAME` | `clk._domainkey`  | _(Clerk-provided)_            | DNS only | Email DKIM signing  |
