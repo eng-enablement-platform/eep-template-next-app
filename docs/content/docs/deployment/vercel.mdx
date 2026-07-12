@@ -542,12 +542,54 @@ The docs site needs no environment variables to render. `OPENROUTER_API_KEY`
 (and optional `OPENROUTER_MODEL`) only power the AI chat search on `/api/chat` -
 add them later; their absence never causes the 404.
 
+### `DNS_PROBE_FINISHED_NXDOMAIN` / "This site can't be reached"
+
+The Vercel domain shows **valid**, but the site won't load and the browser
+reports `DNS_PROBE_FINISHED_NXDOMAIN`. This almost always means the record is
+live globally but your machine's resolver still has a stale (empty) cached
+answer. Confirm which side is stale before doing anything else.
+
+Check what the public resolvers return versus your local one:
+
+```bash
+# Authoritative answer via Cloudflare and Google (what the world sees)
+dig +short docs.yourproject.dev @1.1.1.1
+dig +short docs.yourproject.dev @8.8.8.8
+
+# What your own machine currently resolves
+dig +short docs.yourproject.dev
+```
+
+If the first two print the Vercel target (e.g.
+`220fb9f65be55b09.vercel-dns-017.com.`) but the last one is empty, the record
+is fine and only your local cache is stale. Flush it:
+
+```bash
+sudo dscacheutil -flushcache && sudo killall -HUP mDNSResponder
+```
+
+Then fully quit and reopen the browser (Chrome also caches internally - clear
+it at `chrome://net-internals/#dns` → **Clear host cache**), or use an incognito
+window, and load `https://docs.yourproject.dev`.
+
+<Callout type='warn'>
+  `.dev` is HSTS-preloaded, so it only loads over `https://`. Plain `http://`
+  won't work by design - always test the `https://` URL.
+</Callout>
+
+If the public resolvers also return nothing, the record itself is wrong or
+hasn't propagated - recheck the CNAME name, target, and that the proxy is grey
+(DNS only) in Cloudflare.
+
 ### Clerk DNS shows verified but the sign-in component still fails
 
 Clerk's verification and the browser resolving the DNS are independent. Clerk
 checks from its own servers; your browser checks from your local DNS resolver.
 After Clerk verifies:
 
-1. Flush your local DNS cache: `sudo dscacheutil -flushcache && sudo killall -HUP mDNSResponder`
+1. Confirm the record resolves publicly but not locally (see
+   [`DNS_PROBE_FINISHED_NXDOMAIN`](#dns_probe_finished_nxdomain--this-site-cant-be-reached)
+   for the `dig` checks), then flush your local DNS cache:
+   `sudo dscacheutil -flushcache && sudo killall -HUP mDNSResponder`
 2. Try an incognito window
 3. Redeploy on Vercel to ensure the build reflects the verified state
