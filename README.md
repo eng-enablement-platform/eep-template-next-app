@@ -31,11 +31,11 @@ authentication, database, API docs, logging, and conventions all wired and
 demonstrated - so you can strip what you don't need rather than bolt on what
 you do.
 
-**Live site:** [eep-next-template.dev](https://eep-next-template.dev/) - Feel
-free to try signing in if you like, though you will be blocked by the role gate.
+- **Live site:** [eep-next-template.dev](https://eep-next-template.dev/) - Feel
+  free to try signing in if you like, though you will be blocked by the role gate.
 
-**Docs site:** [docs.eep-next-template.dev](docs.eep-next-template.dev) - This README covers just enough to get running - everything else (architecture, conventions,
-deployment, deep dives) is in the docs (also available via `/docs` in the template)
+- **Docs site:** [docs.eep-next-template.dev](docs.eep-next-template.dev) - This README covers just enough to get running - everything else (architecture, conventions,
+  deployment, deep dives) is in the docs (also available via `/docs` in the template)
 
 ## Using this template
 
