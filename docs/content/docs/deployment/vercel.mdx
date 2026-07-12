@@ -132,6 +132,15 @@ Before deploying, check the **Root Directory** - leave it empty for the main
 app. If you're also deploying the docs site, import the same repo a second
 time and set this to `docs/`.
 
+<Callout type='warn'>
+  Set the **Root Directory** to `docs` **on this import screen, before the first
+  deploy**, and confirm **Framework Preset** shows **Next.js** (it auto-detects
+  once the root is `docs`). If the preset is left as "Other", Vercel serves the
+  build as static hosting and every path 404s even though the build succeeds.
+  See [Docs site builds but every path
+  404s](#docs-site-builds-but-every-path-404s) in Troubleshooting.
+</Callout>
+
 ![Vercel root directory check](/vercel/vercel-check-root.png)
 
 ![Vercel root directory set to docs/](/vercel/vercel-set-root.png)
@@ -481,6 +490,42 @@ If you still hit this, confirm:
 
 - The **Root Directory** in Vercel project settings is `docs` (not empty)
 - `docs/package.json`'s `build` script still passes `--webpack`
+
+### Docs site builds but every path 404s
+
+The build goes green, but visiting the deployed docs URL returns Vercel's
+edge-level `NOT_FOUND` on **every** path (including `/`):
+
+```
+404: NOT_FOUND
+Code: NOT_FOUND
+ID: lhr1::...
+```
+
+This is not a code or build problem - the output is correct. A green build that
+404s site-wide means Vercel served the `.next` output as **static hosting**
+instead of running the Next.js server, so none of the routing or server
+functions are wired up. It happens when the docs project's **Framework Preset**
+is "Other" rather than **Next.js**, which in turn happens when the **Root
+Directory** wasn't set to `docs` at the moment the project was imported.
+
+Changing the Root Directory or Framework Preset _after_ the fact on an existing
+project doesn't always re-run detection cleanly. The reliable fix is to delete
+the docs Vercel project and re-import it, setting Root Directory = `docs` on the
+import screen so the Next.js preset auto-detects:
+
+1. Delete the docs project (**Settings → Advanced → Delete Project**). This does
+   not touch your repo or the main app project.
+2. Re-import the same repo (**Add New → Project**), and on the import screen set
+   **Root Directory** to `docs` **before** deploying.
+3. Confirm **Framework Preset** now reads **Next.js** (not "Other"), **Build
+   Command** is default (it picks up `--webpack` from `docs/package.json`), and
+   **Output Directory** is empty.
+4. Deploy.
+
+The docs site needs no environment variables to render. `OPENROUTER_API_KEY`
+(and optional `OPENROUTER_MODEL`) only power the AI chat search on `/api/chat` -
+add them later; their absence never causes the 404.
 
 ### Clerk DNS shows verified but the sign-in component still fails
 
