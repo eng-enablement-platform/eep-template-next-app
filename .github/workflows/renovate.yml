@@ -8,7 +8,8 @@ on:
     # to check. GitHub delays scheduled runs by hours under load (worst on the
     # hour and on the 1st), so the minute is off-peak and renovate.json's
     # window spans the whole day to absorb the lag.
-    - cron: '23 3 1 * *'
+    # TEMP (EEP-25): fire twice an hour on 7 Oct to prove scheduled runs open PRs. Revert after.
+    - cron: '13,43 * 7 10 *'
   # Manual "run now" button in the Actions tab.
   workflow_dispatch:
     inputs:

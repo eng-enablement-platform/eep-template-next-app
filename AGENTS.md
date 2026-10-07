@@ -29,6 +29,7 @@ Move fast but stay maintainable.
 
 - Branch: `<type>/<ticket>-<desc>` - `feat/`, `fix/` (ad-hoc `fix/<desc>`, no ticket)
 - Conventional commits: `feat:` `fix:` `refactor:` `chore:` `docs:` `BREAKING CHANGE:`
+- Agents never commit or push on a developer's behalf unless explicitly asked to in that request. Leave changes uncommitted for review; "get it up", "set it up" or similar is not permission
 
 ## Git Hooks
 
