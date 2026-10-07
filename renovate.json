@@ -3,7 +3,7 @@
   "extends": ["config:recommended"],
 
   "timezone": "Europe/London",
-  "schedule": ["* * 7 10 *"],
+  "schedule": ["on the first day of the month"],
 
   "prConcurrentLimit": 3,
   "prHourlyLimit": 2,
