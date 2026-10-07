@@ -13,6 +13,11 @@
   "assignees": ["hectorkurtyanek"],
   "reviewers": ["hectorkurtyanek"],
 
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["on the first day of the month"]
+  },
+
   "vulnerabilityAlerts": {
     "labels": ["security"],
     "schedule": ["at any time"],
@@ -21,22 +26,22 @@
 
   "packageRules": [
     {
-      "description": "Group all Clerk packages into a single PR",
+      "description": "Group Clerk major bumps into a single PR (minor/patch go to all non-major)",
       "matchPackageNames": ["@clerk/{/,}**"],
       "groupName": "Clerk"
     },
     {
-      "description": "Group all OpenTelemetry packages into a single PR",
+      "description": "Group OpenTelemetry major bumps into a single PR (minor/patch go to all non-major)",
       "matchPackageNames": ["@opentelemetry/{/,}**", "@vercel/otel{/,}**"],
       "groupName": "OpenTelemetry"
     },
     {
-      "description": "Group all Radix UI packages into a single PR",
+      "description": "Group Radix UI major bumps into a single PR (minor/patch go to all non-major)",
       "matchPackageNames": ["@radix-ui/{/,}**"],
       "groupName": "Radix UI"
     },
     {
-      "description": "Group all testing packages into a single PR",
+      "description": "Group testing package major bumps into a single PR (minor/patch go to all non-major)",
       "matchPackageNames": [
         "vitest",
         "@vitest/coverage-v8",
@@ -49,7 +54,7 @@
       "groupName": "Testing"
     },
     {
-      "description": "Group all ESLint packages into a single PR",
+      "description": "Group ESLint major bumps into a single PR (minor/patch go to all non-major)",
       "matchPackageNames": [
         "eslint-plugin-import",
         "eslint-plugin-tsdoc",
@@ -61,15 +66,20 @@
       "groupName": "ESLint"
     },
     {
-      "description": "Group Drizzle packages into a single PR",
+      "description": "Group Drizzle major bumps into a single PR (minor/patch go to all non-major)",
       "matchPackageNames": ["drizzle-orm", "drizzle-kit"],
       "groupName": "Drizzle"
     },
     {
-      "description": "Pin major version bumps to require explicit review - they may contain breaking changes",
+      "description": "Label major version bumps for explicit review - they may contain breaking changes",
       "matchUpdateTypes": ["major"],
       "labels": ["dependencies", "major-update"],
       "automerge": false
+    },
+    {
+      "description": "Batch every minor/patch/digest update (incl. the families above) into one monthly PR. Must stay last so it overrides the family groupNames; majors keep their family PRs",
+      "matchUpdateTypes": ["minor", "patch", "digest"],
+      "groupName": "all non-major"
     }
   ]
 }
