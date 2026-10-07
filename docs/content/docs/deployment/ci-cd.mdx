@@ -190,12 +190,14 @@ Renovate is **self-hosted** here: it runs inside a GitHub Actions workflow (`.gi
 
 ### Schedule
 
-- **Monthly updates** - the first day of each month, before 9am (Europe/London)
-- **Security patches** - immediately, on any schedule
+- **Monthly updates** - the first day of each month (Europe/London)
+- **Security patches** - immediately, on any schedule (requires Dependabot alerts - see **Enable security alerts** under [Self-hosting setup](#self-hosting-setup))
 
-The cadence is expressed in `renovate.json` as `before 9am on the first day of
-the month`. The workflow's own `cron` (`0 6 1 * *`) wakes Renovate at 06:00 UTC
-on the 1st; the `renovate.json` schedule gates when PRs actually open.
+The cadence is expressed in `renovate.json` as `on the first day of the month`.
+The workflow's own `cron` (`23 3 1 * *`) wakes Renovate at 03:23 UTC on the 1st;
+the `renovate.json` schedule gates when PRs actually open. GitHub can delay
+scheduled runs by several hours, so the window deliberately covers the whole day -
+a narrower window (e.g. `before 9am`) gets missed and Renovate silently opens nothing.
 
 ### What it does
 
@@ -275,6 +277,7 @@ and fill in the form:
   - Commit statuses: **Read & write**
   - Checks: **Read & write**
   - Administration: **Read**
+  - Dependabot alerts: **Read** (needed for security patches - see below)
   - Metadata: **Read** (auto-selected)
 - **Where can this App be installed?** Only on this account
 - Click **Create GitHub App**
@@ -287,6 +290,26 @@ and fill in the form:
 
 - On the App page -> **Install App** -> choose your org
 - Select **Only select repositories** -> pick this repo -> **Install**
+
+</CollapsibleStep>
+
+<CollapsibleStep title="Enable security alerts" defaultOpen={false}>
+
+Renovate doesn't scan for vulnerabilities itself - it reads GitHub's Dependabot alerts and
+opens a `security`-labelled PR for each one. If alerts are off,
+security patches silently wait for the next monthly run like any other update.
+
+Go to the repo -> **Settings -> Advanced Security** and turn on:
+
+- **Dependency graph** - alerts are built on top of it
+- **Dependabot alerts** - the feed Renovate reads
+
+![GitHub Advanced Security settings with Dependency graph and Dependabot alerts enabled](/renovate/github-alerts.png)
+
+<Callout type='warn'>
+  Leave **Dependabot security updates** off - that makes Dependabot open its own
+  fix PRs, duplicating Renovate's.
+</Callout>
 
 </CollapsibleStep>
 
