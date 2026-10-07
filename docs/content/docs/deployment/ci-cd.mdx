@@ -201,12 +201,24 @@ a narrower window (e.g. `before 9am`) gets missed and Renovate silently opens no
 
 ### What it does
 
-Renovate scans all dependencies across the root and `docs/` workspace, groups related package families into single PRs, and opens them for review.
+Renovate scans all dependencies across the root and `docs/` workspace (plus `diagrams/uv.lock`) and opens PRs for review.
 It never auto-merges - all PRs require your approval before merging.
+
+| PR                        | When             | Contents                                                                                                |
+| ------------------------- | ---------------- | ------------------------------------------------------------------------------------------------------- |
+| **all non-major**         | 1st of the month | Every minor/patch bump (plus pinned GitHub Action digest updates) in one PR - the quick, low-risk merge |
+| **Lock file maintenance** | 1st of the month | Regenerates the lockfiles so transitive deps move to their latest in-range (often patched) versions     |
+| **Major updates**         | 1st of the month | One PR per family (or per package), labelled `major-update` - read the changelogs                       |
+| **Security**              | Any time         | One PR per vulnerable direct dependency (from Dependabot alerts), labelled `security`                   |
+
+<Callout>
+  Lock file maintenance is what clears most transitive CVEs flagged by Trivy
+</Callout>
 
 ### Package groups
 
-Related packages are batched into single PRs so you're not flooded with individual bumps:
+Minor and patch updates all land in the single **all non-major** PR. The family groups below only
+take effect for **major** bumps, so related packages still move together when breaking changes land:
 
 | Group         | Packages                                   |
 | ------------- | ------------------------------------------ |
@@ -217,19 +229,17 @@ Related packages are batched into single PRs so you're not flooded with individu
 | ESLint        | eslint, all plugins and stylistic packages |
 | Drizzle       | `drizzle-orm` + `drizzle-kit`              |
 
-Major version bumps always get their own PR and are labelled `major-update` - they may contain breaking changes and should be reviewed carefully.
+Major version bumps outside these families get one PR per package. All majors are labelled `major-update` - they may contain breaking changes and should be reviewed carefully.
 
 <Callout type='warn'>
-  Grouping is **per-family, not one-PR-for-everything**. Each group above
-  collapses only its matching packages into a single PR. Anything that does not
-  match a group rule (for example `swr`, `postcss`, `@types/node`) falls through
-  to Renovate's default of **one PR per package**. So a run typically opens
-  several PRs - the grouped families plus the ungrouped one-offs - not a single
-  combined PR. This is deliberate: each PR stays coherent and independently
-  mergeable, so a broken bump never blocks the safe ones. `prConcurrentLimit`
-  (3) and `prHourlyLimit` (2) throttle how many open at once; the rest show as
-  **Rate-Limited** on the Dependency Dashboard and are released as open PRs are
-  merged or closed.
+  The **all non-major** rule must stay **last** in `packageRules` - later rules
+  override earlier ones, so moving it up would let the family groups split minor
+  bumps back out. If the batched PR fails CI, find the culprit bump and either
+  fix it in the PR or exclude it with a temporary `packageRules` entry
+  (`matchPackageNames` + `enabled: false`) until it can be handled on its own.
+  `prConcurrentLimit` (3) and `prHourlyLimit` (2) throttle how many PRs open at
+  once; the rest show as **Rate-Limited** on the Dependency Dashboard and are
+  released as open PRs are merged or closed.
 </Callout>
 
 ### PR labels
@@ -471,8 +481,3 @@ To require CI to pass before merging PRs to `main`, go to **GitHub Settings
 </Callout>
 
 ---
-
-## Coming soon
-
-- Neon preview database branching - isolated DB branch per PR, deleted on merge
-- Vercel preview deploy integration
