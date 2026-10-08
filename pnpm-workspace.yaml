@@ -1,24 +1,19 @@
-# docs/ is a standalone Fumadocs site with its own package.json, tsconfig, and
-# lockfile - no code coupling to the root app in either direction. It is
-# deliberately NOT a workspace member: making it one forces Renovate's
-# `pnpm update --lockfile-only --recursive` to resolve both dependency trees in
-# one process on every root branch, which OOM-kills Mend's 3GB runner. Detaching
-# keeps root Renovate branches resolving the root tree only. Drive docs from root
-# via `cd docs && ...` scripts instead of `pnpm --filter`.
+# pnpm settings for the root app. Each setting's reasoning sits directly above it
+# so it survives automated rewrites of this file (e.g. Renovate bumping overrides).
+
+# docs/ is deliberately NOT a workspace member: it is a standalone Fumadocs site
+# with its own package.json, lockfile and Vercel project, with no code coupling to
+# the root app. Keeping it separate means root and docs dependency updates land
+# and deploy independently. Drive docs from root via `cd docs && ...` scripts
+# instead of `pnpm --filter`.
 packages: []
 
 # Only resolve versions published at least 3 days ago (pnpm's default is 1 day).
 # Matches renovate.json's minimumReleaseAge so lockfile regeneration - including
-# Renovate's - never pulls a brand-new transitive release.
+# Renovate's - never pulls a brand-new transitive release. Frozen installs (CI)
+# also reject lockfile entries that break this. For an urgent security patch,
+# add the package to `minimumReleaseAgeExclude` temporarily.
 minimumReleaseAge: 4320
-
-# Skip pnpm's per-install supply-chain re-verification pass (minimumReleaseAge /
-# trustPolicy re-check of every lockfile entry). That pass holds per-package
-# registry metadata in memory for the whole install and OOMs Renovate's 3GB
-# Mend-hosted runner during full multi-lockfile regeneration. We author every
-# lockfile change here and defend PRs with --frozen-lockfile + Trivy + review,
-# so trusting the committed lockfile is an acceptable trade. Requires pnpm >= 11.3.
-trustLockfile: true
 
 # Force vite to a patched version across all workspace packages.
 # CVE-2026-53571: server.fs.deny bypass, fixed in 8.0.16.
