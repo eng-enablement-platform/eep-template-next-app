@@ -37,7 +37,7 @@
   "features": {
     // Node 24 + pnpm via corepack
     "ghcr.io/devcontainers/features/node:1": {
-      "version": "24.16.0",
+      "version": "24.21.0",
       "pnpmVersion": "latest"
     },
     // Python 3.14 for diagrams/

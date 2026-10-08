@@ -1,6 +1,49 @@
 ---
 title: CI/CD
-description: GitHub Actions quality gate, Trivy security scanning, and Renovate dependency management.
+description: Pre-commit hook, GitHub Actions quality gate, Trivy security scanning, and Renovate dependency management.
+---
+
+## Pre-commit hook
+
+<Callout type='warn'>
+  The pre-commit hook is intentionally aggressive. If you're not used to this
+  level of enforcement it will feel pretty heavy at first. A full typecheck, test run,
+  and build on every commit is not typical but it's setup like this by design!
+
+When you're working with an agent, unchecked commits are how a codebase
+quietly spirals. The hook is the
+guardrail that keeps that from happening. It's the single most effective thing
+in this template for keeping agentic workflows from going off the rails.
+
+</Callout>
+
+The hook is powered by [Husky](https://typicode.github.io/husky/) and
+[lint-staged](https://github.com/lint-staged/lint-staged). Husky registers the
+hook with git and runs `.husky/pre-commit` on every commit. `lint-staged` runs
+ESLint and Prettier against staged files only, so you're never linting the
+whole codebase, just what's about to be committed.
+
+The hook itself is a bash script located at `.husky/pre-commit`.
+
+| Trigger                                    | What runs                                       |
+| ------------------------------------------ | ----------------------------------------------- |
+| Any staged `.ts` / `.tsx` or config change | `tsc --noEmit` + full test suite + build        |
+| `package.json` or `pnpm-lock.yaml` changed | Trivy security scan                             |
+| `eslint.config.ts` changed                 | ESLint config probe                             |
+| All commits                                | lint-staged (ESLint + Prettier on staged files) |
+| No relevant changes                        | Heavy checks skipped automatically              |
+
+**Escape hatch** - for intentional WIP or a TDD red phase only:
+
+```bash
+SKIP_CHECKS=1 git commit -m "wip: rough sketch"
+```
+
+<Callout type='warn'>
+  Lint, Trivy, and style still run even with `SKIP_CHECKS=1`. Never use it to
+  bypass failing tests on shippable code.
+</Callout>
+
 ---
 
 ## Overview
@@ -203,6 +246,9 @@ a narrower window (e.g. `before 9am`) gets missed and Renovate silently opens no
 
 Renovate scans all dependencies across the root and `docs/` workspace (plus `diagrams/uv.lock`) and opens PRs for review.
 It never auto-merges - all PRs require your approval before merging.
+It only proposes versions that have been published for at least **3 days** (`minimumReleaseAge`) -
+pnpm 11 rejects brand-new releases at install time, and the delay gives a bad or compromised release
+time to be pulled before it reaches you.
 
 | PR                        | When             | Contents                                                                                                |
 | ------------------------- | ---------------- | ------------------------------------------------------------------------------------------------------- |
@@ -229,17 +275,22 @@ take effect for **major** bumps, so related packages still move together when br
 | ESLint        | eslint, all plugins and stylistic packages |
 | Drizzle       | `drizzle-orm` + `drizzle-kit`              |
 
+The **OTel collector image** (`docker-compose.otel.yml`) always gets its own PR: it is still `0.x`, so
+every bump counts as "minor", but its config format changes between releases and CI never runs it -
+test it locally before merging.
+
 Major version bumps outside these families get one PR per package. All majors are labelled `major-update` - they may contain breaking changes and should be reviewed carefully.
 
 <Callout type='warn'>
-  The **all non-major** rule must stay **last** in `packageRules` - later rules
-  override earlier ones, so moving it up would let the family groups split minor
-  bumps back out. If the batched PR fails CI, find the culprit bump and either
-  fix it in the PR or exclude it with a temporary `packageRules` entry
-  (`matchPackageNames` + `enabled: false`) until it can be handled on its own.
-  `prConcurrentLimit` (3) and `prHourlyLimit` (2) throttle how many PRs open at
-  once; the rest show as **Rate-Limited** on the Dependency Dashboard and are
-  released as open PRs are merged or closed.
+  The **all non-major** rule must stay **after** the family rules in
+  `packageRules` - later rules override earlier ones, so moving it up would let
+  the family groups split minor bumps back out. Only deliberate carve-outs (like
+  the OTel image) go after it. If the batched PR fails CI, find the culprit bump
+  and either fix it in the PR or exclude it with a temporary `packageRules`
+  entry (`matchPackageNames` + `enabled: false`) until it can be handled on its
+  own. `prConcurrentLimit` (3) and `prHourlyLimit` (2) throttle how many PRs
+  open at once; the rest show as **Rate-Limited** on the Dependency Dashboard
+  and are released as open PRs are merged or closed.
 </Callout>
 
 ### PR labels
