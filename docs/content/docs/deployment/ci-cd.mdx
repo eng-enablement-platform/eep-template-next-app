@@ -1,6 +1,49 @@
 ---
 title: CI/CD
-description: GitHub Actions quality gate, Trivy security scanning, and Renovate dependency management.
+description: Pre-commit hook, GitHub Actions quality gate, Trivy security scanning, and Renovate dependency management.
+---
+
+## Pre-commit hook
+
+<Callout type='warn'>
+  The pre-commit hook is intentionally aggressive. If you're not used to this
+  level of enforcement it will feel pretty heavy at first. A full typecheck, test run,
+  and build on every commit is not typical but it's setup like this by design!
+
+When you're working with an agent, unchecked commits are how a codebase
+quietly spirals. The hook is the
+guardrail that keeps that from happening. It's the single most effective thing
+in this template for keeping agentic workflows from going off the rails.
+
+</Callout>
+
+The hook is powered by [Husky](https://typicode.github.io/husky/) and
+[lint-staged](https://github.com/lint-staged/lint-staged). Husky registers the
+hook with git and runs `.husky/pre-commit` on every commit. `lint-staged` runs
+ESLint and Prettier against staged files only, so you're never linting the
+whole codebase, just what's about to be committed.
+
+The hook itself is a bash script located at `.husky/pre-commit`.
+
+| Trigger                                    | What runs                                       |
+| ------------------------------------------ | ----------------------------------------------- |
+| Any staged `.ts` / `.tsx` or config change | `tsc --noEmit` + full test suite + build        |
+| `package.json` or `pnpm-lock.yaml` changed | Trivy security scan                             |
+| `eslint.config.ts` changed                 | ESLint config probe                             |
+| All commits                                | lint-staged (ESLint + Prettier on staged files) |
+| No relevant changes                        | Heavy checks skipped automatically              |
+
+**Escape hatch** - for intentional WIP or a TDD red phase only:
+
+```bash
+SKIP_CHECKS=1 git commit -m "wip: rough sketch"
+```
+
+<Callout type='warn'>
+  Lint, Trivy, and style still run even with `SKIP_CHECKS=1`. Never use it to
+  bypass failing tests on shippable code.
+</Callout>
+
 ---
 
 ## Overview
