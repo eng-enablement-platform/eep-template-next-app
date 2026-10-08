@@ -1,4 +1,16 @@
+# docs/ is a standalone Fumadocs site with its own package.json, tsconfig, and
+# lockfile - no code coupling to the root app in either direction. It is
+# deliberately NOT a workspace member: making it one forces Renovate's
+# `pnpm update --lockfile-only --recursive` to resolve both dependency trees in
+# one process on every root branch, which OOM-kills Mend's 3GB runner. Detaching
+# keeps root Renovate branches resolving the root tree only. Drive docs from root
+# via `cd docs && ...` scripts instead of `pnpm --filter`.
 packages: []
+
+# Only resolve versions published at least 3 days ago (pnpm's default is 1 day).
+# Matches renovate.json's minimumReleaseAge so lockfile regeneration - including
+# Renovate's - never pulls a brand-new transitive release.
+minimumReleaseAge: 4320
 
 # Skip pnpm's per-install supply-chain re-verification pass (minimumReleaseAge /
 # trustPolicy re-check of every lockfile entry). That pass holds per-package
@@ -12,7 +24,7 @@ trustLockfile: true
 # CVE-2026-53571: server.fs.deny bypass, fixed in 8.0.16.
 # Remove once vitest/fumadocs-mdx update their peer deps to pull >= 8.0.16.
 overrides:
-  vite: '8.3.3'
+  vite: '8.3.2'
 
 allowBuilds:
   '@scarf/scarf': false

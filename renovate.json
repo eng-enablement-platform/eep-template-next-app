@@ -5,6 +5,9 @@
   "timezone": "Europe/London",
   "schedule": ["on the first day of the month"],
 
+  "minimumReleaseAge": "3 days",
+  "internalChecksFilter": "strict",
+
   "prConcurrentLimit": 3,
   "prHourlyLimit": 2,
   "branchConcurrentLimit": 3,
@@ -77,9 +80,14 @@
       "automerge": false
     },
     {
-      "description": "Batch every minor/patch/digest update (incl. the families above) into one monthly PR. Must stay last so it overrides the family groupNames; majors keep their family PRs",
+      "description": "Batch every minor/patch/digest update (incl. the families above) into one monthly PR. Must stay after the family rules so it overrides their groupNames; majors keep their family PRs",
       "matchUpdateTypes": ["minor", "patch", "digest"],
       "groupName": "all non-major"
+    },
+    {
+      "description": "Keep the OTel collector image out of the batch - it is 0.x so every bump is 'minor', but the config format changes between releases and CI never exercises it",
+      "matchPackageNames": ["otel/opentelemetry-collector-contrib"],
+      "groupName": "OTel collector image"
     }
   ]
 }
