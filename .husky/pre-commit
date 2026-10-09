@@ -59,8 +59,16 @@ files_changed() {
     git diff --cached --name-only | grep -E "$1"
 }
 
-# Run Trivy only when dependency manifests changed
-if git diff --cached --name-only | grep -qE '^(package\.json|pnpm-lock\.yaml)$'; then
+# Run Trivy only when a dependency manifest or lockfile changed, in ANY
+# directory - the scan covers the whole tree (root app, docs/, diagrams/), so
+# the trigger must too, or a change to e.g. diagrams/uv.lock skips it here and
+# only fails in CI.
+#
+# Deliberately not run on every commit: a CVE published against dependencies
+# you haven't touched would then block unrelated commits. New CVEs on unchanged
+# lockfiles are caught by the CI security job (every push) and Renovate's
+# vulnerability alerts instead.
+if git diff --cached --name-only | grep -qE '(^|/)(package\.json|pnpm-lock\.yaml|pyproject\.toml|uv\.lock)$'; then
     echo "🔐 Running Trivy security scan..."
     if ! trivy fs --scanners vuln --ignore-unfixed --detection-priority comprehensive --disable-telemetry --skip-version-check --severity HIGH,CRITICAL --exit-code 1 .; then
         echo "❌ Security vulnerabilities found! Fix them before committing."
@@ -68,7 +76,7 @@ if git diff --cached --name-only | grep -qE '^(package\.json|pnpm-lock\.yaml)$';
     fi
     echo "✅ No critical vulnerabilities found!"
 else
-    echo "🔐 Skipping Trivy (package.json / pnpm-lock.yaml unchanged)"
+    echo "🔐 Skipping Trivy (no dependency manifests or lockfiles changed)"
 fi
 
 # Run ESLint config probes only when the config itself changed.
