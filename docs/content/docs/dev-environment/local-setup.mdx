@@ -39,8 +39,6 @@ The key variables to set before the app will run:
 | `CLERK_SECRET_KEY`                  | Clerk secret key           | [Clerk dashboard](https://dashboard.clerk.com) → API Keys                         |
 | `DATABASE_URL`                      | Postgres connection string | Pre-filled for local Docker (`postgresql://postgres:postgres@localhost:5432/app`) |
 
-The remaining variables (`NEXT_PUBLIC_CLERK_SIGN_IN_URL` etc.) are pre-filled in the template and work as-is for local dev.
-
 <Callout type='warn'>
   All environment variables are validated at build time using [T3
   Env](https://env.t3.gg/). If a required variable is missing or malformed, the
