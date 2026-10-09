@@ -27,7 +27,10 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./vitest.setup.ts'],
-    include: ['src/**/*.{test,spec}.{ts,tsx}'],
+    include: [
+      'src/**/*.{test,spec}.{ts,tsx}',
+      'eslint-rules/**/*.{test,spec}.ts',
+    ],
     /*
      * Stub required env vars so T3 Env (`src/lib/env`) can validate at
      * module-load time without real secrets. Tests that exercise actual
