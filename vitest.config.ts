@@ -32,6 +32,16 @@ export default defineConfig({
       'eslint-rules/**/*.{test,spec}.ts',
     ],
     /*
+     * `pnpm test:coverage` only - plain `pnpm test` skips instrumentation.
+     * `components/ui/` is vendored shadcn, so it is excluded rather than
+     * counted as untested code.
+     */
+    coverage: {
+      include: ['src/**', 'eslint-rules/**'],
+      exclude: ['**/__tests__/**', 'src/components/ui/**'],
+      reporter: ['text', 'html', 'lcov'],
+    },
+    /*
      * Stub required env vars so T3 Env (`src/lib/env`) can validate at
      * module-load time without real secrets. Tests that exercise actual
      * DB or external service calls are integration/e2e tests and run
