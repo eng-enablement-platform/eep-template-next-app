@@ -3,8 +3,6 @@
 Thanks for contributing back to the template! Just a few simple things
 for guidance.
 
-## Working on the template
-
 Clone it:
 
 ```bash
@@ -12,11 +10,10 @@ git clone https://github.com/eng-enablement-platform/eep-template-next-app.git
 ```
 
 > [!NOTE]
-> The `.eep/` folder tells create-eep how to turn the template into a project
-> (starter README, optional extras). If you add or rename something it
-> references - e.g. a `docs` script or the `diagrams/` folder - update
+> The `.eep/` folder tells the [create-eep](https://github.com/eng-enablement-platform/create-eep) CLI how to turn the template into a project
+> (starter README, optional extras etc.). If you add or rename something it
+> references - e.g. a `docs` script or the `diagrams/` folder, update
 > `.eep/template.json` too.
-> See [create-eep](https://github.com/eng-enablement-platform/create-eep) for the CLI repo
 
 ## Branches
 
