@@ -11,8 +11,9 @@ import { env } from '@/lib/env';
  * environments.
  *
  * This module intentionally omits the `server-only` guard: the app's DB
- * singleton (`db.ts`) carries it, while standalone `tsx` scripts (migrations,
- * seed) import `buildPool` directly and run outside Next's module graph.
+ * singleton (`db.ts`) carries it, while standalone `tsx` scripts (seed, smoke
+ * check) import `buildPool` directly and run outside Next's module graph.
+ * Migrations build their own pool so they don't need the full app env.
  *
  * @returns A new pool ready to accept queries. The caller owns its lifecycle:
  *   keep it alive as a singleton for the long-running app, or call `.end()`

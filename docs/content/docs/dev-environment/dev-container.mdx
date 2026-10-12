@@ -5,7 +5,8 @@ description: Zero-setup development environment - what it provides and how to us
 
 The repo ships a [Dev Container](https://containers.dev/) for a zero-setup environment.
 Clone the repo, open it in VS Code or Cursor, and everything is ready - no manual Node,
-pnpm, Python, or database installation required.
+pnpm, Python, or database installation required. Database migrations are applied
+automatically each time the container starts.
 
 ---
 
@@ -22,21 +23,20 @@ Make sure whichever you choose is running before opening the container.
 
 ## What it provides
 
-The devcontainer uses Docker Compose and starts two services side-by-side:
+The devcontainer is a **single container** built from `.devcontainer/Dockerfile` -
+no Docker Compose. Postgres 17 runs inside it, started automatically each time the
+container starts. Keeping it to one container avoids path problems some Docker
+runtimes (notably Rancher Desktop) have with Compose-based devcontainers.
 
-| Service      | What it is                                        | Port   |
-| ------------ | ------------------------------------------------- | ------ |
-| **app**      | Dev environment (Node 24, pnpm, Python 3.14, Zsh) | -      |
-| **postgres** | Postgres 17 (matches `docker-compose.yml`)        | `5432` |
+Inside the container you get:
 
-Inside the `app` container you get:
-
+- **Postgres 17** on `localhost:5432` (database `app`, user and password `postgres`)
 - **Node 24** + **pnpm** matching `.nvmrc` and `engines`
-- **Python 3.14** + **uv** + **Graphviz** - ready to regenerate the architecture diagram
+- **uv** + **Graphviz**, with Python 3.14 downloaded by uv - ready to regenerate the architecture diagram
 - **Zsh** + Oh My Zsh with autosuggestions, syntax highlighting, and history search
 - **VS Code extensions** pre-installed: ESLint, Prettier, Tailwind IntelliSense, Playwright, Vitest, GitLens, Python/Ruff, Material Icon Theme, Error Lens
 - **`pnpm install`** already run - deps ready immediately
-- **`DATABASE_URL`** auto-wired to the Postgres service - no manual change needed
+- **`DATABASE_URL`** auto-wired to the in-container Postgres - no manual change needed
 - **`.env.local`** auto-sourced in your terminal on start - Clerk keys picked up automatically once the file exists
 
 ---
@@ -60,14 +60,17 @@ Inside the `app` container you get:
 cp .env.local_template .env.local
 ```
 
-Fill in your Clerk keys. `DATABASE_URL` is already set to the Postgres service - leave it as-is.
+Fill in your Clerk keys. `DATABASE_URL` is already set to the in-container Postgres - leave it as-is.
 
 </CollapsibleStep>
 
-<CollapsibleStep title="Run migrations and start the server" defaultOpen={false}>
+<CollapsibleStep title="Start the server" defaultOpen={false}>
+
+Migrations are applied automatically when the container starts. After pulling new
+migrations, re-run them yourself or just restart the container.
 
 ```bash
-pnpm db:migrate   # apply migrations (idempotent)
+pnpm db:migrate   # re-apply migrations (idempotent - only needed after pulling new ones)
 pnpm db:seed      # optional - seed demo data
 pnpm dev          # app on http://localhost:3000
 ```
@@ -75,6 +78,15 @@ pnpm dev          # app on http://localhost:3000
 </CollapsibleStep>
 
 </CollapsibleSteps>
+
+**Leaving the container**
+
+To go back to working on your machine, open the Command Palette (`Cmd+Shift+P`) →
+**Dev Containers: Reopen Folder Locally**.
+
+**After changing `.devcontainer/devcontainer.json`**
+
+Run **Dev Containers: Rebuild Container** from the Command Palette to pick up the changes.
 
 ---
 
@@ -91,7 +103,3 @@ rm -rf docs/.next && pnpm dev:docs
 ```
 
 One-time fix - once `.next` is rebuilt inside the container it stays writable.
-
-**After changing `.devcontainer/devcontainer.json`**
-
-Run **Dev Containers: Rebuild Container** from the Command Palette to pick up the changes.

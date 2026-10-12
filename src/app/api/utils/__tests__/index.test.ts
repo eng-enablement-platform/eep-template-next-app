@@ -3,12 +3,22 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 
 import {
+  describeErrorCause,
   hasRole,
   parseId,
+  routeErrorHandler,
   validationErrorResponse,
   withAuth,
   withRole,
 } from '@/app/api/utils';
+
+// Capture what routeErrorHandler logs, without a real Winston logger.
+const { mockLogError } = vi.hoisted(() => ({ mockLogError: vi.fn() }));
+
+vi.mock('@/classes/loggers/application', () => ({
+  LOG_SOURCE: { API: 'api' },
+  rootLogger: () => ({ error: mockLogError }),
+}));
 
 /*
  * `auth()` from Clerk reads the request session. We mock it so the wrapper tests
@@ -196,5 +206,71 @@ describe('withRole', () => {
 
     expect(response.status).toBe(200);
     expect(handler).toHaveBeenCalledOnce();
+  });
+});
+
+describe('describeErrorCause', () => {
+  it('returns undefined for an error without a cause', () => {
+    expect(describeErrorCause(new Error('boom'))).toBeUndefined();
+  });
+
+  it('returns undefined for a non-Error value', () => {
+    expect(describeErrorCause('boom')).toBeUndefined();
+  });
+
+  it('follows a nested cause chain, innermost last', () => {
+    const error = new Error('Failed query', {
+      cause: new Error('pool error', {
+        cause: new Error('relation "example_items" does not exist'),
+      }),
+    });
+
+    expect(describeErrorCause(error)).toBe(
+      'pool error <- relation "example_items" does not exist',
+    );
+  });
+
+  it('describes a non-Error cause', () => {
+    expect(describeErrorCause(new Error('outer', { cause: 42 }))).toBe('42');
+  });
+
+  it('stops on a cyclic cause chain', () => {
+    const error = new Error('loop');
+    error.cause = error;
+
+    expect(describeErrorCause(error)?.split(' <- ')).toHaveLength(5);
+  });
+});
+
+describe('routeErrorHandler', () => {
+  afterEach(() => {
+    mockLogError.mockClear();
+  });
+
+  it('logs the underlying cause but does not return it to the client', async () => {
+    const error = new Error('Failed query: select ...', {
+      cause: new Error('relation "example_items" does not exist'),
+    });
+
+    const response = routeErrorHandler(error, 'GET /api/example-items');
+
+    expect(mockLogError).toHaveBeenCalledWith({
+      message: 'Request failed',
+      context: 'GET /api/example-items',
+      detail: 'Failed query: select ...',
+      cause: 'relation "example_items" does not exist',
+    });
+    expect(response.status).toBe(500);
+    expect(JSON.stringify(await response.json())).not.toContain('relation');
+  });
+
+  it('omits cause from the log when there is none', () => {
+    routeErrorHandler(new Error('boom'), 'GET /api/x');
+
+    expect(mockLogError).toHaveBeenCalledWith({
+      message: 'Request failed',
+      context: 'GET /api/x',
+      detail: 'boom',
+    });
   });
 });
