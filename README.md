@@ -39,19 +39,14 @@ you do.
 
 ## Using this template
 
-Start a new project with [create-eep](https://github.com/eng-enablement-platform/create-eep):
+Start a new project using this template with [create-eep](https://github.com/eng-enablement-platform/create-eep):
 
 ```bash
 npx create-eep@latest my-app --template next-app
 ```
 
-It downloads a fresh copy with no template git history, asks which optional extras to keep (docs site, diagrams-as-code, dev container), and adds a starter README.
-From there, follow the [Quick start](#quick-start) below. Strip the demo
-features you don't need (counter, posts, example items) and keep the wiring you
-do - see the [docs](https://docs.eep-next-template.dev) for the architecture and
-conventions.
-
-Want to improve the template itself? See [CONTRIBUTING.md](CONTRIBUTING.md).
+> [!NOTE]
+> See [CONTRIBUTING.md](CONTRIBUTING.md) if you want to work on updating / improving the template itself
 
 ## Prerequisites
 
