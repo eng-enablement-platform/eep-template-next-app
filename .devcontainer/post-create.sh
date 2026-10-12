@@ -1,21 +1,18 @@
 #!/usr/bin/env zsh
-# Runs once when the devcontainer is first created.
+# Runs once when the devcontainer is first created, after VS Code attaches
+# (in the background). Dependencies are installed earlier, in on-create.sh.
 # Must run as zsh so the Oh My Zsh environment is available for plugin wiring.
 # Keep this idempotent — it may be re-run manually.
 set -euo pipefail
-
-echo "▶ Installing project dependencies..."
-pnpm install
 
 # Postgres 17 and Graphviz are pre-installed in the Dockerfile as root.
 # post-create only handles user-level setup that needs the workspace mounted.
 
 # diagrams/ is optional - create-eep can scaffold a project without it.
+# uv is in the image (Dockerfile); `uv sync` downloads the Python version
+# diagrams/pyproject.toml asks for, so no system Python is needed.
 if [ -d diagrams ]; then
-  echo "▶ Installing uv (Python package manager for diagrams/)..."
-  pip install -U pip uv --quiet
-
-  echo "▶ Installing diagram dependencies via uv..."
+  echo "▶ Installing diagram dependencies (and Python) via uv..."
   cd diagrams && uv sync && cd ..
 fi
 

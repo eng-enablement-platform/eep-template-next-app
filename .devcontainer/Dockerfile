@@ -1,5 +1,10 @@
 FROM mcr.microsoft.com/devcontainers/base:debian
 
+# uv (Python package manager for diagrams/) from its official image - a pinned
+# binary, no curl | sh. uv also downloads a prebuilt Python on demand, which is
+# much faster than the devcontainer python feature (it can compile from source).
+COPY --from=ghcr.io/astral-sh/uv:0.13.0 /uv /uvx /usr/local/bin/
+
 # Install Postgres 17 as root during image build — avoids sudo password issues
 # that occur when installing via postCreateCommand as the vscode user.
 RUN apt-get update -qq \

@@ -4,14 +4,14 @@
   //
   // What you get:
   //   • Node 24 + pnpm (matches .nvmrc and engines field)
-  //   • Python 3.14 + uv + Graphviz  (for regenerating diagrams/)
-  //   • Postgres 17 as a sidecar container via Docker Compose
+  //   • uv + Graphviz, with Python 3.14 fetched by uv  (for regenerating diagrams/)
+  //   • Postgres 17 running inside the container (no Docker Compose)
   //   • Zsh + Oh My Zsh with autosuggestions, syntax-highlighting, history-search
   //   • Full VS Code extension set pre-installed
   //
   // First-time setup after the container starts:
   //   1. Copy .env.local_template → .env.local and fill in your Clerk keys.
-  //   2. DATABASE_URL is auto-overridden to point at the Postgres sidecar —
+  //   2. DATABASE_URL is auto-overridden to point at the in-container Postgres —
   //      no change needed for local dev.
   //   3. Run `pnpm dev` to start the app on :3000.
   //
@@ -19,10 +19,10 @@
   //   Rancher Desktop runs Docker in a Linux VM and resolves relative paths in
   //   compose files from that VM's CWD, not the host repo root. This causes the
   //   entire repos folder to be mounted instead of just this repo. Using a
-  //   single-container devcontainer with an inline Postgres sidecar (via the
-  //   ghcr.io/devcontainers/features/postgres feature, or postCreateCommand)
-  //   avoids this entirely — the Dev Containers extension always mounts the
-  //   correct workspace folder regardless of Docker runtime.
+  //   single-container devcontainer with Postgres installed inside it (in
+  //   .devcontainer/Dockerfile, started by post-start.sh) avoids this
+  //   entirely — the Dev Containers extension always mounts the correct
+  //   workspace folder regardless of Docker runtime.
   // ────────────────────────────────────────────────────────────────────────────
 
   "name": "eep-template-next-app",
@@ -40,25 +40,35 @@
       "version": "24.21.0",
       "pnpmVersion": "latest"
     },
-    // Python 3.14 for diagrams/
-    "ghcr.io/devcontainers/features/python:1": {
-      "version": "3.14"
-    },
     // Zsh + Oh My Zsh (terminal UX)
     "ghcr.io/devcontainers/features/common-utils:2": {
       "installZsh": true,
       "installOhMyZsh": true,
       "configureZshAsDefaultShell": true,
-      "upgradePackages": true
+      // A full apt upgrade on every build is slow; the base image is kept
+      // current by bumping its tag instead.
+      "upgradePackages": false
     }
   },
 
-  // DATABASE_URL for the local Postgres sidecar (localhost inside the container).
+  // node_modules lives in a Docker volume, not the shared workspace folder.
+  // Otherwise the container's `pnpm install` overwrites the host's
+  // node_modules with Linux native binaries (breaking tests/builds on macOS
+  // and Windows), and a volume is also much faster than a bind mount on macOS.
+  "mounts": [
+    "source=${localWorkspaceFolderBasename}-node_modules,target=${containerWorkspaceFolder}/node_modules,type=volume"
+  ],
+
+  // DATABASE_URL for the in-container Postgres (localhost inside the container).
   "containerEnv": {
     "DATABASE_URL": "postgresql://postgres:postgres@localhost:5432/app"
   },
 
-  // Runs once when the container is first created.
+  // Runs once when the container is first created, BEFORE VS Code attaches -
+  // VS Code waits for it, so extensions find node_modules on first load.
+  "onCreateCommand": "bash .devcontainer/on-create.sh",
+
+  // Runs once when the container is first created, after VS Code attaches.
   "postCreateCommand": "zsh .devcontainer/post-create.sh",
 
   // Runs every time the container starts.

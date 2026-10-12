@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "remove": [],
+  "remove": ["CONTRIBUTING.md"],
   "readme": "README.md",
   "features": [
     {

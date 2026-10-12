@@ -169,9 +169,38 @@ export function parseId(raw: string): number | null {
 }
 
 /**
+ * Describe what caused an error, following its `cause` chain.
+ *
+ * Libraries often wrap the real failure: Drizzle throws `Failed query: ...`
+ * with the Postgres error (e.g. `relation "example_items" does not exist`)
+ * as its `cause`. Logging only `error.message` hides the actual problem.
+ *
+ * @param error - The thrown value.
+ * @returns The cause messages, innermost last, joined with ` <- ` - or
+ *   `undefined` when the error has no cause.
+ *
+ * @example
+ * ```ts
+ * describeErrorCause(new Error('Failed query', { cause: new Error('relation does not exist') }));
+ * // 'relation does not exist'
+ * ```
+ */
+export function describeErrorCause(error: unknown): string | undefined {
+  const causes: string[] = [];
+  let current = error instanceof Error ? error.cause : undefined;
+  // Cap the walk so a cyclic cause chain can't loop forever.
+  while (current !== undefined && causes.length < 5) {
+    causes.push(current instanceof Error ? current.message : String(current));
+    current = current instanceof Error ? current.cause : undefined;
+  }
+  return causes.length > 0 ? causes.join(' <- ') : undefined;
+}
+
+/**
  * Standard error handler for API route handlers.
  *
- * Logs the failure against the application logger and returns a consistent
+ * Logs the failure against the application logger - including the underlying
+ * `cause`, which is where the real reason usually is - and returns a consistent
  * JSON error envelope so every route surfaces failures the same way. Call it
  * from a route's `catch` block.
  *
@@ -195,7 +224,15 @@ export function routeErrorHandler(
 ): NextResponse {
   const message = error instanceof Error ? error.message : 'Unknown error';
 
-  logger.error({ message: 'Request failed', context, detail: message });
+  const cause = describeErrorCause(error);
+
+  // The cause is logged server-side only - never returned to the client.
+  logger.error({
+    message: 'Request failed',
+    context,
+    detail: message,
+    ...(cause === undefined ? {} : { cause }),
+  });
 
   return NextResponse.json(
     { error: 'Failed to process request', details: message },

@@ -40,4 +40,4 @@ Depending on what you chose when creating the project, you may also have:
 - Turn it into a git repo: `git init && git add -A && git commit -m "chore: initial commit from create-eep"`
 - Strip the demo features you don't need (counter, posts, example items) and keep the wiring you do.
 - Architecture, conventions and deep dives: the [template docs](https://docs.eep-next-template.dev/docs).
-- Working rules for humans and AI agents: [AGENTS.md](AGENTS.md). Branches, commits and PRs: [CONTRIBUTING.md](CONTRIBUTING.md).
+- Working rules for humans and AI agents - code standards, branch naming and conventional commits: [AGENTS.md](AGENTS.md).

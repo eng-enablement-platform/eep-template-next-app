@@ -1,4 +1,5 @@
-# Optional OTel stack for local development - Jaeger + OpenTelemetry Collector.
+# Optional OpenTelemetry (OTel) stack for local development - Jaeger +
+# OpenTelemetry Collector. Traces travel over the OpenTelemetry Protocol (OTLP).
 #
 # Run standalone (OTel only) or combined with the base file:
 #
@@ -10,13 +11,13 @@
 #   NEXT_OTEL_VERBOSE=1           # optional - surfaces more internal spans
 #
 # Jaeger UI → http://localhost:16686
-# Hit some routes in the app, then select "next-template" in the Service
-# dropdown and click "Find Traces" to see the waterfall.
+# Hit some routes in the app, then select your project's name (the `name` in
+# package.json) in the Service dropdown and click "Find Traces" to see the
+# waterfall.
 
 services:
   otel-collector:
     image: otel/opentelemetry-collector-contrib:0.104.0
-    container_name: next-template-otel-collector
     restart: unless-stopped
     command: ['--config=/etc/otel-collector-config.yaml']
     volumes:
@@ -29,7 +30,6 @@ services:
 
   jaeger:
     image: jaegertracing/all-in-one:latest
-    container_name: next-template-jaeger
     restart: unless-stopped
     environment:
       - COLLECTOR_OTLP_ENABLED=true

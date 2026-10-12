@@ -44,8 +44,9 @@ resolution, layout loading, response start).
 
 ## Local development
 
-To see traces locally you need a collector (receives OTLP from Next.js) and a
-visual backend (Jaeger). Both run as Docker services.
+To see traces locally you need a collector, which receives traces from Next.js
+over the OpenTelemetry Protocol (OTLP), and a visual backend (Jaeger). Both run
+as Docker services.
 
 ### How the pieces connect
 
@@ -102,7 +103,7 @@ Generate some traces by browsing a few pages in the app,
 Open [http://localhost:16686](http://localhost:16686). Traces don't appear
 automatically - you need to search for them:
 
-1. Select **next-template** from the **Service** dropdown
+1. Select your project's name (the `name` in `package.json`) from the **Service** dropdown
 2. Click **Find Traces**
 
 ![Jaeger find traces - select service and click Find Traces](/jaeger/jaeger-find-traces.png)
@@ -117,7 +118,7 @@ rendering, fetch calls, and route handler execution with millisecond timings.
   No traces appearing? Make sure `OTEL_EXPORTER_OTLP_ENDPOINT` is set and the
   dev server was **restarted** after adding it - Next.js reads env vars at
   startup, not at request time. Check the collector is receiving data with:
-  `docker logs next-template-otel-collector --tail 20`.
+  `docker compose -f docker-compose.otel.yml logs otel-collector --tail 20`.
 </Callout>
 
 ---
@@ -126,14 +127,17 @@ rendering, fetch calls, and route handler execution with millisecond timings.
 
 **`src/instrumentation.ts`** - Next.js calls this file's `register()` export
 once before the app starts in each runtime (Node.js and Edge). It registers the
-`@vercel/otel` SDK with the service name `next-template`. No other files need
-to change - Next.js picks up the instrumentation hook automatically.
+`@vercel/otel` SDK, using the `name` from `package.json` as the service name -
+so each project's traces are labelled with its own name. No other files need to
+change - Next.js picks up the instrumentation hook automatically.
 
 ```ts
 import { registerOTel } from '@vercel/otel';
 
+import packageJson from '../package.json';
+
 export function register() {
-  registerOTel({ serviceName: 'next-template' });
+  registerOTel({ serviceName: packageJson.name });
 }
 ```
 
@@ -153,7 +157,7 @@ import { trace } from '@opentelemetry/api';
 
 export async function fetchExternalData() {
   return trace
-    .getTracer('next-template')
+    .getTracer('my-app') // any name - usually your app or module
     .startActiveSpan('fetchExternalData', async (span) => {
       try {
         return await callSomeApi();
@@ -195,7 +199,7 @@ app itself.
   need to switch away from `@vercel/otel` to use your own observability vendor -
   it sends to any OTLP-compatible endpoint via `OTEL_EXPORTER_OTLP_ENDPOINT`.
   Only switch to the manual SDK if you hit a specific config wall (custom
-  sampler, multiple exporters, non-OTLP protocol).
+  sampler, multiple exporters, non-OpenTelemetry Protocol (non-OTLP) export).
 </Callout>
 
 ### Self-hosting or a custom vendor
