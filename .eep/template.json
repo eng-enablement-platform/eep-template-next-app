@@ -1,0 +1,26 @@
+{
+  "version": 2,
+  "remove": [],
+  "readme": "README.md",
+  "features": [
+    {
+      "id": "docs",
+      "prompt": "Include the docs site (Fumadocs, in docs/)?",
+      "default": false,
+      "remove": ["docs/"],
+      "scripts": ["dev:docs", "dev:all", "build:docs", "build:all"]
+    },
+    {
+      "id": "diagrams",
+      "prompt": "Include diagrams-as-code (Python, in diagrams/)?",
+      "default": true,
+      "remove": ["diagrams/"]
+    },
+    {
+      "id": "devcontainer",
+      "prompt": "Include the VS Code dev container (.devcontainer/)?",
+      "default": true,
+      "remove": [".devcontainer/"]
+    }
+  ]
+}

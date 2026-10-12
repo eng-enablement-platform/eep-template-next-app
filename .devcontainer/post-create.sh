@@ -10,11 +10,14 @@ pnpm install
 # Postgres 17 and Graphviz are pre-installed in the Dockerfile as root.
 # post-create only handles user-level setup that needs the workspace mounted.
 
-echo "▶ Installing uv (Python package manager for diagrams/)..."
-pip install -U pip uv --quiet
+# diagrams/ is optional - create-eep can scaffold a project without it.
+if [ -d diagrams ]; then
+  echo "▶ Installing uv (Python package manager for diagrams/)..."
+  pip install -U pip uv --quiet
 
-echo "▶ Installing diagram dependencies via uv..."
-cd diagrams && uv sync && cd ..
+  echo "▶ Installing diagram dependencies via uv..."
+  cd diagrams && uv sync && cd ..
+fi
 
 echo "▶ Installing Zsh plugins..."
 ZSH_CUSTOM="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}"

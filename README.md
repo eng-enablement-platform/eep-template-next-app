@@ -39,25 +39,19 @@ you do.
 
 ## Using this template
 
-Two ways to start your own project from this template:
-
-- **CLI (recommended)** - scaffold and re-purpose interactively. _Coming soon -
-  the CLI is built from this template and will handle cloning, renaming, and
-  stripping the parts you don't need._
-- **Manual clone** - clone and make it your own by hand (below).
-
-### Manual clone
+Start a new project with [create-eep](https://github.com/eng-enablement-platform/create-eep):
 
 ```bash
-git clone https://github.com/eng-enablement-platform/eep-template-next-app.git my-app
-cd my-app
-rm -rf .git && git init        # start a fresh history that's yours
+npx create-eep@latest my-app --template next-app
 ```
 
-From here, follow the [Quick start](#quick-start) below. Strip the demo
+It downloads a fresh copy with no template git history, asks which optional extras to keep (docs site, diagrams-as-code, dev container), and adds a starter README.
+From there, follow the [Quick start](#quick-start) below. Strip the demo
 features you don't need (counter, posts, example items) and keep the wiring you
 do - see the [docs](https://docs.eep-next-template.dev) for the architecture and
 conventions.
+
+Want to improve the template itself? See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Prerequisites
 
