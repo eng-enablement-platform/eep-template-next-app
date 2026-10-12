@@ -1,6 +1,7 @@
 # OpenTelemetry Collector configuration for local development.
 #
-# Pipeline: Next.js app → collector (OTLP/HTTP on :4318) → Jaeger UI (:16686)
+# Pipeline: Next.js app → collector (OpenTelemetry Protocol (OTLP) over HTTP on
+# :4318) → Jaeger UI (:16686)
 #
 # Used by docker-compose.otel.yml. Not needed in production - point
 # OTEL_EXPORTER_OTLP_ENDPOINT at your hosted collector or vendor endpoint
