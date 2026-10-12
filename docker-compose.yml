@@ -7,18 +7,26 @@
 #   docker compose up -d      # start
 #   docker compose down       # stop (keeps data volume)
 #   docker compose down -v    # stop and wipe data
+#
+# No fixed container_name: Compose names containers and volumes after the
+# project folder (e.g. my-app-postgres-1, my-app_postgres_data), so several
+# projects created from this template can run side by side without clashing.
+#
+# Port 5432 already taken by another project? Pick another host port and match
+# it in DATABASE_URL in .env.local:
+#
+#   POSTGRES_PORT=5433 docker compose up -d
 
 services:
   postgres:
     image: postgres:17-alpine
-    container_name: next-template-postgres
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: app
     ports:
-      - '5432:5432'
+      - '${POSTGRES_PORT:-5432}:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:

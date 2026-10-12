@@ -16,7 +16,6 @@
 services:
   otel-collector:
     image: otel/opentelemetry-collector-contrib:0.104.0
-    container_name: next-template-otel-collector
     restart: unless-stopped
     command: ['--config=/etc/otel-collector-config.yaml']
     volumes:
@@ -29,7 +28,6 @@ services:
 
   jaeger:
     image: jaegertracing/all-in-one:latest
-    container_name: next-template-jaeger
     restart: unless-stopped
     environment:
       - COLLECTOR_OTLP_ENABLED=true

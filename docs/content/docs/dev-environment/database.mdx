@@ -21,8 +21,11 @@ docker compose down -v  # stop and wipe all data
 <Callout type='warn'>
   If Postgres is already running on `:5432` (another project, a standalone
   container), `docker compose up -d` will fail silently. Check what's running
-  with `docker ps` and stop the conflicting container first. This repo's
-  container is named `next-template-postgres`.
+  with `docker ps`, then either stop the conflicting container or run this one
+  on another port - `POSTGRES_PORT=5433 docker compose up -d` - and update the
+  port in `DATABASE_URL` in `.env.local` to match. Containers are named after
+  the project folder (e.g. `my-app-postgres-1`), so projects created from this
+  template don't clash on names.
 </Callout>
 
 ---

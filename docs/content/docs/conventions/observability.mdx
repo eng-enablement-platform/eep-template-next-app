@@ -117,7 +117,7 @@ rendering, fetch calls, and route handler execution with millisecond timings.
   No traces appearing? Make sure `OTEL_EXPORTER_OTLP_ENDPOINT` is set and the
   dev server was **restarted** after adding it - Next.js reads env vars at
   startup, not at request time. Check the collector is receiving data with:
-  `docker logs next-template-otel-collector --tail 20`.
+  `docker compose -f docker-compose.otel.yml logs otel-collector --tail 20`.
 </Callout>
 
 ---
