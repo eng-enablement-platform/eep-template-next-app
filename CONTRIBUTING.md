@@ -5,20 +5,18 @@ for guidance.
 
 ## Working on the template
 
-This guide is for changing the template itself. To start a new project from
-it, use `npx create-eep@latest my-app --template next-app` instead (see the
-[README](README.md#using-this-template)).
-
-Clone it normally
+Clone it:
 
 ```bash
 git clone https://github.com/eng-enablement-platform/eep-template-next-app.git
 ```
 
-The `.eep/` folder tells create-eep how to turn the template into a project
-(starter README, optional extras). If you add or rename something it
-references - e.g. a `docs` script or the `diagrams/` folder - update
-`.eep/template.json` too.
+> [!NOTE]
+> The `.eep/` folder tells create-eep how to turn the template into a project
+> (starter README, optional extras). If you add or rename something it
+> references - e.g. a `docs` script or the `diagrams/` folder - update
+> `.eep/template.json` too.
+> See [create-eep](https://github.com/eng-enablement-platform/create-eep) for the CLI repo
 
 ## Branches
 
