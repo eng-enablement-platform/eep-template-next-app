@@ -19,8 +19,9 @@ Locally, Docker runs the database - a hosted Postgres (e.g. [Neon](https://neon.
 
 ## Quick start
 
+create-eep installs dependencies for you. If you skipped that step (or it failed), run `pnpm install` first.
+
 ```bash
-pnpm install                         # install dependencies
 cp .env.local_template .env.local    # add your secrets (Clerk keys)
 pnpm db:up                           # start the database (POSTGRES_PORT in .env.local)
 pnpm db:migrate                      # run migrations
@@ -37,7 +38,8 @@ Depending on what you chose when creating the project, you may also have:
 
 ## Make it yours
 
-- Turn it into a git repo: `git init && git add -A && git commit -m "chore: initial commit from create-eep"`
+- **Git:** create-eep sets up a repository with a first commit for you. If you skipped that step:
+  `git init && git add -A && git commit -m "chore: initial commit from create-eep"`
 - Strip the demo features you don't need (counter, posts, example items) and keep the wiring you do.
 - Architecture, conventions and deep dives: the [template docs](https://docs.eep-next-template.dev/docs).
 - Working rules for humans and AI agents - code standards, branch naming and conventional commits: [AGENTS.md](AGENTS.md).
