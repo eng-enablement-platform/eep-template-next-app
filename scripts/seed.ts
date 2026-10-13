@@ -1,6 +1,9 @@
-import { config } from 'dotenv';
+// Must be the first import - loads .env files before @/lib/env validates.
+import '../src/lib/env/load-env-files';
+
 import { drizzle } from 'drizzle-orm/node-postgres';
 
+import { handleScriptError } from '../src/db/connection-errors';
 import { buildPool } from '../src/db/pool';
 import { exampleItemsTable } from '../src/db/schema';
 import type { NewExampleItem } from '../src/db/types';
@@ -14,8 +17,6 @@ import type { NewExampleItem } from '../src/db/types';
  *
  * Run with `pnpm db:seed`. Safe to re-run: it clears the table first.
  */
-
-config({ path: '.env.local' });
 
 const seedItems: NewExampleItem[] = [
   { name: 'First item', description: 'A draft example', quantity: 1 },
@@ -50,7 +51,4 @@ async function seed(): Promise<void> {
   }
 }
 
-seed().catch((error: unknown) => {
-  console.error('Seed failed:', error);
-  process.exit(1);
-});
+seed().catch(handleScriptError('Seed failed'));

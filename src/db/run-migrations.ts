@@ -1,11 +1,13 @@
-import { config } from 'dotenv';
+// First import, for consistency with the other scripts (loads .env files).
+import '../lib/env/load-env-files';
+
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { migrate } from 'drizzle-orm/node-postgres/migrator';
 import path from 'path';
 import { Pool } from 'pg';
 import { z } from 'zod';
 
-config({ path: '.env.local' });
+import { handleScriptError } from './connection-errors';
 
 /**
  * Run Drizzle migrations against the database described by `DATABASE_URL`.
@@ -32,4 +34,4 @@ export async function runMigrations() {
   }
 }
 
-runMigrations();
+runMigrations().catch(handleScriptError('DB migrations failed'));

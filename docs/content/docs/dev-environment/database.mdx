@@ -6,26 +6,32 @@ description: Local Postgres via Docker, migrations, seeding, and the smoke check
 ## Local setup
 
 Local dev runs Postgres 17 in Docker, matching the schema and driver used in production.
-The connection string is pre-filled in `.env.local_template`:
+The port is set once, in `.env.local` - `DATABASE_URL` reads it:
 
-```
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/app
+```bash
+POSTGRES_PORT=5432
+DATABASE_URL=postgresql://postgres:postgres@localhost:${POSTGRES_PORT}/app
 ```
 
 ```bash
-docker compose up -d    # start Postgres on :5432
-docker compose down     # stop (keeps the data volume)
-docker compose down -v  # stop and wipe all data
+pnpm db:up        # start Postgres on POSTGRES_PORT
+pnpm db:down      # stop (keeps the data volume)
+pnpm db:down -v   # stop and wipe all data
 ```
 
+`pnpm db:up` runs `docker compose` with `--env-file .env.local`, which is how
+Compose picks up `POSTGRES_PORT` - plain `docker compose up -d` only reads `.env`,
+so it always uses the default port 5432. Containers are named after the project
+folder (e.g. `my-app-postgres-1`), so projects created from this template don't
+clash on names.
+
 <Callout type='warn'>
-  If Postgres is already running on `:5432` (another project, a standalone
-  container), `docker compose up -d` will fail silently. Check what's running
-  with `docker ps`, then either stop the conflicting container or run this one
-  on another port - `POSTGRES_PORT=5433 docker compose up -d` - and update the
-  port in `DATABASE_URL` in `.env.local` to match. Containers are named after
-  the project folder (e.g. `my-app-postgres-1`), so projects created from this
-  template don't clash on names.
+  **Port 5432 already in use?** Another project's Postgres is often already on
+  `:5432`. Set a free port in `.env.local` - e.g. `POSTGRES_PORT=5433` - and run
+  `pnpm db:up`. `DATABASE_URL` follows automatically, so there's nothing else to
+  change. If you hit the wrong database by mistake, `pnpm db:migrate` tells you:
+  _"Connected to Postgres on localhost:5432, but it has no "app" database. Is
+  that another project's Postgres?"_
 </Callout>
 
 ---

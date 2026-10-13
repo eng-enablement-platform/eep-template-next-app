@@ -1,10 +1,11 @@
-import { defineConfig, devices } from '@playwright/test';
-import dotenv from 'dotenv';
-import path from 'path';
+/*
+ * Must be the first import - loads .env.local (with ${VAR} expansion) so
+ * CLERK_SECRET_KEY and the E2E_CLERK_USER_EMAIL_* vars are available to the
+ * global setup and fixtures. Resolves from the repo root, where `pnpm e2e` runs.
+ */
+import '../src/lib/env/load-env-files';
 
-/* Load .env.local so CLERK_SECRET_KEY and the E2E_CLERK_USER_EMAIL_* vars are
- * available to the global setup and fixtures without exporting them manually. */
-dotenv.config({ path: path.resolve(__dirname, '../.env.local') });
+import { defineConfig, devices } from '@playwright/test';
 
 const baseURL = 'http://localhost:3000';
 

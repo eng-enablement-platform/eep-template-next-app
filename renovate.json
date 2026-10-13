@@ -1,32 +1,25 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["config:recommended"],
-
   "timezone": "Europe/London",
   "schedule": ["on the first day of the month"],
-
   "minimumReleaseAge": "3 days",
   "internalChecksFilter": "strict",
-
   "prConcurrentLimit": 3,
   "prHourlyLimit": 2,
   "branchConcurrentLimit": 3,
-
   "labels": ["dependencies"],
   "assignees": ["hectorkurtyanek"],
   "reviewers": ["hectorkurtyanek"],
-
   "lockFileMaintenance": {
     "enabled": true,
     "schedule": ["on the first day of the month"]
   },
-
   "vulnerabilityAlerts": {
     "labels": ["security"],
     "schedule": ["at any time"],
     "automerge": false
   },
-
   "packageRules": [
     {
       "description": "Group Clerk major bumps into a single PR (minor/patch go to all non-major)",
@@ -72,6 +65,11 @@
       "description": "Group Drizzle major bumps into a single PR (minor/patch go to all non-major)",
       "matchPackageNames": ["drizzle-orm", "drizzle-kit"],
       "groupName": "Drizzle"
+    },
+    {
+      "description": "Keep next, @next/env and eslint-config-next on the same version - @next/env is imported directly by the db scripts, so it must match next. Groups their major bumps into one PR (minor/patch go to all non-major)",
+      "matchPackageNames": ["next", "@next/env", "eslint-config-next"],
+      "groupName": "Next.js"
     },
     {
       "description": "Label major version bumps for explicit review - they may contain breaking changes",

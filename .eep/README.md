@@ -22,7 +22,7 @@ Locally, Docker runs the database - a hosted Postgres (e.g. [Neon](https://neon.
 ```bash
 pnpm install                         # install dependencies
 cp .env.local_template .env.local    # add your secrets (Clerk keys)
-docker compose up -d                 # start the database
+pnpm db:up                           # start the database (POSTGRES_PORT in .env.local)
 pnpm db:migrate                      # run migrations
 pnpm dev                             # http://localhost:3000
 ```

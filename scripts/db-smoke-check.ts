@@ -1,7 +1,10 @@
-import { config } from 'dotenv';
+// Must be the first import - loads .env files before @/lib/env validates.
+import '../src/lib/env/load-env-files';
+
 import { eq } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/node-postgres';
 
+import { handleScriptError } from '../src/db/connection-errors';
 import { buildPool } from '../src/db/pool';
 import { exampleItemsTable } from '../src/db/schema';
 
@@ -15,8 +18,6 @@ import { exampleItemsTable } from '../src/db/schema';
  *
  * Run with `pnpm db:check`. Exits non-zero if the DB is unreachable or empty.
  */
-
-config({ path: '.env.local' });
 
 /*
  * Parse the host out of DATABASE_URL so it's obvious which DB is being hit.
@@ -68,7 +69,4 @@ async function smokeCheck(): Promise<void> {
   }
 }
 
-smokeCheck().catch((error: unknown) => {
-  console.error('DB smoke check failed:', error);
-  process.exit(1);
-});
+smokeCheck().catch(handleScriptError('DB smoke check failed'));

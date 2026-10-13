@@ -33,11 +33,12 @@ cp .env.local_template .env.local
 
 The key variables to set before the app will run:
 
-| Variable                            | What it is                 | Where to get it                                                                   |
-| ----------------------------------- | -------------------------- | --------------------------------------------------------------------------------- |
-| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Clerk public key           | [Clerk dashboard](https://dashboard.clerk.com) → API Keys                         |
-| `CLERK_SECRET_KEY`                  | Clerk secret key           | [Clerk dashboard](https://dashboard.clerk.com) → API Keys                         |
-| `DATABASE_URL`                      | Postgres connection string | Pre-filled for local Docker (`postgresql://postgres:postgres@localhost:5432/app`) |
+| Variable                            | What it is                 | Where to get it                                                                |
+| ----------------------------------- | -------------------------- | ------------------------------------------------------------------------------ |
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Clerk public key           | [Clerk dashboard](https://dashboard.clerk.com) → API Keys                      |
+| `CLERK_SECRET_KEY`                  | Clerk secret key           | [Clerk dashboard](https://dashboard.clerk.com) → API Keys                      |
+| `DATABASE_URL`                      | Postgres connection string | Pre-filled for local Docker - uses `${POSTGRES_PORT}`, so leave it as-is       |
+| `POSTGRES_PORT`                     | Local Postgres port        | Defaults to `5432` - change it if another project's database already uses that |
 
 <Callout type='warn'>
   All environment variables are validated at build time using [T3
@@ -53,7 +54,7 @@ See [Authentication Setup](/docs/dev-environment/authentication) for Clerk-speci
 ## Start the database
 
 ```bash
-docker compose up -d
+pnpm db:up   # Postgres on POSTGRES_PORT from .env.local (default 5432)
 ```
 
 Then run migrations (safe to re-run, skips already-applied ones):

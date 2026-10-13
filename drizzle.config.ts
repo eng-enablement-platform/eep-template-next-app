@@ -1,4 +1,6 @@
-import { config } from 'dotenv';
+// Must be the first import - loads .env files (with ${VAR} expansion) first.
+import './src/lib/env/load-env-files';
+
 import { defineConfig } from 'drizzle-kit';
 
 /**
@@ -9,8 +11,6 @@ import { defineConfig } from 'drizzle-kit';
  * Drizzle to interact with the PostgreSQL database.
  *
  */
-
-config({ path: '.env.local' });
 
 export default defineConfig({
   out: './drizzle',
