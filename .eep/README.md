@@ -32,7 +32,7 @@ pnpm dev                             # http://localhost:3000
 Depending on what you chose when creating the project, you may also have:
 
 - **Docs site** (`docs/`) - a Fumadocs site. Run it with `pnpm dev:docs` (http://localhost:3001), or `pnpm dev:all` for app + docs together.
-- **Diagrams-as-code** (`diagrams/`) - Python scripts that generate the architecture diagrams. They describe the template's architecture - rewrite them for your own. Regenerate with `cd diagrams && uv run python main.py` (needs [uv](https://docs.astral.sh/uv/) and Graphviz).
+- **Diagrams-as-code** (`diagrams/`) - Python scripts that generate the architecture diagrams. They describe the template's architecture - rewrite them for your own. create-eep installs their dependencies for you when [uv](https://docs.astral.sh/uv/) is installed (otherwise run `cd diagrams && uv sync`). Regenerate with `cd diagrams && uv run python main.py` (also needs Graphviz).
 - **Dev container** (`.devcontainer/`) - a zero-setup environment with everything preinstalled. In VS Code: **Dev Containers: Reopen in Container**.
 
 ## Make it yours
