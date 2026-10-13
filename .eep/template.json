@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "remove": ["CONTRIBUTING.md"],
   "readme": "README.md",
   "features": [
@@ -14,7 +14,13 @@
       "id": "diagrams",
       "prompt": "Include diagrams-as-code (Python, in diagrams/)?",
       "default": true,
-      "remove": ["diagrams/"]
+      "remove": ["diagrams/"],
+      "setup": {
+        "title": "Install diagram dependencies",
+        "command": ["uv", "sync"],
+        "cwd": "diagrams",
+        "missing": "Diagrams need uv (it downloads Python for you) - see https://docs.astral.sh/uv/getting-started/installation/, then `cd diagrams && uv sync`."
+      }
     },
     {
       "id": "devcontainer",
