@@ -40,9 +40,6 @@ importers:
       date-fns:
         specifier: ^4.4.0
         version: 4.4.0
-      dotenv:
-        specifier: ^17.4.2
-        version: 17.4.2
       drizzle-orm:
         specifier: ^0.45.2
         version: 0.45.2(@opentelemetry/api@1.9.1)(@types/pg@8.20.0)(pg@8.21.0)
@@ -104,6 +101,9 @@ importers:
       '@clerk/testing':
         specifier: ^2.1.6
         version: 2.1.6(@playwright/test@1.60.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@next/env':
+        specifier: 16.3.8
+        version: 16.3.8
       '@playwright/test':
         specifier: ^1.60.0
         version: 1.60.0

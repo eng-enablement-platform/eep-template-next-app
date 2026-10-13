@@ -1,21 +1,23 @@
 # Local Postgres for development.
 #
 # Brings up a single Postgres instance matching the DATABASE_URL in
-# env.local_template. Production uses a hosted provider (e.g. Neon) - only the
+# .env.local. Production uses a hosted provider (e.g. Neon) - only the
 # DATABASE_URL changes, the app's node-postgres driver is identical.
 #
-#   docker compose up -d      # start
-#   docker compose down       # stop (keeps data volume)
-#   docker compose down -v    # stop and wipe data
+# Use the pnpm scripts - they pass --env-file .env.local so POSTGRES_PORT is
+# picked up (plain `docker compose` only reads .env):
+#
+#   pnpm db:up          # start
+#   pnpm db:down        # stop (keeps data volume)
+#   pnpm db:down -v     # stop and wipe data
 #
 # No fixed container_name: Compose names containers and volumes after the
 # project folder (e.g. my-app-postgres-1, my-app_postgres_data), so several
 # projects created from this template can run side by side without clashing.
 #
-# Port 5432 already taken by another project? Pick another host port and match
-# it in DATABASE_URL in .env.local:
-#
-#   POSTGRES_PORT=5433 docker compose up -d
+# Port 5432 already taken by another project? Set a free port in .env.local -
+# e.g. POSTGRES_PORT=5433 - and run `pnpm db:up`. DATABASE_URL reads
+# ${POSTGRES_PORT}, so it follows automatically.
 
 services:
   postgres:

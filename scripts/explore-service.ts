@@ -1,6 +1,5 @@
-import { config } from 'dotenv';
-
-config({ path: '.env.local' });
+// Must be the first import - loads .env files before @/lib/env validates.
+import '@/lib/env/load-env-files';
 
 import { exampleItemService } from '@/classes/services/example-item';
 
