@@ -67,10 +67,3 @@ Template releases are automated with [release-please](https://github.com/googlea
 1. Merge PRs to `main` with conventional commits - `fix:` means a patch release, `feat:` a minor one, and `docs:` / `chore:` / `ci:` / `test:` don't trigger a release.
 2. release-please keeps a single **Release PR** open with the next version and changelog, updating it on every merge.
 3. Merge the Release PR to release: it tags the commit (`vX.Y.Z`) and creates a GitHub Release.
-
-Nothing is published - projects are created from the template with create-eep, which can pin a release with `--ref vX.Y.Z`.
-The template version lives in `version.txt`, not `package.json`, so generated projects still start at `0.1.0`.
-None of the release files reach generated projects - they're in the `remove` list in `.eep/template.json`.
-
-> **One-off after the first release:** the first Release PR is forced to `1.0.0` by `"release-as": "1.0.0"` in `release-please-config.json`.
-> Once `v1.0.0` is released, remove that line - otherwise every later Release PR also proposes `1.0.0`.
