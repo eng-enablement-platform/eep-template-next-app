@@ -25,10 +25,10 @@
   </a>
 </p>
 
-A production-grade Next.js scaffold built on [Engineering Enablement Platform
+An opinionated production-grade Next.js scaffold built on [Engineering Enablement Platform
 (EEP)](https://github.com/eng-enablement-platform) principles. Ships full -
 authentication, database, API docs, logging, and conventions all wired and
-demonstrated - so you can strip what you don't need rather than bolt on what
+demonstrated. Strip what you don't need rather than bolt on what
 you do.
 
 - **Live site:** [eep-next-template.dev](https://eep-next-template.dev/) - Feel
