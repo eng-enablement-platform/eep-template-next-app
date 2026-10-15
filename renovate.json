@@ -9,8 +9,6 @@
   "prHourlyLimit": 2,
   "branchConcurrentLimit": 3,
   "labels": ["dependencies"],
-  "assignees": ["hectorkurtyanek"],
-  "reviewers": ["hectorkurtyanek"],
   "lockFileMaintenance": {
     "enabled": true,
     "schedule": ["on the first day of the month"]
