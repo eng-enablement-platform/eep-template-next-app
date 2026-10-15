@@ -13,3 +13,5 @@ node_modules
  test-results
  junit.xml
  docs
+ # Written by release-please
+ CHANGELOG.md

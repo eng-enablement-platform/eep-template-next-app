@@ -1,6 +1,13 @@
 {
   "version": 3,
-  "remove": ["CONTRIBUTING.md"],
+  "remove": [
+    "CONTRIBUTING.md",
+    "CHANGELOG.md",
+    "version.txt",
+    "release-please-config.json",
+    ".release-please-manifest.json",
+    ".github/workflows/release-please.yml"
+  ],
   "readme": "README.md",
   "features": [
     {
