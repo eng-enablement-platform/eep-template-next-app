@@ -312,6 +312,17 @@ changes: same grouping, same labels, same schedule.
 The one-time setup below is done once per repo. It looks long but it's mostly clicking through
 a single web form - **no code, no server, no webhooks.**
 
+Until the secrets are added, the workflow **skips with a notice** instead of failing - so a project
+created from this template is never stuck with a red monthly run.
+
+<Callout>
+  **Several projects in one organisation?** Create the GitHub App **once for the
+  organisation**, and add `RENOVATE_APP_ID`, `RENOVATE_APP_PRIVATE_KEY` and
+  `RENOVATE_GITHUB_COM_TOKEN` as **organisation secrets** (Settings → Secrets
+  and variables → Actions). Each new project then only needs adding to the App's
+  repository access - no per-repo secrets.
+</Callout>
+
 <Callout type='warn'>
   The GitHub App you create below is a **new, private App you own** - it is NOT
   the public Mend-hosted "Renovate" app. Yours only mints a short-lived token so

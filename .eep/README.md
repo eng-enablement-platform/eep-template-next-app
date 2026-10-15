@@ -40,6 +40,7 @@ Depending on what you chose when creating the project, you may also have:
 
 - **Git:** create-eep sets up a repository with a first commit for you. If you skipped that step:
   `git init && git add -A && git commit -m "chore: initial commit from create-eep"`
+- **Dependency updates:** Renovate runs self-hosted in GitHub Actions (Mend's hosted Renovate app runs out of memory on this lockfile). Follow the one-time [self-hosting setup](https://docs.eep-next-template.dev/docs/deployment/ci-cd#self-hosting-setup) to create the GitHub App and add its 3 secrets - until then the monthly run skips with a notice.
 - Strip the demo features you don't need (counter, posts, example items) and keep the wiring you do.
 - Architecture, conventions and deep dives: the [template docs](https://docs.eep-next-template.dev/docs).
 - Working rules for humans and AI agents - code standards, branch naming and conventional commits: [AGENTS.md](AGENTS.md).

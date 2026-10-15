@@ -2,6 +2,7 @@
   "version": 3,
   "remove": [
     "CONTRIBUTING.md",
+    "LICENSE",
     "CHANGELOG.md",
     "version.txt",
     "release-please-config.json",
