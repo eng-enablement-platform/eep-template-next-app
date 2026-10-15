@@ -1,0 +1,43 @@
+# Versioned releases of the template, from conventional commits.
+#
+# release-please keeps one Release PR open (next version + CHANGELOG.md);
+# merging it tags the release (vX.Y.Z) and creates a GitHub Release. Nothing is
+# published - the template is consumed by create-eep, which can pin a release
+# with `--ref vX.Y.Z`.
+#
+# Template-maintenance only: create-eep removes this workflow, CHANGELOG.md,
+# version.txt and the release-please config from generated projects (see
+# .eep/template.json).
+name: Release Please
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-please
+  cancel-in-progress: false
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    steps:
+      # A GitHub App token, not GITHUB_TOKEN: PRs opened with GITHUB_TOKEN don't
+      # trigger CI, and the main ruleset requires CI to pass before merging.
+      # Reuses the Renovate app (contents + pull requests write); swap for a
+      # dedicated release app if Release PRs should not show as the Renovate bot.
+      - name: Get app token
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          app-id: ${{ secrets.RENOVATE_APP_ID }}
+          private-key: ${{ secrets.RENOVATE_APP_PRIVATE_KEY }}
+
+      # Config: release-please-config.json + .release-please-manifest.json.
+      - uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
+        with:
+          token: ${{ steps.app-token.outputs.token }}
