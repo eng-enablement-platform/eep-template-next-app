@@ -26,15 +26,14 @@
 </p>
 
 An opinionated production-grade Next.js scaffold built on [Engineering Enablement Platform
-(EEP)](https://github.com/eng-enablement-platform) principles. Ships full -
+(EEP)](https://github.com/eng-enablement-platform) principles. Ships full
 authentication, database, API docs, logging, and conventions all wired and
-demonstrated. Strip what you don't need rather than bolt on what
-you do.
+demonstrated.
 
 - **Live site:** [eep-next-template.dev](https://eep-next-template.dev/) - Feel
   free to try signing in if you like, though you will be blocked by the role gate.
 
-- **Docs site:** [docs.eep-next-template.dev](https://docs.eep-next-template.dev/docs) - This README covers just enough to get running - everything else (architecture, conventions,
+- **Docs site:** [docs.eep-next-template.dev](https://docs.eep-next-template.dev/docs) - This README covers just enough to get running, everything else (architecture, conventions,
   deployment, deep dives) is in the docs (also available via `/docs` in the template)
 
 ## Using this template
@@ -44,9 +43,6 @@ Start a new project using this template with [create-eep](https://github.com/eng
 ```bash
 npx create-eep@latest my-app --template next-app
 ```
-
-> [!NOTE]
-> See [CONTRIBUTING.md](CONTRIBUTING.md) if you want to work on updating / improving the template itself
 
 ## Prerequisites
 
