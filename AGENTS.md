@@ -76,11 +76,8 @@ Three layers, strictly separated:
 - **Read vs write** - reads → `GET` handlers; UI writes → server actions (`*-actions.ts`); external writes → route handlers, sharing the same Zod schema as the action
 - **Validation** - Zod schemas in `src/validation/`, one file per domain, shared by route + action
 - **Logging** - `rootLogger` from `classes/loggers/application`; `logSource` = layer (`API`/`ACTION`/`SERVICE`), `scope` = concern; log once at the write boundary, not in the service. Verbosity via `LOG_LEVEL`; DB firehose via `DB_QUERY_LOG=1`
-
-## Data Fetching
-
-SWR for all client fetching. Never `useEffect` for fetching. Hooks wrap SWR in
-`hooks/`, each handling its own loading/error state.
+- SWR for all client fetching. Never `useEffect` for fetching. Hooks wrap SWR in
+  `hooks/`, each handling its own loading/error state.
 
 ## Naming
 
@@ -109,6 +106,10 @@ imports for `ui/`.
 
 ## Documentation
 
+- Write plain English, everywhere (docs, docstrings, comments, commits, PRs): short sentences, everyday words, one idea each. If it reads like an LLM wrote it ("leverage", "robust", "ensures seamless..."), rewrite it in the style of an informal conversation with a colleague
+- `README.md` stays as light as possible - just enough for a developer to get set up and running quickly. No conventions, deep dives or history
+- Conventions and rules live here in `AGENTS.md`
+- Anything else (design, runbooks, background) goes in developer documentation in `/docs`
 - TSDoc on all code - lean, the _why_ not the _what_
 - Example/reference files open TSDoc with `EXAMPLE <TYPE>` (e.g. `EXAMPLE COMPONENT`) - the only approved form
 - Methods/hooks/utilities: purpose, `@param`, `@returns` (enforced), one `@example`

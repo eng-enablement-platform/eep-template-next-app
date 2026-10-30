@@ -60,6 +60,17 @@ BREAKING CHANGE: incompatible API change
 - **Stay on it after it's up.** Once threads are resolved and approvals are in,
   merge promptly.
 
+## Testing what users get
+
+CI's **Generated project** workflow ([`.github/workflows/generated-project.yml`](.github/workflows/generated-project.yml)) scaffolds a project from your PR's commit with [create-eep](https://github.com/eng-enablement-platform/create-eep) - once with every optional extra and once with none - and runs lint, typecheck, tests and build inside each.
+If it fails but the normal CI passes, the template works but the projects made from it don't - usually `.eep/template.json` points at something you renamed, or code depends on an extra that was removed.
+
+Reproduce it locally once your branch is pushed:
+
+```bash
+npx create-eep@latest my-test --template next-app --ref <your-branch> --without docs --without diagrams --without devcontainer
+```
+
 ## Releases
 
 Template releases are automated with [release-please](https://github.com/googleapis/release-please) - never edit `CHANGELOG.md` or `version.txt` by hand.
