@@ -1,0 +1,101 @@
+# Proves the template still produces a working project - the way a user gets
+# it, not just the template repo itself.
+#
+# Scaffolds a project from this commit with create-eep (the published CLI),
+# once with every optional extra and once with none, then runs the template's
+# own checks inside each generated project. Catches what the template's CI
+# can't: a renamed file the .eep/ manifest still references, or code that
+# breaks once an extra (docs, diagrams, devcontainer) is removed.
+#
+# Template-maintenance only: create-eep removes this workflow from generated
+# projects (see .eep/template.json).
+name: Generated project
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: generated-project-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  generated-project:
+    name: Generated project (${{ matrix.extras }} extras)
+    runs-on: ubuntu-latest
+    # Same secrets as ci.yml - the build validates env vars (T3 Env).
+    environment: preview
+    env:
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+      CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+    strategy:
+      # Report both variants even when one fails.
+      fail-fast: false
+      matrix:
+        extras: [all, no]
+    steps:
+      # Only for .nvmrc, the pnpm version (packageManager) and the pnpm cache -
+      # the generated project has the same lockfile.
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      # create-eep makes the first commit, which needs an identity.
+      - name: Configure git
+        run: |
+          git config --global user.name "create-eep CI"
+          git config --global user.email "ci@example.com"
+
+      # Outside the checkout, so the template's own files can't leak in. The
+      # exact commit (not the branch name) so a later push can't change what
+      # this run tests. GIGET_AUTH avoids GitHub's anonymous rate limit.
+      - name: Generate project (${{ matrix.extras }} extras)
+        working-directory: ${{ runner.temp }}
+        env:
+          EXTRAS: ${{ matrix.extras }}
+          TEMPLATE_REF: ${{ github.event.pull_request.head.sha || github.sha }}
+          GIGET_AUTH: ${{ github.token }}
+        run: |
+          if [ "$EXTRAS" = all ]; then
+            extras=(--with docs --with diagrams --with devcontainer)
+          else
+            extras=(--without docs --without diagrams --without devcontainer)
+          fi
+          npx --yes create-eep@latest generated-app --template next-app \
+            --ref "$TEMPLATE_REF" --yes "${extras[@]}"
+
+      # create-eep reports a failed install as a note rather than failing, so
+      # check it here: fails if the lockfile doesn't match package.json.
+      - name: Install dependencies
+        working-directory: ${{ runner.temp }}/generated-app
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        working-directory: ${{ runner.temp }}/generated-app
+        run: pnpm lint
+
+      - name: Typecheck
+        working-directory: ${{ runner.temp }}/generated-app
+        run: pnpm typecheck
+
+      - name: Tests
+        working-directory: ${{ runner.temp }}/generated-app
+        run: |
+          pnpm test
+          pnpm test:tz
+          pnpm test:contract
+
+      - name: Build
+        working-directory: ${{ runner.temp }}/generated-app
+        run: pnpm build
