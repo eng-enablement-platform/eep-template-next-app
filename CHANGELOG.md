@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.0](https://github.com/eng-enablement-platform/eep-template-next-app/compare/v1.0.0...v1.0.0) (2026-10-31)
+
+
+### Features
+
+* add project template test + udpate agents.md and contributions ([0f1923d](https://github.com/eng-enablement-platform/eep-template-next-app/commit/0f1923df24483586c7f6835ef1e13852a70751c5))
+
 ## [1.0.0](https://github.com/eng-enablement-platform/eep-template-next-app/compare/v0.1.0...v1.0.0) (2026-10-15)
 
 
