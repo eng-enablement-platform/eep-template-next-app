@@ -37,7 +37,7 @@
   "features": {
     // Node 24 + pnpm via corepack
     "ghcr.io/devcontainers/features/node:1": {
-      "version": "24.21.0",
+      "version": "24.22.2",
       "pnpmVersion": "latest"
     },
     // Zsh + Oh My Zsh (terminal UX)
