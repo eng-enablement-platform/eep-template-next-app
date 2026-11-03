@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.0.0](https://github.com/eng-enablement-platform/eep-template-next-app/compare/v1.0.0...v1.0.0) (2026-11-03)
+
+
+### Features
+
+* add project template test + udpate agents.md and contributions ([0f1923d](https://github.com/eng-enablement-platform/eep-template-next-app/commit/0f1923df24483586c7f6835ef1e13852a70751c5))
+
+
+### Bug Fixes
+
+* cve bumps ([9d3e4f8](https://github.com/eng-enablement-platform/eep-template-next-app/commit/9d3e4f82b2af61a6e8ef20e60868e0378703e378))
+* **deps:** update all non-major ([3d06680](https://github.com/eng-enablement-platform/eep-template-next-app/commit/3d06680a2cfcd07b0410ccd3396ec22bff414555))
+* **deps:** update all non-major ([395196b](https://github.com/eng-enablement-platform/eep-template-next-app/commit/395196b48c3558f53556efa3ec247be94b393ce3))
+
 ## [1.0.0](https://github.com/eng-enablement-platform/eep-template-next-app/compare/v0.1.0...v1.0.0) (2026-10-15)
 
 
