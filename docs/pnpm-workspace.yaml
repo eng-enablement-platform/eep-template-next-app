@@ -13,9 +13,9 @@ minimumReleaseAge: 4320
 overrides:
   js-yaml@<4.3.1: '^4.3.2'
   # Force undici to a patched version. It is pulled transitively by @ai-sdk/provider-utils.
-  # CVE-2026-12151 / CVE-2026-1526 / CVE-2026-2229: WebSocket DoS via unbounded memory
-  # growth, fixed in 6.27.0. Remove once @ai-sdk/provider-utils updates to pull >= 6.27.0.
-  undici@<6.27.0: '^6.27.0'
+  # CVE-2026-109383: TLS cert validation bypass, CVE-2026-109869 / CVE-2026-87018: DoS.
+  # Fixed in 6.29.1. Remove once @ai-sdk/provider-utils updates to pull >= 6.29.1.
+  undici@<6.29.1: '^6.29.1'
 
 allowBuilds:
   esbuild: true
