@@ -7,6 +7,8 @@ import { ThemeProvider } from 'next-themes';
 import type { ReactNode } from 'react';
 
 import { AppToaster } from '@/components/common/toast';
+import { clerkAppearance } from '@/lib/clerk/appearance';
+import { clerkLocalization } from '@/lib/clerk/localization';
 import { cn } from '@/utils/tailwind-merge';
 
 /*
@@ -57,7 +59,10 @@ export default function RootLayout({
       className={cn('h-full font-sans antialiased', inter.variable)}
     >
       <body className='flex min-h-full flex-col'>
-        <ClerkProvider>
+        <ClerkProvider
+          appearance={clerkAppearance}
+          localization={clerkLocalization}
+        >
           <ThemeProvider
             attribute='class'
             enableSystem

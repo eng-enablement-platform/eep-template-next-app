@@ -1,3 +1,9 @@
+/*
+ * Clerk's styles go in their own layer (see `cssLayerName` in
+ * lib/clerk/appearance.ts), ordered before utilities so our Tailwind classes
+ * on Clerk elements win.
+ */
+@layer theme, base, clerk, components, utilities;
 @import 'tailwindcss';
 @import 'tw-animate-css';
 @import 'shadcn/tailwind.css';
@@ -37,6 +43,9 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-brand: var(--brand);
+  --color-brand-foreground: var(--brand-foreground);
+  --color-brand-accent: var(--brand-accent);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -71,6 +80,14 @@
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
   --radius: 0.625rem;
+  /*
+   * EEP brand colours, taken from the logo. Kept separate from --primary on
+   * purpose: only the auth screens and user menu use them, the rest of the app
+   * stays neutral.
+   */
+  --brand: #1b5fa8;
+  --brand-foreground: #ffffff;
+  --brand-accent: #14958f;
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);
@@ -105,6 +122,8 @@
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
+  /* The logo's lighter teal - the darker one is too dim for links on dark. */
+  --brand-accent: #6bbab5;
   --sidebar: oklch(0.205 0 0);
   --sidebar-foreground: oklch(0.985 0 0);
   --sidebar-primary: oklch(0.488 0.243 264.376);

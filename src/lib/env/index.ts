@@ -40,7 +40,7 @@ export const env = createEnv({
     NEXT_PUBLIC_CLERK_SIGN_UP_URL: z.string().default('/sign-up'),
     NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL: z.string().default('/'),
     NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL: z.string().default('/'),
-    // Optional - when set, a "Docs" link appears in the homepage navbar.
+    // Optional - when set, a "Repo docs" link appears in the user menu.
     NEXT_PUBLIC_DOCS_URL: z.url().optional(),
   },
   runtimeEnv: {
